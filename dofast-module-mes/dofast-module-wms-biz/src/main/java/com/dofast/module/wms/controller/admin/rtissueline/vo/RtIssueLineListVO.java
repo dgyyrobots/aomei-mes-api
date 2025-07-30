@@ -73,6 +73,10 @@ public class RtIssueLineListVO {
 
     private String erpBatchCode;
 
+    private String parentBatchCode;
+
+    private String erpStatus;
+
     private LocalDateTime createTime;
 
 }

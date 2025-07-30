@@ -6,6 +6,8 @@ import com.dofast.module.pro.controller.admin.feedback.vo.*;
 import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.module.pro.dal.dataobject.task.TaskDO;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * 生产报工记录 Service 接口
@@ -54,6 +56,16 @@ public interface FeedbackService {
      */
     List<FeedbackDO> getFeedbackList(Collection<Long> ids);
 
+
+    /**
+     * 获得生产报工记录列表
+     *
+     * @param feedbackCodes 编号
+     * @return 生产报工记录列表
+     */
+    List<FeedbackDO> getFeedbackListByFeedbackCodes(Collection<String> feedbackCodes);
+
+
     /**
      * 获得生产报工记录分页
      *
@@ -75,5 +87,9 @@ public interface FeedbackService {
     Boolean OneClickCreateFeedback(FeedbackDO taskDO);
 
     List<Map<String, Object>> getCapacity();
+
+    Map<String, Object> getFeedbackCount(String workorderCode, String taskCode);
+
+    Map<String, Object> getIotFeedbackLog(String machineryCode);
 
 }

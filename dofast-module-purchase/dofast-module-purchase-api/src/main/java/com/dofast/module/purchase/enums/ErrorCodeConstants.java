@@ -26,7 +26,7 @@ public interface ErrorCodeConstants {
 
     ErrorCode GOODS_NOT_WAREHOUSE = new ErrorCode(1030005000, "采购商品未入库");
 
-    ErrorCode MATERIAL_NOT_WAREHOUSE = new ErrorCode(1030006000, "当前物料未入库");
+    ErrorCode MATERIAL_NOT_WAREHOUSE = new ErrorCode(1030006000, "当前物料未入库或不存在!");
 
     ErrorCode MATERIAL_MAX_STOCK = new ErrorCode(1030006000, "物料在调拨线边仓超出最大上限");
 
@@ -35,6 +35,13 @@ public interface ErrorCodeConstants {
     ErrorCode RETREATE_ORDER_NOT_EXISTS = new ErrorCode(1030008000, "ERP仓退单不存在");
 
     ErrorCode RECEIVE_CANNOT_EXCEED = new ErrorCode(1030009000, "收货总数不能超过采购数量的105%");
+
+    ErrorCode FIND_ORIGIN_GOODS = new ErrorCode(1030010000, "找寻到母单, 请使用拆分后的商品信息!");
+
+    ErrorCode ERP_ERROR = new ErrorCode(1030010000, "ERP接口异常!");
+
+    ErrorCode PARAMS_ERROR = new ErrorCode(1030010000, "获取条码类型异常, 请检查输入法是否为英文!");
+
 
 
 }

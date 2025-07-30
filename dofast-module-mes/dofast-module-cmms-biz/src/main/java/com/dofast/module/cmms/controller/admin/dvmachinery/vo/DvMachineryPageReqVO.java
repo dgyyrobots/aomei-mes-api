@@ -66,6 +66,9 @@ public class DvMachineryPageReqVO extends PageParam {
     @Schema(description = "ERP设备编码")
     private String erpMachineryCode;
 
+    @Schema(description = "产品ID")
+    private Long productId;
+
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;

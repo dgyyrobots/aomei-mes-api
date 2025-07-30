@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.module.mes.api.WorkStationAPi.WorkStationApi;
 import com.dofast.module.mes.api.WorkStationAPi.dto.WorkStationDTO;
+import com.dofast.module.mes.api.autocode.AutoCodeApi;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
 import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderDTO;
@@ -75,6 +76,8 @@ public class IpqcController {
     @Resource
     private DefectRecordService defectRecordService;
 
+    @Resource
+    private AutoCodeApi autoCodeApi;
 
     @PostMapping("/create")
     @Operation(summary = "创建过程检验单")
@@ -83,6 +86,11 @@ public class IpqcController {
         if(Constant.NOT_UNIQUE.equals(ipqcService.checkIpqcCodeUnique(createReqVO))){
             return error(ErrorCodeConstants.IPQC_CODE_EXISTS);
         }
+
+        String code = autoCodeApi.genSerialCode("IPQC_CODE",null);
+        createReqVO.setIpqcCode(code);
+        createReqVO.setIpqcName(code);
+
         //根据工单获取产品信息
         WorkorderDTO workorder = workorderApi.getWorkorder(createReqVO.getWorkorderCode());
         createReqVO.setWorkorderId(workorder.getId());
@@ -93,11 +101,10 @@ public class IpqcController {
         createReqVO.setItemName(workorder.getProductName());
         createReqVO.setSpecification(workorder.getProductSpc());
         createReqVO.setUnitOfMeasure(workorder.getUnitOfMeasure());
-        WorkStationDTO workStationDTO = workStationApi.getWorkstation(createReqVO.getWorkstationCode());
+        WorkStationDTO workStationDTO = workStationApi.getWorkstation(createReqVO.getWorkstationCode(), createReqVO.getProcessCode());
         createReqVO.setWorkstationId(workStationDTO.getId());
         createReqVO.setWorkstationCode(workStationDTO.getWorkstationCode());
         createReqVO.setWorkstationName(workStationDTO.getWorkstationName());
-
 
         //根据产品和检测类型获取检测模板
         TemplateBaseVO param = new TemplateBaseVO();

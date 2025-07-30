@@ -2,6 +2,7 @@ package com.dofast.module.wms.controller.admin.allocatedheader;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.alibaba.excel.util.StringUtils;
 import com.dofast.module.cal.api.team.TeamApi;
 import com.dofast.module.cal.api.team.dto.TeamDTO;
 import com.dofast.module.mes.constant.Constant;
@@ -14,12 +15,15 @@ import com.dofast.module.wms.controller.admin.allocatedline.vo.AllocatedLineExpo
 import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderCreateReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
+import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockUpdateReqVO;
+import com.dofast.module.wms.convert.allocatedrecord.AllocatedRecordConvert;
 import com.dofast.module.wms.convert.issueheader.IssueHeaderConvert;
 import com.dofast.module.wms.dal.dataobject.allocatedline.AllocatedLineDO;
 import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
+import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.dal.mysql.allocatedline.AllocatedLineMapper;
@@ -29,9 +33,11 @@ import com.dofast.module.wms.enums.ErrorCodeConstants;
 import com.dofast.module.wms.service.allocatedline.AllocatedLineService;
 import com.dofast.module.wms.service.allocatedrecord.AllocatedRecordService;
 import com.dofast.module.wms.service.issueheader.IssueHeaderService;
+import com.dofast.module.wms.service.issueline.IssueLineService;
 import com.dofast.module.wms.service.materialstock.MaterialStockService;
 import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
+import com.sun.org.apache.bcel.internal.generic.RETURN;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -63,6 +69,7 @@ import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
 
+import static com.dofast.framework.common.pojo.UserConstants.BATCH_CODE_SWITCH_DATE;
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.*;
@@ -100,10 +107,7 @@ public class AllocatedHeaderController {
     private IssueHeaderService issueHeaderService;
 
     @Resource
-    private IssueHeaderMapper issueHeaderMapper;
-
-    @Resource
-    private IssueLineMapper issueLineMapper;
+    private IssueLineService issueLineService;
 
     @Resource
     private MaterialStockERPAPI materialStockERPAPI;
@@ -134,7 +138,7 @@ public class AllocatedHeaderController {
         String dateStr = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         // 生成3位随机数
         int random = (int) ((Math.random() * 9 + 1) * 100);
-        if(bindWorkorder){
+        if (bindWorkorder) {
             // 校验当前的任务单是否已创建调拨单
             String taskCode = createReqVO.getTaskCode();
             TaskDTO taskDTO = taskApi.getTask(taskCode);
@@ -144,18 +148,18 @@ public class AllocatedHeaderController {
 
             // 班组编码
             String attr1 = taskDTO.getAttr1();
-            if(attr1 == null){
+            if (attr1 == null) {
                 return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
             }
             exportReqVO.setTaskCode(taskCode);
 
             createReqVO.setAllocatedName(taskDTO.getProcessName() + "调拨单" + dateStr + random);
-        }else{
+        } else {
             StorageLocationDO location = storageLocationService.getStorageLocation(createReqVO.getLocationId());
             String processName = "";
-            if(location!= null){
-                ProcessDTO process =  processApi.getcess(location.getProcessCode());
-                if(process!= null){
+            if (location != null) {
+                ProcessDTO process = processApi.getcess(location.getProcessCode());
+                if (process != null) {
                     processName = process.getProcessName();
                 }
             }
@@ -449,7 +453,6 @@ public class AllocatedHeaderController {
      * 执行调拨
      *
      * @return
-     *
      */
     @PreAuthorize("@ss.hasPermission('wms:issue-header:update')")
     @Transactional
@@ -460,7 +463,7 @@ public class AllocatedHeaderController {
         // 查询调拨单头
         AllocatedHeaderDO allocated = allocatedHeaderService.getAllocatedHeader(allocatedId);
         boolean bindWorkorder = Boolean.parseBoolean(allocated.getBindWorkorder());
-        if(bindWorkorder){
+        if (bindWorkorder) {
             TaskDTO taskDTO = taskApi.getTask(allocated.getTaskId());
             if (taskDTO == null) {
                 return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
@@ -471,12 +474,12 @@ public class AllocatedHeaderController {
         params.put("allocatedId", allocatedId);
         params.put("allocatedCode", allocated.getAllocatedCode());
         // ERP暂时没有仓库, 只有库区与库位暂时不传递仓库信息
-        params.put("inLocationId" , allocated.getLocationId());
+        params.put("inLocationId", allocated.getLocationId());
         params.put("inLocationCode", allocated.getLocationCode());
         params.put("inLocationName", allocated.getLocationName());
-        params.put("inAreaId"    , allocated.getAreaId());
-        params.put("inAreaCode"   , allocated.getAreaCode());
-        params.put("inAreaName"   , allocated.getAreaName());
+        params.put("inAreaId", allocated.getAreaId());
+        params.put("inAreaCode", allocated.getAreaCode());
+        params.put("inAreaName", allocated.getAreaName());
        /* AllocatedLineExportReqVO param = new AllocatedLineExportReqVO();
         param.setAllocatedId(allocatedId);
         List<AllocatedLineDO> lines = allocatedLineService.getAllocatedLineList(param);*/
@@ -486,18 +489,49 @@ public class AllocatedHeaderController {
         param.setAllocatedFlag("N"); // 未执行的调拨单身
         List<AllocatedRecordDO> lines = allocatedRecordService.getAllocatedRecordList(param);
 
-        if(lines.isEmpty() || CollUtil.isEmpty(lines)){
+        if (lines.isEmpty() || CollUtil.isEmpty(lines)) {
             return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_PROCESS_LINE);
         }
         List<Map<String, Object>> erpRequestList = new ArrayList<>(); // 用于回传ERP接口
         for (AllocatedRecordDO line : lines) {
+            MaterialStockExportReqVO reqVO = new MaterialStockExportReqVO().setBatchCode(line.getBatchCode()).setItemCode(line.getItemCode());
+            List<MaterialStockDO> stockDOList = materialStockService.getMaterialStockListContainZero(reqVO);
+            MaterialStockDO stockDO = stockDOList == null ? null : stockDOList.stream()
+                    .sorted(Comparator.comparing(MaterialStockDO::getCreateTime))
+                    .findFirst()
+                    .orElse(null);
+            if(stockDO == null){
+                return error(ErrorCodeConstants.ALLOCATED_MATERIAL_STOCK_NOT_EXISTS);
+            }
             Map<String, Object> map = new HashMap<>();
+            map.put("recodeId", line.getId());
             map.put("itemCode", line.getItemCode());
             map.put("itemName", line.getItemName());
             map.put("specification", line.getSpecification());
             map.put("quantityAllocated", line.getQuantityAllocated());
             map.put("unitOfMeasure", line.getUnitOfMeasure());
-            map.put("batchCode", line.getBatchCode());
+            // 2025-6-8 追加母批次
+            // map.put("batchCode", line.getBatchCode());
+
+            String batchCode;
+            if (stockDO.getCreateTime().isBefore(BATCH_CODE_SWITCH_DATE)) {
+                batchCode = stockDO.getErpBatchCode();
+                if (batchCode == null) {
+                    System.out.println("ERP批次号缺失 | 调拨单行ID：" +  line.getId());
+                    continue;
+                }
+            }else{
+                batchCode = line.getParentBatchCode();
+                if (batchCode == null) {
+                    System.out.println("批次号缺失 | 领料单行ID：" +  line.getId());
+                     continue;
+                }
+            }
+            if(batchCode == null){
+                continue;
+            }
+
+            map.put("batchCode", batchCode);
             map.put("warehouseId", line.getWarehouseId());
             map.put("warehouseCode", line.getWarehouseCode());
             map.put("warehouseName", line.getWarehouseName());
@@ -511,11 +545,35 @@ public class AllocatedHeaderController {
         }
         params.put("allocatedList", erpRequestList);
 
-       /* String result = materialStockERPAPI.requisitionNoteCreate(params);
-        if(!result.contains("SUCCESS")){
-           return error(ErrorCodeConstants.ALLOCATED_INTERFACE_ERROR);
-        }*/
+        Map<Long, String> erpStatusMap = new HashMap<>();
+        for (AllocatedRecordDO line : lines) {
+            erpStatusMap.put(line.getId(), "N"); // 默认设为未同步
+        }
+
+        if(!erpRequestList.isEmpty()){
+            String result = materialStockERPAPI.requisitionNoteCreate(params);
+            // String result = "SUCCESS";
+            if(!result.contains("SUCCESS")){
+                updateErpStatus(lines, erpStatusMap, "N");
+                return error(ErrorCodeConstants.ALLOCATED_INTERFACE_ERROR);
+            }
+            for (Map<String, Object> recode : erpRequestList) {
+                Number idNumber = (Number) recode.get("recodeId");
+                if (idNumber != null) {
+                    erpStatusMap.put(idNumber.longValue(), "Y");
+                }
+            }
+        }
+
         List<AllocatedTxBean> beans = allocatedHeaderService.getTxBeans(allocatedId);
+
+        for (Map<String, Object> recode : erpRequestList) {
+            Number idNumber = (Number) recode.get("recodeId");
+            Long id = idNumber.longValue();
+            AllocatedRecordDO recordDO = allocatedRecordService.getAllocatedRecord(id);
+            recordDO.setErpStatus("Y");
+            allocatedRecordService.updateAllocatedRecord(AllocatedRecordConvert.INSTANCE.convert01(recordDO));
+        }
 
         //调用库存核心
         storageCoreService.processAllocated(beans);
@@ -525,17 +583,27 @@ public class AllocatedHeaderController {
         AllocatedHeaderUpdateReqVO updateReqVO = AllocatedHeaderConvert.INSTANCE.convert01(allocated);
         allocatedHeaderService.updateAllocatedHeader(updateReqVO);
 
-        // 更新调拨单单身记录
-        for (int i = 0; i < lines.size(); i++) {
-            AllocatedRecordDO recordDO = lines.get(i);
+
+        for (AllocatedRecordDO recordDO : lines) {
+            String erpStatus = erpStatusMap.get(recordDO.getId());
+            recordDO.setErpStatus(erpStatus != null ? erpStatus : "N");
             recordDO.setAllocatedFlag("Y");
             recordDO.setUpdateTime(LocalDateTime.now());
         }
+
         allocatedRecordService.updateAllocatedRecordBatch(lines);
 
 
         return success(true);
 
+    }
+
+    private void updateErpStatus(List<AllocatedRecordDO> lines, Map<Long, String> statusMap, String status) {
+        for (AllocatedRecordDO line : lines) {
+            line.setErpStatus(status);
+        }
+        // 立即更新到数据库
+        allocatedRecordService.updateAllocatedRecordBatch(lines);
     }
 
     /**
@@ -550,19 +618,19 @@ public class AllocatedHeaderController {
     @PreAuthorize("@ss.hasPermission('wms:allocated-header:create')")
     public CommonResult<Boolean> finshAllocatedHeader(@RequestParam("id") Long allocatedId) {
         AllocatedHeaderDO reqVO = allocatedHeaderService.getAllocatedHeader(allocatedId);
-        if(!reqVO.getStatus().equals(Constant.ORDER_STATUS_CONFIRMED)){
+        if (!reqVO.getStatus().equals(Constant.ORDER_STATUS_CONFIRMED)) {
             return error(ErrorCodeConstants.ALLOCATED_LINE_STATUS_ERROR);
         }
 
         boolean bindWorkorder = Boolean.parseBoolean(reqVO.getBindWorkorder());
-        if(bindWorkorder){
+        if (bindWorkorder) {
             TaskDTO taskDTO = taskApi.getTask(reqVO.getTaskId());
             if (taskDTO == null) {
                 return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
             }
             // 班组编码
             String attr1 = taskDTO.getAttr1();
-            if(attr1 == null){
+            if (attr1 == null) {
                 return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
             }
         }
@@ -575,7 +643,7 @@ public class AllocatedHeaderController {
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
             exportReqVO.setItemCode(bom.getItemCode());
             exportReqVO.setBatchCode(bom.getBatchCode());
-            System.out.println("当前查询库存信息: " +  exportReqVO.toString());
+            System.out.println("当前查询库存信息: " + exportReqVO.toString());
             List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
             materialStock.get(0).setRecptStatus("Y");
             materialStockService.updateMaterialStock(BeanUtil.toBean(materialStock.get(0), MaterialStockUpdateReqVO.class));
@@ -613,12 +681,12 @@ public class AllocatedHeaderController {
     @PreAuthorize("@ss.hasPermission('wms:allocated-header:create')")
     public CommonResult<Boolean> createIssue(@RequestParam("id") Long allocatedId) {
         AllocatedHeaderDO reqVO = allocatedHeaderService.getAllocatedHeader(allocatedId);
-        if(!Boolean.parseBoolean(reqVO.getBindWorkorder())){
+        if (!Boolean.parseBoolean(reqVO.getBindWorkorder())) {
             return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_BIND_WORKORDER);
         }
 
         // 若当前领料单状态不是已完成 , 则提示错误
-        if(!reqVO.getStatus().equals(Constant.ORDER_STATUS_FINISHED)){
+        if (!reqVO.getStatus().equals(Constant.ORDER_STATUS_FINISHED)) {
             return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_NOT_FINISHED);
         }
 
@@ -632,7 +700,7 @@ public class AllocatedHeaderController {
 
         exportReqVO.setTaskId(reqVO.getTaskId());
         List<IssueHeaderDO> issueHeaderList = issueHeaderService.getIssueHeaderList(exportReqVO);
-        if(issueHeaderList!=null && !issueHeaderList.isEmpty()){
+        if (issueHeaderList != null && !issueHeaderList.isEmpty()) {
             return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_NOT_CREATE_ISSUE);
         }
 
@@ -640,17 +708,17 @@ public class AllocatedHeaderController {
 
         // 班组编码
         String attr1 = taskDTO.getAttr1();
-        if(attr1 == null){
+        if (attr1 == null) {
             return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
         }
         TeamDTO teamDTO = teamApi.getTeamByCode(attr1);
         String machineryCode = null;
         String machineryName = null;
-        Long machineryId =  null;
-        if(teamDTO!=null){
+        Long machineryId = null;
+        if (teamDTO != null) {
             machineryCode = teamDTO.getMachineryCode();
             machineryName = teamDTO.getMachineryName();
-            machineryId =  teamDTO.getMachineryId();
+            machineryId = teamDTO.getMachineryId();
         }
 
         // 追加领料单信息
@@ -697,6 +765,86 @@ public class AllocatedHeaderController {
         return success(true);
     }
 
+    @GetMapping("/traceAllocatedPage")
+    @Operation(summary = "获得调拨单头分页")
+    @PreAuthorize("@ss.hasPermission('wms:allocated-header:query')")
+    public CommonResult<PageResult<AllocatedHeaderRespVO>> traceAllocatedPage(@Valid AllocatedHeaderPageReqVO pageVO) {
+        Set<String> allocatedCodeSet = new HashSet<String>();
 
+        String workorderCode = pageVO.getWorkorderCode();
+        String taskCode = pageVO.getTaskCode();
+        String batchCode = pageVO.getBatchCode();
+
+        if (workorderCode == null && taskCode == null && batchCode == null) {
+            return success();
+        }
+
+        Set<String> batchCodeSet = new HashSet<>();
+
+        if (workorderCode != null && !"".equals(workorderCode)) {
+            // 查询工单下所有的领料单
+            // 获取领料单身所有领料批次
+            List<IssueHeaderDO> issueHeaderList = issueHeaderService.getIssueHeaderList(new IssueHeaderExportReqVO().setWorkorderCode(workorderCode));
+            if (!issueHeaderList.isEmpty()) {
+                for (IssueHeaderDO issueHeaderDO : issueHeaderList) {
+                    List<IssueLineDO> issueLineDOS = issueLineService.getIssueLineList(new IssueLineExportReqVO().setIssueId(issueHeaderDO.getId()));
+                    if (!issueLineDOS.isEmpty()) {
+                        for (IssueLineDO issueLineDO : issueLineDOS) {
+                            batchCodeSet.add(issueLineDO.getBatchCode());
+                        }
+                    }
+                }
+            }
+            List<String> batchCodeList = new ArrayList<>(batchCodeSet);
+            // 基于批次获取调拨单头信息
+            List<AllocatedHeaderDO> allocatedHeaderDO = allocatedHeaderService.getAllocatedHeaderListByBatchCodeList(batchCodeList);
+            if (!allocatedHeaderDO.isEmpty()) {
+                for (AllocatedHeaderDO allocatedHeaderDO1 : allocatedHeaderDO) {
+                    allocatedCodeSet.add(allocatedHeaderDO1.getAllocatedCode());
+                }
+            }
+        }
+
+        if (taskCode != null && !"".equals(taskCode)) {
+            IssueHeaderDO issueHeader = Optional.ofNullable(issueHeaderService.getIssueHeaderList(new IssueHeaderExportReqVO().setTaskCode(taskCode)).get(0)).orElse(null);
+            if (issueHeader != null) {
+                List<IssueLineDO> issueLineDOS = issueLineService.getIssueLineList(new IssueLineExportReqVO().setIssueId(issueHeader.getId()));
+                if (!issueLineDOS.isEmpty()) {
+                    for (IssueLineDO issueLineDO : issueLineDOS) {
+                        batchCodeSet.add(issueLineDO.getBatchCode());
+                    }
+                }
+            }
+            List<String> batchCodeList = new ArrayList<>(batchCodeSet);
+            // 基于批次获取调拨单头信息
+            List<AllocatedHeaderDO> allocatedHeaderDO = allocatedHeaderService.getAllocatedHeaderListByBatchCodeList(batchCodeList);
+            if (!allocatedHeaderDO.isEmpty()) {
+                for (AllocatedHeaderDO allocatedHeaderDO1 : allocatedHeaderDO) {
+                    allocatedCodeSet.add(allocatedHeaderDO1.getAllocatedCode());
+                }
+            }
+        }
+
+        if(batchCode!= null && !"".equals(batchCode)){
+            List<AllocatedRecordDO> allocatedLineDOList = allocatedRecordService.getAllocatedRecordList(new AllocatedRecordExportReqVO().setBatchCode(batchCode));
+            if(!allocatedLineDOList.isEmpty()){
+                for (AllocatedRecordDO allocatedRecordDO : allocatedLineDOList) {
+                   AllocatedHeaderDO allocatedHeaderDO = allocatedHeaderService.getAllocatedHeader(allocatedRecordDO.getAllocatedId());
+                   allocatedCodeSet.add(allocatedHeaderDO.getAllocatedCode());
+                }
+            }
+        }
+
+        if(allocatedCodeSet.isEmpty()){
+            return success();
+        }
+        List<String> allocatedHeaderDOList = new ArrayList<>(allocatedCodeSet);
+        pageVO.setAllocatedCodeList(allocatedHeaderDOList);
+        pageVO.setWorkorderCode(null);
+        pageVO.setTaskCode(null);
+        pageVO.setBatchCode(null);
+        PageResult<AllocatedHeaderDO> pageResult = allocatedHeaderService.getAllocatedHeaderPage(pageVO);
+        return success(AllocatedHeaderConvert.INSTANCE.convertPage(pageResult));
+    }
 
 }

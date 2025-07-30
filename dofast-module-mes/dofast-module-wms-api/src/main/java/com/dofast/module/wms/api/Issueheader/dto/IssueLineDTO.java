@@ -161,13 +161,35 @@ public class IssueLineDTO {
     private Long sequenceOrder;
 
     /**
+     * ERP批次
+     */
+    private String erpBatchCode;
+
+    /**
+     * ERP调用标识
+     */
+    private String erpEnable;
+
+    /**
+     * 母批次
+     */
+    private String parentBatchCode;
+
+    /**
      * 创建时间
      */
     private Date createTime;
 
     /**
+     * 创建人
+     */
+    private String creator;
+
+    /**
      * 创建时间
      */
     private Date updateTime;
+
+
 
 }

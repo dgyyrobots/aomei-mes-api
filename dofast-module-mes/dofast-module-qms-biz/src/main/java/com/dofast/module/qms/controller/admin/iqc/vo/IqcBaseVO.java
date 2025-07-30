@@ -35,7 +35,6 @@ public class IqcBaseVO {
     private Long templateId;
 
     @Schema(description = "供应商ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "22368")
-    @NotNull(message = "供应商ID不能为空")
     private Long vendorId;
 
     @Schema(description = "供应商编码", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -43,7 +42,6 @@ public class IqcBaseVO {
     private String vendorCode;
 
     @Schema(description = "供应商名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "张三")
-    @NotNull(message = "供应商名称不能为空")
     private String vendorName;
 
     @Schema(description = "供应商简称")
@@ -68,10 +66,10 @@ public class IqcBaseVO {
     private String unitOfMeasure;
 
     @Schema(description = "最低检测数")
-    private Integer quantityMinCheck;
+    private BigDecimal quantityMinCheck;
 
     @Schema(description = "最大不合格数")
-    private Integer quantityMaxUnqualified;
+    private BigDecimal quantityMaxUnqualified;
 
     @Schema(description = "本次接收数量", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "本次接收数量不能为空")
@@ -79,10 +77,10 @@ public class IqcBaseVO {
 
     @Schema(description = "本次检测数量", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "本次检测数量不能为空")
-    private Integer quantityCheck;
+    private BigDecimal quantityCheck;
 
     @Schema(description = "不合格数")
-    private Integer quantityUnqualified;
+    private BigDecimal quantityUnqualified;
 
     @Schema(description = "致命缺陷率")
     private BigDecimal crRate;
@@ -94,13 +92,13 @@ public class IqcBaseVO {
     private BigDecimal minRate;
 
     @Schema(description = "致命缺陷数量")
-    private Integer crQuantity;
+    private BigDecimal crQuantity;
 
     @Schema(description = "严重缺陷数量")
-    private Integer majQuantity;
+    private BigDecimal majQuantity;
 
     @Schema(description = "轻微缺陷数量")
-    private Integer minQuantity;
+    private BigDecimal minQuantity;
 
     @Schema(description = "检测结果")
     private String checkResult;
@@ -136,6 +134,11 @@ public class IqcBaseVO {
 
     @Schema(description = "附件")
     private String adjuncts;
+
+    @Schema(description = "采购单号")
+    private String poNo;
+
+
 
     public Long getId(){
         return null;

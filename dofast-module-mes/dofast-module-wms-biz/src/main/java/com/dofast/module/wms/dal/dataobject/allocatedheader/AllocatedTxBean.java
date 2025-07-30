@@ -118,4 +118,7 @@ public class AllocatedTxBean extends BaseDO {
      * 生产工单编号
      */
     private String workorderCode;
+
+    /** 母批次号 */
+    private String parentBatchCode;
 }

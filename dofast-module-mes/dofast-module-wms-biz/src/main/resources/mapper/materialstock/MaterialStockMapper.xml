@@ -9,4 +9,26 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getOriginIdByBatchCode" resultType="java.lang.Long">
+        SELECT id FROM (
+                           (SELECT id, create_time FROM purchase_goods
+                            WHERE batch_code = #{batchCode} AND deleted = 0
+                            ORDER BY create_time DESC LIMIT 1)
+
+                           UNION ALL
+
+                           (SELECT id, create_time FROM pro_feedback
+                            WHERE batch_code = #{batchCode} AND deleted = 0
+                            ORDER BY create_time DESC LIMIT 1)
+
+                           UNION ALL
+
+                           (SELECT id, create_time FROM wms_rt_issue_line
+                            WHERE batch_code = #{batchCode} AND deleted = 0
+                            ORDER BY create_time DESC LIMIT 1)
+                       ) AS combined_data
+        ORDER BY create_time DESC
+            LIMIT 1
+    </select>
+
 </mapper>

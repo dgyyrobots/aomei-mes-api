@@ -103,8 +103,10 @@ public class retreatOrderJob implements JobHandler {
                 if(vendor!= null){
                     order.setVendorName(vendor.getVendorName());
                 }
-                order.setRetreatUser(userDTO.getUsername());
-                order.setRetreatNick(userDTO.getNickname());
+                if(userDTO!=null) {
+                    order.setRetreatUser(userDTO.getUsername());
+                    order.setRetreatNick(userDTO.getNickname());
+                }
                 addOrder.add(order);
                 // 追加仓退单详情信息
             }else{
@@ -112,8 +114,10 @@ public class retreatOrderJob implements JobHandler {
                 if(vendor!= null){
                     retreatOrderDO.setVendorName(vendor.getVendorName());
                 }
-                retreatOrderDO.setRetreatUser(userDTO.getUsername());
-                retreatOrderDO.setRetreatNick(userDTO.getNickname());
+                if(userDTO!=null){
+                    retreatOrderDO.setRetreatUser(userDTO.getUsername());
+                    retreatOrderDO.setRetreatNick(userDTO.getNickname());
+                }
                 editOrder.add(retreatOrderDO);
             }
         }
@@ -143,6 +147,20 @@ public class retreatOrderJob implements JobHandler {
             String unitOfMeasure = Optional.ofNullable((String) retreatGoods.get("UNIT_OF_MEASURE")).orElse(""); // 商品单位
             BigDecimal receiveNum = retreatGoods.get("RECEIVE_NUM").equals(null)? new BigDecimal(0) : (BigDecimal) retreatGoods.get("RECEIVE_NUM");
             BigDecimal consequence = retreatGoods.get("CONSEQUENCE").equals(null)? new BigDecimal(0) : (BigDecimal) retreatGoods.get("CONSEQUENCE");// 商品项次
+
+            // 追加采购, 收货信息
+            String poNo = Optional.ofNullable((String) retreatGoods.get("PO_NO")).orElse(""); // 采购单号
+            BigDecimal purchaseBatch = Optional.ofNullable((BigDecimal) retreatGoods.get("PURCHASE_BATCH")).orElse(null); // 采购项次
+            BigDecimal purchaseConsequence = Optional.ofNullable((BigDecimal) retreatGoods.get("PURCHASE_CONSEQUENCE")).orElse(null); // 采购项序
+            BigDecimal purchaseBatchConsequence = Optional.ofNullable((BigDecimal) retreatGoods.get("PURCHASE_BATCH_CONSEQUENCE")).orElse(null); // 采购分批序
+
+            String warehousingCode = Optional.ofNullable((String) retreatGoods.get("WAREHOUSING_CODE")).orElse(""); // 收货单号
+            BigDecimal warehousingSequence = Optional.ofNullable((BigDecimal) retreatGoods.get("WAREHOUSING_SEQUENCE")).orElse(null); // 收货项序
+            String reasonCode = Optional.ofNullable((String) retreatGoods.get("REASON_CODE")).orElse(""); // 仓退理由码
+            String batchCode = Optional.ofNullable((String) retreatGoods.get("BATCH_CODE")).orElse(""); // 批次号
+
+
+
             Long warehouseId = null;
             String warehouseCode = "";
             String warehouseName = "";
@@ -193,6 +211,16 @@ public class retreatOrderJob implements JobHandler {
                retreatGoodsDO.setUnitOfMeasure(unitOfMeasure);
                retreatGoodsDO.setReceiveNum(receiveNum);
                retreatGoodsDO.setConsequence(String.valueOf(consequence));
+
+               retreatGoodsDO.setPoNo(poNo);
+               retreatGoodsDO.setPurchaseBatch(purchaseBatch.intValue());
+               retreatGoodsDO.setPurchaseConsequence(purchaseConsequence.intValue());
+               retreatGoodsDO.setPurchaseBatchConsequence(purchaseBatchConsequence.intValue());
+               retreatGoodsDO.setErpReceiveCode(warehousingCode);
+               retreatGoodsDO.setReceiveSeq(warehousingSequence.intValue());
+               retreatGoodsDO.setReasonCode(reasonCode);
+
+               retreatGoodsDO.setBatchCode(batchCode);
                retreatGoodsDO.setLocationCode(locationCode);
                retreatGoodsDO.setLocationName(locationName);
                retreatGoodsDO.setLocationId(locationId);
@@ -207,6 +235,14 @@ public class retreatOrderJob implements JobHandler {
                 retreatGoodsDO.setGoodsSpecs(goodsSpec);
                 retreatGoodsDO.setUnitOfMeasure(unitOfMeasure);
                 retreatGoodsDO.setReceiveNum(receiveNum);
+                retreatGoodsDO.setPoNo(poNo);
+                retreatGoodsDO.setPurchaseBatch(purchaseBatch.intValue());
+                retreatGoodsDO.setPurchaseConsequence(purchaseConsequence.intValue());
+                retreatGoodsDO.setPurchaseBatchConsequence(purchaseBatchConsequence.intValue());
+                retreatGoodsDO.setErpReceiveCode(warehousingCode);
+                retreatGoodsDO.setReceiveSeq(warehousingSequence.intValue());
+                retreatGoodsDO.setReasonCode(reasonCode);
+                retreatGoodsDO.setBatchCode(batchCode);
                 retreatGoodsDO.setLocationCode(locationCode);
                 retreatGoodsDO.setLocationName(locationName);
                 retreatGoodsDO.setLocationId(locationId);
@@ -223,9 +259,6 @@ public class retreatOrderJob implements JobHandler {
         if(!editGoods.isEmpty()){
             retreatGoodsService.updateBatch(editGoods);
         }
-
-        System.out.println("仓退单定时任务执行成功");
-
         return "success";
     }
 }

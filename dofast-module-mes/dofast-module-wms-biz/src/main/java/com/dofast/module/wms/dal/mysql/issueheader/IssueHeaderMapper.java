@@ -58,6 +58,7 @@ public interface IssueHeaderMapper extends BaseMapperX<IssueHeaderDO> {
                 .eqIfPresent(IssueHeaderDO::getProcessCode, reqVO.getProcessCode())
                 .eqIfPresent(IssueHeaderDO::getProcessName, reqVO.getProcessName())
                 .betweenIfPresent(IssueHeaderDO::getCreateTime, reqVO.getCreateTime())
+                .inIfPresent(IssueHeaderDO::getIssueCode, reqVO.getIssueCodeList())
                 .orderByDesc(IssueHeaderDO::getId));
     }
 

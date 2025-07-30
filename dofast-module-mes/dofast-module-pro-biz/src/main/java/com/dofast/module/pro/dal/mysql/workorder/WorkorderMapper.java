@@ -1,11 +1,15 @@
 package com.dofast.module.pro.dal.mysql.workorder;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.workorder.vo.*;
 
@@ -53,6 +57,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
                 .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId())
                 .notInIfPresent(WorkorderDO::getOrderSource, Collections.singleton("4"))
+                .inIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderList())
                 .orderByDesc(WorkorderDO::getCreateTime));
     }
     default List<WorkorderDO> selectList(WorkorderListVO reqVO) {
@@ -159,7 +164,49 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getIsOut, reqVO.getIsOut())
                 .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId())
                 .notInIfPresent(WorkorderDO::getOrderSource, Collections.singleton("4")));
+    }
 
+
+    default Map<String, Integer> getCountMonthWorkorderLastYear() {
+        QueryWrapper<WorkorderDO> wrapper = new QueryWrapper<>();
+        wrapper.select("DATE_FORMAT(create_time, '%Y-%m') AS month", "SUM(quantity_produced) AS total")
+                .groupBy("month")
+                .ge("create_time", LocalDate.now().minusYears(1).withDayOfYear(1)) // 上一年第一天
+                .lt("create_time", LocalDate.now().withDayOfYear(1)); // 今年第一天
+
+        List<Map<String, Object>> result = selectMaps(wrapper);
+
+        Map<String, Integer> resultMap = new HashMap<>();
+        if (result == null || result.isEmpty()) return resultMap;
+        for (Map<String, Object> map : result) {
+            String month = (String) map.get("month");
+            Double total = (Double) map.get("total");
+            resultMap.put(month, total != null ? total.intValue() : 0);
+        }
+        return resultMap;
+    }
+
+
+    default Map<String, Integer> getCountMonthWorkorderThisYear() {
+        QueryWrapper<WorkorderDO> wrapper = new QueryWrapper<>();
+        wrapper.select("DATE_FORMAT(create_time, '%Y-%m') AS month", "SUM(quantity_produced) AS total")
+                .groupBy("month")
+                // 时间范围：今年第一天 ~ 明年第一天（确保覆盖全年）
+                .ge("create_time", LocalDate.now().withDayOfYear(1))          // 今年第一天
+                .lt("create_time", LocalDate.now().plusYears(1).withDayOfYear(1)); // 明年第一天
+
+        List<Map<String, Object>> result = selectMaps(wrapper);
+
+        Map<String, Integer> resultMap = new HashMap<>();
+        if (result == null || result.isEmpty()) {
+            return resultMap;
+        }
+        for (Map<String, Object> map : result) {
+            String month = (String) map.get("month");
+            Double total = (Double) map.get("total");
+            resultMap.put(month, total != null ? total.intValue() : 0);
+        }
+        return resultMap;
     }
 
 }

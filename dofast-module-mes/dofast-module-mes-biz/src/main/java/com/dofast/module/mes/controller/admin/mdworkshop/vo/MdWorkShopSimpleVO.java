@@ -13,4 +13,7 @@ public class MdWorkShopSimpleVO {
 
     @Schema(description = "车间名称", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
+
+    @Schema(description = "车间编码", requiredMode = Schema.RequiredMode.REQUIRED)
+    private String code;
 }

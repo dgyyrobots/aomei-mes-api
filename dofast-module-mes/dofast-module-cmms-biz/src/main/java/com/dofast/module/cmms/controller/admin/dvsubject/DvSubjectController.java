@@ -45,9 +45,9 @@ public class DvSubjectController {
     @Operation(summary = "创建设备点检保养项目")
     @PreAuthorize("@ss.hasPermission('cmms:dv-subject:create')")
     public CommonResult<Long> createDvSubject(@Valid @RequestBody DvSubjectCreateReqVO createReqVO) {
-        if(Constant.NOT_UNIQUE.equals(dvSubjectService.checkSubjectCodeUnique(createReqVO))){
+        /*if(Constant.NOT_UNIQUE.equals(dvSubjectService.checkSubjectCodeUnique(createReqVO))){
             return error(ErrorCodeConstants.DV_SUBJECT_NOT_EXISTS);
-        }
+        }*/
         return success(dvSubjectService.createDvSubject(createReqVO));
     }
 
@@ -55,9 +55,9 @@ public class DvSubjectController {
     @Operation(summary = "更新设备点检保养项目")
     @PreAuthorize("@ss.hasPermission('cmms:dv-subject:update')")
     public CommonResult<Boolean> updateDvSubject(@Valid @RequestBody DvSubjectUpdateReqVO updateReqVO) {
-        if(Constant.NOT_UNIQUE.equals(dvSubjectService.checkSubjectCodeUnique(updateReqVO))){
+        /*if(Constant.NOT_UNIQUE.equals(dvSubjectService.checkSubjectCodeUnique(updateReqVO))){
             return error(ErrorCodeConstants.DV_SUBJECT_NOT_EXISTS);
-        }
+        }*/
         dvSubjectService.updateDvSubject(updateReqVO);
         return success(true);
     }

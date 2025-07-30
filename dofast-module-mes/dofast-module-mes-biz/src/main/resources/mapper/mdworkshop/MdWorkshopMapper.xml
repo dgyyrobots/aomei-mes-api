@@ -12,11 +12,12 @@
         <id column="id" property="id" />
         <result column="id" property= "id" />
         <result column="workshop_name" property="name" />
+        <result column="workshop_code" property="code" />
     </resultMap>
 
     <!-- 编写查询语句 -->
     <select id="selectSimpleList" resultMap="MdWorkShopSimpleResultMap">
-        SELECT id, workshop_name
+        SELECT id, workshop_name , workshop_code
         FROM mes_md_workshop
     </select>
 </mapper>

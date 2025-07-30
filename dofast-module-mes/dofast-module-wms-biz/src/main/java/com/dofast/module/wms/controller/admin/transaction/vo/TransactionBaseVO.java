@@ -152,6 +152,16 @@ public class TransactionBaseVO {
     @Schema(description = "入库标识")
     private String recptStatus;
 
+    @Schema(description = "入库母批次号")
+    private String parentBatchCode;
+
+    @Schema(description = "仓库确认状态")
+    private String confirmStatus;
+
+    @Schema(description = "来源单据ID")
+    private Long originId;
+
+
     public Long getId(){
         return null;
     }

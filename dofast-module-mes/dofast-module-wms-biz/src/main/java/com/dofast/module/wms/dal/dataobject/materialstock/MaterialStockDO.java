@@ -158,4 +158,21 @@ public class MaterialStockDO extends BaseDO {
      * 批次
      */
     private String erpBatchCode;
+
+    /**
+     * 来源单据ID
+     */
+    private Long originId;
+
+    /**
+     * 母批次号
+     */
+    private String parentBatchCode;
+
+    /**
+     * 仓库确认状态
+     */
+    private String confirmStatus;
+
+
 }

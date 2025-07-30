@@ -68,7 +68,6 @@ public class changeOrderJob implements JobHandler {
         // 初始化变更工单信息
         List<Map<String, Object>> workOrderList = workorderOracleService.initChangeWorkorderInfo();
         if (workOrderList.isEmpty()) {
-            System.out.println("未获取到变更工单信息!");
             return "未获取到变更工单信息!";
         }
 
@@ -110,7 +109,6 @@ public class changeOrderJob implements JobHandler {
         if (!updateWorkorder.isEmpty()) {
             workorderMapper.updateBatch(updateWorkorder);
         }
-        System.out.println("工单定时器执行成功!");
 
         // 更新变更工单BOM信息
         List<WorkorderBomDO> updateWorkorderBom = new ArrayList<>(); // 更新工单BOM信息
@@ -145,7 +143,6 @@ public class changeOrderJob implements JobHandler {
         if (!updateWorkorderBom.isEmpty()) {
             workorderBomMapper.updateBatch(updateWorkorderBom);
         }
-        System.out.println("工单BOM定时器执行成功!");
 
         // 开始绑定变更工单的工艺路线信息
         List<RouteDO> addRouteList = new ArrayList<>(); // 新增工艺路线

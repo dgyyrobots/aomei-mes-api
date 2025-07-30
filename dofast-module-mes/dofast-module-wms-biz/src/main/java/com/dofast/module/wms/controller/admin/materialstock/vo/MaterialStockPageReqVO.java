@@ -116,4 +116,12 @@ public class MaterialStockPageReqVO extends PageParam {
     @Schema(description = "ERP批次")
     private String erpBatchCode;
 
+    @Schema(description = "来源Id")
+    private Long originId;
+
+    @Schema(description = "母批次号")
+    private String parentBatchCode;
+
+    @Schema(description = "仓库确认状态")
+    private String confirmStatus;
 }

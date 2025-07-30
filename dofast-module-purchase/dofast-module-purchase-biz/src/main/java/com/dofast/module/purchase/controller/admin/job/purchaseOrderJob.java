@@ -180,7 +180,6 @@ public class purchaseOrderJob implements JobHandler {
         if(!editGoods.isEmpty()){
             goodsMapper.updateBatch(editGoods);
         }
-        System.out.println("入库单定时器执行完成!");
         return "success";
     }
 }

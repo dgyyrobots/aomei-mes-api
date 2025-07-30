@@ -2,6 +2,8 @@ package com.dofast.module.pro.controller.admin.feedbackmember.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -39,6 +41,9 @@ public class FeedbackMemberExcelVO {
 
     @ExcelProperty("岗位Id")
     private String postIds;
+
+    @ExcelProperty("生产产量")
+    private BigDecimal quantity;
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;

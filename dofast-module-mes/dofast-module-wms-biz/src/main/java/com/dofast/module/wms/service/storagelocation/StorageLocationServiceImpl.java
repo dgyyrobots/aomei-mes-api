@@ -35,6 +35,13 @@ public class StorageLocationServiceImpl implements StorageLocationService {
     }
 
     @Override
+    public StorageLocationDO selectWmStorageLocationByLocationCodeAndProcessCode(String locationCode, String processCode){
+        return storageLocationMapper.selectWmStorageLocationByLocationCodeAndProcessCode(locationCode, processCode);
+    }
+
+
+
+    @Override
     public int deleteByWarehouseId(Long warehouseId) {
         return storageLocationMapper.deleteByWarehouseId(warehouseId);
     }

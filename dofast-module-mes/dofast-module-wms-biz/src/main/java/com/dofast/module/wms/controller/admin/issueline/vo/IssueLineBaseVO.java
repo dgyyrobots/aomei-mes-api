@@ -124,5 +124,8 @@ public class IssueLineBaseVO {
     @Schema(description = "ERP调用标识")
     private String erpEnable;
 
+    @Schema(description = "母批次")
+    private String parentBatchCode;
+
 
 }

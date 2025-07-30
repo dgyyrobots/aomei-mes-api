@@ -1,5 +1,6 @@
 package com.dofast.module.qms.dal.dataobject.iqcline;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -106,5 +107,35 @@ public class IqcLineDO extends BaseDO {
      * 预留字段4
      */
     private Integer attr4;
+
+    /**
+     * 检验数值1
+     */
+    private BigDecimal inspectionValue1;
+
+    /**
+     * 检验数值2
+     */
+    private BigDecimal inspectionValue2;
+
+    /**
+     * 检验数值3
+     */
+    private BigDecimal inspectionValue3;
+
+    /**
+     * 检验数值4
+     */
+    private BigDecimal inspectionValue4;
+
+    /**
+     * 检验数值5
+     */
+    private BigDecimal inspectionValue5;
+
+    /**
+     * 检验结果
+     */
+    private String inspectionResult;
 
 }

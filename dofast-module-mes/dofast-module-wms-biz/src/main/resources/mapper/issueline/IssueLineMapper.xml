@@ -9,4 +9,29 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="getIssueLineListByFeedbackCodes" resultType="com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO">
+        SELECT * FROM wms_issue_line
+        <where>
+            <choose>
+                <!-- 有报工单时 -->
+                <when test="feedbackCodes != null and !feedbackCodes.isEmpty()">
+                    <!-- 使用IN查询精确匹配 -->
+                    feedback_code IN
+                    <foreach collection="feedbackCodes" item="code" open="(" separator="," close=")">
+                        #{code}
+                    </foreach>
+
+                    <!-- 使用FIND_IN_SET进行逗号分隔值匹配 -->
+                    <foreach collection="feedbackCodes" item="code">
+                        OR FIND_IN_SET(#{code}, feedback_code)
+                    </foreach>
+                </when>
+                <!-- 无报工单时返回空结果 -->
+                <otherwise>
+                    1 = 0
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
 </mapper>

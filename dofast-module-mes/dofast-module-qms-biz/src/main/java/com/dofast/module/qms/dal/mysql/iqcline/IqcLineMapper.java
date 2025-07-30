@@ -41,6 +41,12 @@ public interface IqcLineMapper extends BaseMapperX<IqcLineDO> {
                 .eqIfPresent(IqcLineDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(IqcLineDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(IqcLineDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(IqcLineDO::getInspectionValue1, reqVO.getInspectionValue1())
+                .eqIfPresent(IqcLineDO::getInspectionValue2, reqVO.getInspectionValue2())
+                .eqIfPresent(IqcLineDO::getInspectionValue3, reqVO.getInspectionValue3())
+                .eqIfPresent(IqcLineDO::getInspectionValue4, reqVO.getInspectionValue4())
+                .eqIfPresent(IqcLineDO::getInspectionValue5, reqVO.getInspectionValue5())
+                .eqIfPresent(IqcLineDO::getInspectionResult, reqVO.getInspectionResult())
                 .betweenIfPresent(IqcLineDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(IqcLineDO::getId));
     }
@@ -66,6 +72,12 @@ public interface IqcLineMapper extends BaseMapperX<IqcLineDO> {
                 .eqIfPresent(IqcLineDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(IqcLineDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(IqcLineDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(IqcLineDO::getInspectionValue1, reqVO.getInspectionValue1())
+                .eqIfPresent(IqcLineDO::getInspectionValue2, reqVO.getInspectionValue2())
+                .eqIfPresent(IqcLineDO::getInspectionValue3, reqVO.getInspectionValue3())
+                .eqIfPresent(IqcLineDO::getInspectionValue4, reqVO.getInspectionValue4())
+                .eqIfPresent(IqcLineDO::getInspectionValue5, reqVO.getInspectionValue5())
+                .eqIfPresent(IqcLineDO::getInspectionResult, reqVO.getInspectionResult())
                 .betweenIfPresent(IqcLineDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(IqcLineDO::getId));
     }

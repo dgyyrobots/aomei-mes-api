@@ -1,5 +1,6 @@
 package com.dofast.module.wms.controller.admin.feedline;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
@@ -203,6 +204,14 @@ public class FeedLineController {
         // 导出 Excel
         List<FeedLineExcelVO> datas = FeedLineConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "上料详情.xls", "数据", FeedLineExcelVO.class, datas);
+    }
+
+    @GetMapping("/summeryPage")
+    @Operation(summary = "获得上料详情分页")
+    @PreAuthorize("@ss.hasPermission('wms:feed-line:query')")
+    public CommonResult<IPage<FeedLineSummaryVO>> getSummeryFeedLinePage(@Valid FeedLinePageReqVO pageVO) {
+        IPage<FeedLineSummaryVO> pageResult = feedLineService.selectMaterialUsageSummary(pageVO);
+        return success(pageResult);
     }
 
 }

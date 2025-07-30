@@ -12,4 +12,6 @@ public interface DictDataOracleService {
     // 获取ERP单据类型
     List<Map<String, Object>> initDocType();
 
+    // 获取ERP关账日期
+    Map<String, Object> initCloseDate();
 }

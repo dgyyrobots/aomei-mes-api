@@ -37,5 +37,18 @@ public class FeedbackApiImpl implements FeedbackApi{
     }
 
 
+    @Override
+    public FeedbackDTO getFeedBackByBatchCode(String batchCode){
+        FeedbackExportReqVO exportReqVO = new FeedbackExportReqVO();
+        exportReqVO.setBatchCode(batchCode);
+        List<FeedbackDO> feedbackDO = feedbackService.getFeedbackList(exportReqVO);
+        if(feedbackDO.isEmpty()){
+            return null;
+        }
+        FeedbackDTO feedbackDTO = BeanUtil.toBean(feedbackDO.get(0), FeedbackDTO.class);
+        return feedbackDTO;
+    }
+
+
 
 }

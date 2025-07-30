@@ -157,6 +157,16 @@ public class TaskDTO {
     private Integer attr4;
 
     /**
+     * 实际开始操作时间
+     */
+    private LocalDateTime actualStartTime;
+
+    /**
+     * 实际结束时间
+     */
+    private LocalDateTime actualEndTime;
+
+    /**
      * 母批次号
      */
     private String parentBatchCode;

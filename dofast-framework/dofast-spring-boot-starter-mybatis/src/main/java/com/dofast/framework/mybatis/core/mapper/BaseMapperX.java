@@ -67,8 +67,24 @@ public interface BaseMapperX<T> extends MPJBaseMapper<T> {
                 .eq(field3, value3).eq(field4, value4).eq(field5, value5));
     }
 
+    default T selectOne(SFunction<T, ?> field1, Object value1, SFunction<T, ?> field2, Object value2,
+                        SFunction<T, ?> field3, Object value3 , SFunction<T, ?> field4, Object value4 , SFunction<T, ?> field5, Object value5, SFunction<T, ?> field6, Object value6) {
+        return selectOne(new LambdaQueryWrapper<T>().eq(field1, value1).eq(field2, value2)
+                .eq(field3, value3).eq(field4, value4).eq(field5, value5).eq(field6, value6));
+    }
 
 
+    default T selectOne(SFunction<T, ?> field1, Object value1, SFunction<T, ?> field2, Object value2,
+                        SFunction<T, ?> field3, Object value3 , SFunction<T, ?> field4, Object value4 , SFunction<T, ?> field5, Object value5, SFunction<T, ?> field6, Object value6 , SFunction<T, ?> field7, Object value7 ) {
+        return selectOne(new LambdaQueryWrapper<T>().eq(field1, value1).eq(field2, value2)
+                .eq(field3, value3).eq(field4, value4).eq(field5, value5).eq(field6, value6).eq(field7, value7));
+    }
+
+    default T selectOne(SFunction<T, ?> field1, Object value1, SFunction<T, ?> field2, Object value2,
+                        SFunction<T, ?> field3, Object value3 , SFunction<T, ?> field4, Object value4 , SFunction<T, ?> field5, Object value5, SFunction<T, ?> field6, Object value6 , SFunction<T, ?> field7, Object value7 , SFunction<T, ?> field8, Object value8) {
+        return selectOne(new LambdaQueryWrapper<T>().eq(field1, value1).eq(field2, value2)
+                .eq(field3, value3).eq(field4, value4).eq(field5, value5).eq(field6, value6).eq(field7, value7).eq(field8, value8));
+    }
 
     default Long selectCount() {
         return selectCount(new QueryWrapper<>());

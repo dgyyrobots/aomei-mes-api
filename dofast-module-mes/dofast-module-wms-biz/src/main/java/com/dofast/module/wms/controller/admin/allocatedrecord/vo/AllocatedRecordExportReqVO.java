@@ -80,4 +80,11 @@ public class AllocatedRecordExportReqVO {
     @Schema(description = "供应商编码", example = "S1865")
     private String vendorCode;
 
+    @Schema(description = "母批次")
+    private String parentBatchCode;
+
+    @Schema(description = "ERP状态")
+    private String erpStatus;
+
+
 }

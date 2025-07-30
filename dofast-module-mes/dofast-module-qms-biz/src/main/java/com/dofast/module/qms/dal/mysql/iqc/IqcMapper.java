@@ -59,6 +59,7 @@ public interface IqcMapper extends BaseMapperX<IqcDO> {
                 .eqIfPresent(IqcDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(IqcDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(IqcDO::getAdjuncts, reqVO.getAdjuncts())
+                .eqIfPresent(IqcDO::getPoNo, reqVO.getPoNo())
                 .orderByDesc(IqcDO::getId));
     }
 
@@ -100,6 +101,7 @@ public interface IqcMapper extends BaseMapperX<IqcDO> {
                 .eqIfPresent(IqcDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(IqcDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(IqcDO::getAdjuncts, reqVO.getAdjuncts())
+                .eqIfPresent(IqcDO::getPoNo, reqVO.getPoNo())
                 .orderByDesc(IqcDO::getId));
     }
 

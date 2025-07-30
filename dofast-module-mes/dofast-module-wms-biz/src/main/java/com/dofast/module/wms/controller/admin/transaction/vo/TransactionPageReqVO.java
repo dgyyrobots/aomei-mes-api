@@ -139,6 +139,15 @@ public class TransactionPageReqVO extends PageParam {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "入库母批次号")
+    private String parentBatchCode;
+
+    @Schema(description = "仓库确认状态")
+    private String confirmStatus;
+
+    @Schema(description = "来源单据ID")
+    private Long originId;
+
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;

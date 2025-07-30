@@ -181,10 +181,13 @@ public class AllocatedRecordController {
         List<Map<String, Object>> recordList = (List<Map<String, Object>>) resMap.get("recordList");
         for (Map<String, Object> record : recordList) {
             String batchCode = (String) record.get("batchCode");
+            String parentBatchCode = (String) record.get("parentBatchCode");
             String itemCode = (String) record.get("itemCode");
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
             exportReqVO.setBatchCode(batchCode);
             exportReqVO.setItemCode(itemCode);
+            // 2025-6-8 追加母批次
+            exportReqVO.setParentBatchCode(parentBatchCode);
             exportReqVO.setWarehouseCode(allocatedHeader.getWarehouseCode());
             exportReqVO.setLocationCode(allocatedHeader.getLocationCode());
             exportReqVO.setAreaCode(allocatedHeader.getAreaCode());

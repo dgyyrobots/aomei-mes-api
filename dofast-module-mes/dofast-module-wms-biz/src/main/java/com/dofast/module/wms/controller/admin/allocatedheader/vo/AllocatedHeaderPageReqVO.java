@@ -101,5 +101,13 @@ public class AllocatedHeaderPageReqVO extends PageParam {
 
     @Schema(description = "绑定工单标识", example = "Y")
     private String bindWorkorder;
+
+    // 虚拟字段
+    @Schema(description = "批次号")
+    private String batchCode;
+
+    @Schema(description = "调拨单列表")
+    private List<String> allocatedCodeList;
+
     
 }

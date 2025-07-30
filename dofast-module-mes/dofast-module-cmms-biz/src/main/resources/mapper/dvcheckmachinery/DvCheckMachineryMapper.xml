@@ -21,13 +21,13 @@
     </resultMap>
 
     <select id="checkMachineryUnique" parameterType="com.dofast.module.cmms.controller.admin.dvcheckmachinery.vo.DvCheckMachineryBaseVO" resultMap="DvCheckMachineryResult">
-        select id, cm.plan_id, machinery_id, machinery_code, machinery_name, machinery_brand, machinery_spec, cm.remark, cm.attr1, cm.attr2, cm.attr3, cm.attr4, cm.creator, cm.create_time, cm.updater, cm.update_time
+        select cm.id, cm.plan_id, machinery_id, machinery_code, machinery_name, machinery_brand, machinery_spec, cm.remark, cm.attr1, cm.attr2, cm.attr3, cm.attr4, cm.creator, cm.create_time, cm.updater, cm.update_time
         from cmms_dv_check_machinery cm
                  left join cmms_dv_check_plan cp
                            on cm.plan_id = cp.id
         where cm.machinery_id = #{machineryId} and cp.plan_type = (
             select plan_type
-            from dv_check_plan
+            from cmms_dv_check_plan
             where id = #{planId}
         )  limit 1
     </select>

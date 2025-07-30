@@ -47,7 +47,8 @@ public class IssueLineServiceImpl implements IssueLineService {
         validateIssueLineExists(updateReqVO.getId());
         // 更新
         IssueLineDO updateObj = IssueLineConvert.INSTANCE.convert(updateReqVO);
-        issueLineMapper.updateById(updateObj);
+        int count = issueLineMapper.updateById(updateObj);
+        IssueLineDO line = issueLineMapper.selectById(updateObj.getId());
     }
 
     @Override
@@ -104,6 +105,9 @@ public class IssueLineServiceImpl implements IssueLineService {
         issueLineMapper.updateBatch(issueLineDOS);
     }
 
-
+    @Override
+    public  List<IssueLineDO> getIssueLineListByFeedbackCodes(List<String> feedbackCodes){
+    return issueLineMapper.getIssueLineListByFeedbackCodes(feedbackCodes);
+    }
 
 }

@@ -1,5 +1,8 @@
 package com.dofast.module.wms.service.feedline;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.dofast.framework.common.pojo.PageParam;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -98,6 +101,18 @@ public class FeedLineServiceImpl implements FeedLineService {
     @Override
     public  void insertBatch(List<FeedLineDO> feedLineDOS){
         feedLineMapper.insertBatch(feedLineDOS);
+    }
+
+
+    public IPage<FeedLineSummaryVO> selectMaterialUsageSummary(FeedLinePageReqVO reqVO) {
+        // 创建分页对象
+        Page<FeedLineSummaryVO> page = new Page<>(
+                reqVO.getPageNo() == null ? 1 : reqVO.getPageNo(),
+                reqVO.getPageSize() == null ? 10 : reqVO.getPageSize()
+        );
+
+        // 执行查询
+        return feedLineMapper.selectMaterialUsageSummary(page, reqVO);
     }
 
 

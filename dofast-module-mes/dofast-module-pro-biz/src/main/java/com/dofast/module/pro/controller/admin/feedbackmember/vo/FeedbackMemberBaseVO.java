@@ -2,6 +2,8 @@ package com.dofast.module.pro.controller.admin.feedbackmember.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -36,5 +38,11 @@ public class FeedbackMemberBaseVO {
 
     @Schema(description = "岗位Id")
     private String postIds;
+
+    @Schema(description = "生产产量")
+    private BigDecimal quantity;
+
+
+
 
 }

@@ -212,5 +212,10 @@ public class AllocatedHeaderServiceImpl implements AllocatedHeaderService {
         return allocatedHeaderMapper.getTxBeans(allocatedId);
     }
 
+    public List<AllocatedHeaderDO> getAllocatedHeaderListByBatchCodeList(List<String> batchCodeList){
+        return allocatedHeaderMapper.getAllocatedHeaderListByBatchCodeList(batchCodeList);
+    }
+
+
 
 }

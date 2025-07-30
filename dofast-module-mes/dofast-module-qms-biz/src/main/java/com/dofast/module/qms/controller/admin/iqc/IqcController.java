@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.io.IOException;
 
@@ -123,9 +124,9 @@ public class IqcController {
                 line.setUnitOfMeasure(index.getUnitOfMeasure());
                 line.setThresholdMax(index.getThresholdMax());
                 line.setThresholdMin(index.getThresholdMin());
-                line.setCrQuantity(0);
-                line.setMajQuantity(0);
-                line.setMajQuantity(0);
+                line.setCrQuantity(BigDecimal.ONE);
+                line.setMajQuantity(BigDecimal.ONE);
+                line.setMajQuantity(BigDecimal.ONE);
                 iqcLineService.createIqcLine(line);
             }
         }

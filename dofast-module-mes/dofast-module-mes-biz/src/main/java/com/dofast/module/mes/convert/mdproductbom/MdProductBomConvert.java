@@ -26,6 +26,10 @@ public interface MdProductBomConvert {
 
     MdProductBomRespVO convert(MdProductBomDO bean);
 
+    MdProductBomCreateReqVO convert01(MdProductBomDO bean);
+
+    MdProductBomUpdateReqVO convert02(MdProductBomDO bean);
+
     List<MdProductBomRespVO> convertList(List<MdProductBomDO> list);
 
     PageResult<MdProductBomRespVO> convertPage(PageResult<MdProductBomDO> page);

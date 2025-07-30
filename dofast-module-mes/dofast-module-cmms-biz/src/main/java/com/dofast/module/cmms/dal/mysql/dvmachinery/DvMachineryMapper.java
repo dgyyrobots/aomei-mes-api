@@ -5,6 +5,7 @@ import java.util.*;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
+import com.dofast.module.cmms.dal.dataobject.dvcheckmachinery.DvCheckMachineryDO;
 import com.dofast.module.cmms.dal.dataobject.dvmachinery.DvMachineryDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.cmms.controller.admin.dvmachinery.vo.*;
@@ -37,6 +38,7 @@ public interface DvMachineryMapper extends BaseMapperX<DvMachineryDO> {
                 .eqIfPresent(DvMachineryDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(DvMachineryDO::getErpMachineryCode, reqVO.getErpMachineryCode())
                 .betweenIfPresent(DvMachineryDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(DvMachineryDO::getProductId, reqVO.getProductId())
                 .orderByDesc(DvMachineryDO::getId));
     }
 
@@ -60,6 +62,7 @@ public interface DvMachineryMapper extends BaseMapperX<DvMachineryDO> {
                 .eqIfPresent(DvMachineryDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(DvMachineryDO::getErpMachineryCode, reqVO.getErpMachineryCode())
                 .betweenIfPresent(DvMachineryDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(DvMachineryDO::getProductId, reqVO.getProductId())
                 .orderByDesc(DvMachineryDO::getId));
     }
 

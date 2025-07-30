@@ -11,15 +11,10 @@
     <select id="initProductBomInfo" parameterType="java.lang.String" resultType="java.util.HashMap">
         select DISTINCT A.BMBA001  AS ITEM_ID,
                         A.BMBA003  AS BOM_ITEM_CODE,
-                        BMBA011    AS PRODUCT_QUANTITY,
+                        -- BMBA011    AS PRODUCT_QUANTITY,
                         B.BMAA004  AS UNIT_OF_PRODUCT,
                         BMBA012    AS BOM_QUANTITY,
                         BMBA010    AS UNIT_OF_MEASURE,
-                        CASE
-                            WHEN bmba011 = 0 THEN '0%'
-                            ELSE ROUND(bmba012 / bmba011 * 100, 2) || '%'
-                            END    AS PERCENTAGE
-                        ,
                         d.imaal003 AS BOM_ITEM_NAME,
                         d.imaal004 AS BOM_ITEM_SPEC,
                         A.BMBA030 AS INVERTED,
@@ -33,6 +28,22 @@
           AND BMBASITE = 'AM01'
           AND BMAASTUS = 'Y'
           AND d.imaal002 = 'zh_CN'
+        GROUP BY
+            A.BMBA001,
+            A.BMBA003,
+            BMBA011,
+            B.BMAA004,
+            BMBA012,
+            BMBA010,
+            D.IMAAL003,
+            D.IMAAL004,
+            A.BMBA030,
+            A.bmba009
     </select>
+    <!--/*CASE
+                            WHEN bmba011 = 0 THEN '0%'
+                            ELSE ROUND(bmba012 / bmba011 * 100, 2) || '%'
+                            END    AS PERCENTAGE
+                        -->
 
 </mapper>

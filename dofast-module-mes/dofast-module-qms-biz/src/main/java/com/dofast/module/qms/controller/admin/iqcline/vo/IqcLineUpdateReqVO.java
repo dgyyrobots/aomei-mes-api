@@ -12,7 +12,6 @@ import javax.validation.constraints.*;
 public class IqcLineUpdateReqVO extends IqcLineBaseVO {
 
     @Schema(description = "记录ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "4092")
-    @NotNull(message = "记录ID不能为空")
     private Long id;
 
 }

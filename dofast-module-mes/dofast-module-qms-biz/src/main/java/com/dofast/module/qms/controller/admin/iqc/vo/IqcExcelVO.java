@@ -65,19 +65,19 @@ public class IqcExcelVO {
     private String unitOfMeasure;
 
     @ExcelProperty("最低检测数")
-    private Integer quantityMinCheck;
+    private BigDecimal quantityMinCheck;
 
     @ExcelProperty("最大不合格数")
-    private Integer quantityMaxUnqualified;
+    private BigDecimal quantityMaxUnqualified;
 
     @ExcelProperty("本次接收数量")
     private BigDecimal quantityRecived;
 
     @ExcelProperty("本次检测数量")
-    private Integer quantityCheck;
+    private BigDecimal quantityCheck;
 
     @ExcelProperty("不合格数")
-    private Integer quantityUnqualified;
+    private BigDecimal quantityUnqualified;
 
     @ExcelProperty("致命缺陷率")
     private BigDecimal crRate;
@@ -89,13 +89,13 @@ public class IqcExcelVO {
     private BigDecimal minRate;
 
     @ExcelProperty("致命缺陷数量")
-    private Integer crQuantity;
+    private BigDecimal crQuantity;
 
     @ExcelProperty("严重缺陷数量")
-    private Integer majQuantity;
+    private BigDecimal majQuantity;
 
     @ExcelProperty("轻微缺陷数量")
-    private Integer minQuantity;
+    private BigDecimal minQuantity;
 
     @ExcelProperty("检测结果")
     private String checkResult;
@@ -132,5 +132,8 @@ public class IqcExcelVO {
 
     @ExcelProperty("附件")
     private String adjuncts;
+
+    @ExcelProperty( "采购单号")
+    private String poNo;
 
 }

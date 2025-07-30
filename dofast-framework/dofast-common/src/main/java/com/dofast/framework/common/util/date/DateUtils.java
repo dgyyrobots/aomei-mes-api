@@ -365,4 +365,23 @@ public class DateUtils {
         return LocalDateTimeUtil.isSameDay(date, LocalDateTime.now());
     }
 
+    /**
+     * 获取当前Date型日期
+     *
+     * @return Date() 当前日期
+     */
+    public static Date getNowDate()
+    {
+        return new Date();
+    }
+
+    public static long getTimestamp(){
+        return System.currentTimeMillis();
+    }
+
+    public static long getTimestampSeconds(){
+        return System.currentTimeMillis()/1000;
+    }
+
+
 }

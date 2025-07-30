@@ -3,8 +3,12 @@ package com.dofast.module.purchase.controller.admin.retreatOrder;
 import com.dofast.module.purchase.controller.admin.retreatGoods.vo.RetreatGoodsExportReqVO;
 import com.dofast.module.purchase.convert.retreatOrder.RetreatOrderConvert;
 import com.dofast.module.purchase.dal.dataobject.goods.GoodsDO;
+import com.dofast.module.purchase.dal.dataobject.order.OrderDO;
 import com.dofast.module.purchase.dal.dataobject.retreatGoods.RetreatGoodsDO;
 import com.dofast.module.purchase.dal.dataobject.retreatOrder.RetreatOrderDO;
+import com.dofast.module.purchase.dal.mysql.order.PurchaseOrderMapper;
+import com.dofast.module.purchase.service.goods.GoodsService;
+import com.dofast.module.purchase.service.order.OrderService;
 import com.dofast.module.purchase.service.retreatGoods.RetreatGoodsService;
 import com.dofast.module.wms.api.ERPApi.MaterialStockERPAPI;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +56,12 @@ public class RetreatOrderController {
 
     @Resource
     private MaterialStockERPAPI materialStockERPAPI;
+
+    @Resource
+    private GoodsService goodsService;
+
+    @Resource
+    private OrderService orderService;
 
 
     @PostMapping("/create")
@@ -130,35 +140,49 @@ public class RetreatOrderController {
                 continue;
             }
 
-            String poNo = retreatOrderDO.getRetreatCode(); // 仓退单就是采购单号
             String vendorCode = retreatOrderDO.getVendorCode(); // ERP收货时批次绑定在单头, 故取单头批次
 
+            OrderDO orderDO = orderService.getOrder(goodsDO.getPoNo());
             // 将当前的商品信息添加到对应的List中
             Map<String, Object> goodsMap = new HashMap<>();
             goodsMap.put("id", goodsDO.getId());
-            goodsMap.put("poNo", poNo);
+            goodsMap.put("poNo", goodsDO.getPoNo());
+            goodsMap.put("purchaseBatch", goodsDO.getPurchaseBatch());
+            goodsMap.put("purchaseConsequence", goodsDO.getPurchaseConsequence());
+            goodsMap.put("purchaseBatchConsequence", goodsDO.getPurchaseBatchConsequence());
+            goodsMap.put("warehousingCode", goodsDO.getErpReceiveCode());
+            goodsMap.put("warehousingSeq", goodsDO.getReceiveSeq());
+
             goodsMap.put("goodsNumber", goodsDO.getGoodsNumber());
             goodsMap.put("goodsName", goodsDO.getGoodsName());
             goodsMap.put("unitOfMeasure", goodsDO.getUnitOfMeasure());
             goodsMap.put("receiveNum", goodsDO.getReceiveNum());
-            goodsMap.put("batchCode", goodsDO.getBatchCode());
+
+            // 2025-06-08 追加母批次
+            // goodsMap.put("batchCode", goodsDO.getBatchCode());
+            goodsMap.put("batchCode", orderDO.getParentBatchCode());
+
             goodsMap.put("consequence", goodsDO.getConsequence());
             goodsMap.put("supplierCode", vendorCode);
+            goodsMap.put("locationCode", goodsDO.getLocationCode());
+            goodsMap.put("areaCode", goodsDO.getAreaCode());
+            goodsMap.put("reasonCode", goodsDO.getReasonCode());
+
             goodsMapList.add(goodsMap);
         }
         System.out.println(goodsMapList.toString());
         // 调用ERP接口
-       /* Map<String, Object> erpParams = new HashMap<>();
+        Map<String, Object> erpParams = new HashMap<>();
         erpParams.put("goodsList", goodsMapList);
-        erpParams.put("sourceNo", goodsMapList.get(0).get("poNo"));
+        erpParams.put("sourceNo", goodsMapList.get(0).get("warehousingCode")); // 仓退单的来源单号为收货单号
         erpParams.put("supplierCode", goodsMapList.get(0).get("supplierCode"));
         erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
+        erpParams.put("retreatCode", retreatOrderDO.getRetreatCode());
         erpParams.put("pmds000", "7"); // 仓库退货
-        System.out.println(erpParams.toString());
         String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
         if (!result.contains("success")) {
             return result;
-        }*/
+        }
         return "success";
     }
 

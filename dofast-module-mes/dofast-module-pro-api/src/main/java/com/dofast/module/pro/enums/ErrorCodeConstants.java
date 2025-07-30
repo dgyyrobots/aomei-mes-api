@@ -28,6 +28,9 @@ public interface ErrorCodeConstants {
     ErrorCode ROUTE_NOT_REPEAT = new ErrorCode(712011, "不能重复添加工序");
     ErrorCode ROUTE_PROCESS_HAS_KEY= new ErrorCode(712012, "当前工艺路线已经指定过关键工序");
     ErrorCode ROUTE_CODE_EXITS= new ErrorCode(712013, "工艺路线编号已存在");
+    ErrorCode FEEDBACK_DELETE_NOT_LICENCE = new ErrorCode(712007, "当前报工记录不允许删除!");
+    ErrorCode FEEDBACK_NEXT_PROCEESS_EXISTS = new ErrorCode(712007, "当前报工单存在下道制程, 无需打印合格证!");
+    ErrorCode MERGE_FEEDBACK_NOT_AVALIBE = new ErrorCode(712007, "只允许合并ERP报工已同步的单据");
 
     ErrorCode TASK_ISSUE_NOT_EXISTS = new ErrorCode(713001, "生产任务投料不存在");
     ErrorCode TASK_NOT_EXISTS = new ErrorCode(713002, "生产任务不存在");
@@ -53,6 +56,11 @@ public interface ErrorCodeConstants {
     ErrorCode FEEDBACK_NOT_SAME = new ErrorCode(716003, "请选择相同任务单下的报工单");
     ErrorCode FEEDBACK_ERP_ERROR = new ErrorCode(716003, "报工单接口调用异常!");
     ErrorCode WAREHOUSING_ERP_ERROR = new ErrorCode(716003, "完工入库接口调用异常!");
+
+    ErrorCode MATERIALSTOCK_NOT_EXIST = new ErrorCode(716003, "完工入库接口调用异常!");
+
+    ErrorCode FEEDBACK_TASK_STATUS_ERROR = new ErrorCode(716003, "报工单任务状态只能为已开工或已完工!");
+
 
     ErrorCode TASK_UPDATE_COUNT=new ErrorCode(717001,"更新生产任务的生产数量失败");
 
@@ -108,5 +116,19 @@ public interface ErrorCodeConstants {
     ErrorCode CESS_DEFECT_NOT_EXISTS = new ErrorCode(717023, "工序异常缺陷名称不存在");
 
     ErrorCode FEEDBACK_DEFECT_NOT_EXISTS = new ErrorCode(717024, "报工缺陷不存在");
+
+    ErrorCode USER_NOT_CONFIG_POSTIDS = new ErrorCode(717025, "当前用户未配置岗位");
+
+    ErrorCode ROUTE_PROCESS_HAS_DOWN = new ErrorCode(717026, "当前报工单存在下道工序, 无需调用ERP完工入库!");
+
+    ErrorCode INIT_ERP_PARAM_ERROR = new ErrorCode(717027, "初始化ERP参数异常!");
+
+    ErrorCode FEEDBACK_WAREHOUSING_LOG_NOT_EXISTS = new ErrorCode(717028, "报工入库日志不存在");
+
+    ErrorCode FEEDBACK_AUDIT_NOT_EXISTS = new ErrorCode(717029, "报工审批主表不存在");
+
+    ErrorCode FEEDBACK_AUDIT_ITEM_NOT_EXISTS = new ErrorCode(717030, "报工审批汇总不存在");
+
+    ErrorCode FEEDBACK_AUDIT_DETAIL_NOT_EXISTS = new ErrorCode(717031, "报工审批明细不存在");
 
 }

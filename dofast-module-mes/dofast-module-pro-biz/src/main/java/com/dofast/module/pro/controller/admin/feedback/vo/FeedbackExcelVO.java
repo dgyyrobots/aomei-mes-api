@@ -2,12 +2,15 @@ package com.dofast.module.pro.controller.admin.feedback.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import org.apache.poi.hpsf.Decimal;
 
 /**
  * 生产报工记录 Excel VO
@@ -167,4 +170,30 @@ public class FeedbackExcelVO {
     @ExcelProperty("ERP报工单")
     private String erpFeedback;
 
+    @ExcelProperty("任务单状态")
+    private String taskStatus;
+
+    @ExcelProperty("ERP报工状态")
+    private String erpFeedbackStatus;
+
+    @ExcelProperty("ERP入库状态")
+    private String erpWarehousingStatus;
+
+    @ExcelProperty("合并需求")
+    private String mergeStatus;
+
+    @ExcelProperty("转换数量")
+    private BigDecimal conversionQuantity;
+
+    @ExcelProperty("转换单位")
+    private String conversionUnit;
+
+    @ExcelProperty("转换不合格数量")
+    private BigDecimal conversionQuantityUnquanlified;
+
+    @ExcelProperty("卷数编号")
+    private String volumesNumber;
+
+    @ExcelProperty("数采标识")
+    private String iotFlag;
 }

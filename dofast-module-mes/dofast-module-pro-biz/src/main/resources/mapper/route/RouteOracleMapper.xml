@@ -11,8 +11,11 @@
 
     <select id="initRouteBindProcess" parameterType="java.lang.String" resultType="java.util.HashMap">
         SELECT DISTINCT a.ecba001 AS ITEM_CODE, a.ecba002 AS ROUTE_CODE, a.ecba003 AS ROUTE_DESC , b.ecbb004 AS PROCESS_CODE,
-        b.ecbb008 AS TOP_PROCESS_CODE , b.ecbb010 AS NEXT_PROCESS_CODE , b.ecbb003 AS SEQUENCE FROM DSDATA.ecba_t A
-        LEFT JOIN DSDATA.ECBB_T B on a.ecba001 = b.ecbb001 and a.ecba002 = b.ecbb002 and a.ecbaent = b.ecbbent and a.ecbasite = b.ecbbsite
+                        b.ecbb008 AS TOP_PROCESS_CODE , b.ecbb010 AS NEXT_PROCESS_CODE , b.ecbb003 AS SEQUENCE ,
+                        b.ecbb021 as OUT_UNITS  , b.ecbb022 as OUT_UNITS_CONVERSION_NUMERATOR  , b.ecbb023 as OUT_UNITS_CONVERSION_DENOMINATOR  ,
+                        b.ecbb030 as RECEIVING_UNITS , b.ecbb031 as RECEIVING_UNITS_CONVERSION_NUMERATOR , b.ecbb032 as RECEIVING_UNITS_CONVERSION_DENOMINATOR
+        FROM DSDATA.ecba_t A
+                 LEFT JOIN DSDATA.ECBB_T B on a.ecba001 = b.ecbb001 and a.ecba002 = b.ecbb002 and a.ecbaent = b.ecbbent and a.ecbasite = b.ecbbsite
         where a.ecbasite = 'AM01' and a.ecbaent = #{erpCode} and a.ecba001 is not null and a.ecba002 is not null and b.ecbb004 is not null
         order by a.ecba001 , ECBA002
     </select>

@@ -169,6 +169,7 @@ public class AllocatedLineController {
         for (Map<String, Object> detail : detailList) {
             String itemCode = (String) detail.get("itemCode");
             String batchCode = (String) detail.get("batchCode");
+            String parentBatchCode = (String) detail.get("parentBatchCode");
 
             // 根据单头Id获取记录
             AllocatedRecordExportReqVO exportReqVO = new AllocatedRecordExportReqVO();
@@ -187,6 +188,8 @@ public class AllocatedLineController {
                 Integer itemId = Optional.ofNullable((Integer)detail.get("itemId")).orElse(0);
                 allocatedRecordDO.setItemId(Long.valueOf(itemId));
                 allocatedRecordDO.setBatchCode((String) detail.get("batchCode"));
+                // 2025-6-8 追加母批次号
+                allocatedRecordDO.setParentBatchCode((String) detail.get("parentBatchCode"));
                 allocatedRecordDO.setWarehouseCode((String) detail.get("warehouseCode"));
                 allocatedRecordDO.setWarehouseName((String) detail.get("warehouseName"));
                 Integer warehouseId = (Integer) detail.get("warehouseId");

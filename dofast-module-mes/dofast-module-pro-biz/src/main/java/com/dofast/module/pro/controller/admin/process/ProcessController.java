@@ -3,7 +3,9 @@ package com.dofast.module.pro.controller.admin.process;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.pro.enums.ErrorCodeConstants;
 import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
+
 import org.springframework.validation.annotation.Validated;
 import org.springframework.security.access.prepost.PreAuthorize;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +27,7 @@ import static com.dofast.framework.common.pojo.CommonResult.success;
 import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
+
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.*;
 
 import com.dofast.module.pro.controller.admin.process.vo.*;
@@ -45,10 +48,10 @@ public class ProcessController {
     @Operation(summary = "创建生产工序")
     @PreAuthorize("@ss.hasPermission('pro:cess:create')")
     public CommonResult<Long> createcess(@Valid @RequestBody ProcessCreateReqVO createReqVO) {
-        if(Constant.NOT_UNIQUE.equals(processService.checkProcessCodeUnique(createReqVO))){
+        if (Constant.NOT_UNIQUE.equals(processService.checkProcessCodeUnique(createReqVO))) {
             return error(ErrorCodeConstants.CESS_CODE_EXISTS);
         }
-        if(Constant.NOT_UNIQUE.equals(processService.checkProcessNameUnique(createReqVO))){
+        if (Constant.NOT_UNIQUE.equals(processService.checkProcessNameUnique(createReqVO))) {
             return error(ErrorCodeConstants.CESS_NAME_EXISTS);
         }
         return success(processService.createcess(createReqVO));
@@ -58,10 +61,10 @@ public class ProcessController {
     @Operation(summary = "更新生产工序")
     @PreAuthorize("@ss.hasPermission('pro:cess:update')")
     public CommonResult<Boolean> updatecess(@Valid @RequestBody ProcessUpdateReqVO updateReqVO) {
-        if(Constant.NOT_UNIQUE.equals(processService.checkProcessCodeUnique(updateReqVO))){
+        if (Constant.NOT_UNIQUE.equals(processService.checkProcessCodeUnique(updateReqVO))) {
             return error(ErrorCodeConstants.CESS_CODE_EXISTS);
         }
-        if(Constant.NOT_UNIQUE.equals(processService.checkProcessNameUnique(updateReqVO))){
+        if (Constant.NOT_UNIQUE.equals(processService.checkProcessNameUnique(updateReqVO))) {
             return error(ErrorCodeConstants.CESS_NAME_EXISTS);
         }
         processService.updatecess(updateReqVO);
@@ -88,15 +91,16 @@ public class ProcessController {
 
     /**
      * 查询所有可用工序的清单
+     *
      * @return
      */
     @Operation(summary = "获得生产工序列表")
     @PreAuthorize("@ss.hasPermission('pro:cess:query')")
     @GetMapping("/listAll")
-    public CommonResult<List<ProcessRespVO>> listAll(){
+    public CommonResult<List<ProcessRespVO>> listAll() {
         ProcessListVO process = new ProcessListVO();
         process.setEnableFlag("Y");
-        List<ProcessDO> list =processService.selectAll (process);
+        List<ProcessDO> list = processService.selectAll(process);
         return success(ProcessConvert.INSTANCE.convertList(list));
     }
 
@@ -130,11 +134,33 @@ public class ProcessController {
     @PreAuthorize("@ss.hasPermission('pro:cess:export')")
     @OperateLog(type = EXPORT)
     public void exportcessExcel(@Valid ProcessExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
+                                HttpServletResponse response) throws IOException {
         List<ProcessDO> list = processService.getcessList(exportReqVO);
         // 导出 Excel
         List<ProcessExcelVO> datas = ProcessConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "生产工序.xls", "数据", ProcessExcelVO.class, datas);
+    }
+
+    /**
+     * 积木报表-查询工序
+     *
+     * @return
+     */
+    @Operation(summary = "获得生产工序列表")
+    @PreAuthorize("@ss.hasPermission('pro:cess:query')")
+    @GetMapping("/getProcessJson")
+    public List<Map<String, Object>> getProcessJson() {
+        ProcessListVO process = new ProcessListVO();
+        process.setEnableFlag("Y");
+        List<ProcessDO> list = processService.selectAll(process);
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for (ProcessDO processDO : list) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("text", processDO.getProcessName());
+            map.put("value", processDO.getProcessCode());
+            resultList.add(map);
+        }
+        return resultList;
     }
 
 }

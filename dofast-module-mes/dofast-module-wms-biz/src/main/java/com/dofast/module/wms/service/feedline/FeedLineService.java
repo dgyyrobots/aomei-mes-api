@@ -2,9 +2,13 @@ package com.dofast.module.wms.service.feedline;
 
 import java.util.*;
 import javax.validation.*;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.dofast.framework.common.pojo.PageParam;
 import com.dofast.module.wms.controller.admin.feedline.vo.*;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.framework.common.pojo.PageResult;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 上料详情 Service 接口
@@ -70,4 +74,6 @@ public interface FeedLineService {
     void updateFeedLineBatch(List<FeedLineDO> feedLineDOS);
 
     void insertBatch(List<FeedLineDO> feedLineDOS);
+
+    IPage<FeedLineSummaryVO> selectMaterialUsageSummary(FeedLinePageReqVO pageReqVO);
 }

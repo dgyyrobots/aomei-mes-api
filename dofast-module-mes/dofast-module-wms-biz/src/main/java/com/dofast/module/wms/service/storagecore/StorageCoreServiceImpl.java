@@ -227,6 +227,9 @@ public class StorageCoreServiceImpl implements StorageCoreService {
             transaction_out.setAreaCode(line.getAreaCode());
             transaction_out.setAreaName(line.getAreaName());
             transaction_out.setBatchCode(line.getBatchCode());
+            // 2025-6-8 追加母批次
+            transaction_out.setParentBatchCode(line.getParentBatchCode());
+
             transactionService.processTransaction(transaction_out);
 
             //再构造一条目的库存增加的事务
@@ -244,6 +247,8 @@ public class StorageCoreServiceImpl implements StorageCoreService {
             transaction_in.setVendorName(transaction_out.getVendorName());
             transaction_in.setVendorNick(transaction_out.getVendorNick());
             transaction_in.setBatchCode(line.getBatchCode());
+            // 2025-6-8 追加母批次
+            transaction_out.setParentBatchCode(line.getParentBatchCode());
             //这里使用系统默认生成的线边库初始化对应的入库仓库、库区、库位
 //            WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(Constant.VIRTUAL_WH);
 //            transaction_in.setWarehouseId(warehouse.getId());
@@ -328,26 +333,25 @@ public class StorageCoreServiceImpl implements StorageCoreService {
             BeanUtils.copyBeanProp(transaction_in, line);
 
             // 追加实际转移的仓库位置
-            WarehouseDO warehouseIn = warehouseService.selectWmWarehouseByWarehouseCode(rtIssueDO.getWarehouseCode());
+            /*WarehouseDO warehouseIn = warehouseService.selectWmWarehouseByWarehouseCode(rtIssueDO.getWarehouseCode());
             StorageLocationDO locationIn = storageLocationService.selectWmStorageLocationByLocationCode(rtIssueDO.getLocationCode());
-
 
             //StorageAreaDO areaIn = storageAreaService.selectWmStorageAreaByAreaCode(rtIssueDO.getAreaCode());
             StorageAreaExportReqVO exReqVO = new StorageAreaExportReqVO();
             exReqVO.setAreaCode(rtIssueDO.getAreaCode());
-            exReqVO.setLocationId(location.getId());
+            exReqVO.setLocationId(rtIssueDO.getLocationId());
             List<StorageAreaDO> areaListIn = storageAreaService.getStorageAreaList(exportReqVO);
-            StorageAreaDO areaIn = areaListIn.get(0);
+            StorageAreaDO areaIn = areaListIn.get(0);*/
 
-            transaction_in.setWarehouseId(warehouseIn.getId());
-            transaction_in.setWarehouseCode(warehouseIn.getWarehouseCode());
-            transaction_in.setWarehouseName(warehouseIn.getWarehouseName());
-            transaction_in.setLocationId(locationIn.getId());
-            transaction_in.setLocationCode(locationIn.getLocationCode());
-            transaction_in.setLocationName(locationIn.getLocationName());
-            transaction_in.setAreaId(areaIn.getId());
-            transaction_in.setAreaCode(areaIn.getAreaCode());
-            transaction_in.setAreaName(areaIn.getAreaName());
+            transaction_in.setWarehouseId(rtIssueDO.getWarehouseId());
+            transaction_in.setWarehouseCode(rtIssueDO.getWarehouseCode());
+            transaction_in.setWarehouseName(rtIssueDO.getWarehouseName());
+            transaction_in.setLocationId(rtIssueDO.getLocationId());
+            transaction_in.setLocationCode(rtIssueDO.getLocationCode());
+            transaction_in.setLocationName(rtIssueDO.getLocationName());
+            transaction_in.setAreaId(rtIssueDO.getAreaId());
+            transaction_in.setAreaCode(rtIssueDO.getAreaCode());
+            transaction_in.setAreaName(rtIssueDO.getAreaName());
             transaction_in.setTransactionFlag(1);//库存增加
             transaction_in.setTransactionDate(LocalDateTime.now());
             //由于是新增的库存记录所以需要将查询出来的库存记录ID置为空
@@ -355,6 +359,9 @@ public class StorageCoreServiceImpl implements StorageCoreService {
             MaterialStockExportReqVO materialStockDO = new MaterialStockExportReqVO();
             materialStockDO.setItemCode(line.getItemCode());
             materialStockDO.setBatchCode(line.getBatchCode());
+
+            // 2025-06-08 追加母批次
+            materialStockDO.setParentBatchCode(line.getParentBatchCode());
             List<MaterialStockDO> materialStockList = materialStockService.getMaterialStockList(materialStockDO);
             if (!materialStockList.isEmpty()) {
                 MaterialStockDO materialStock = materialStockList.get(0);

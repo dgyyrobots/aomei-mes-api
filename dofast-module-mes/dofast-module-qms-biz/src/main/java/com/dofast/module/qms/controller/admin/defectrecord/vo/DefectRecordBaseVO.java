@@ -2,6 +2,8 @@ package com.dofast.module.qms.controller.admin.defectrecord.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -35,7 +37,7 @@ public class DefectRecordBaseVO {
     private String defectLevel;
 
     @Schema(description = "缺陷数量")
-    private Integer defectQuantity;
+    private BigDecimal defectQuantity;
 
     @Schema(description = "备注", example = "你猜")
     private String remark;

@@ -46,4 +46,6 @@ public interface ErrorCodeConstants {
 
     ErrorCode DEVICE_GROUP_NOT_EXISTS=new ErrorCode(1001012014,"设备分组不存在");
 
+    ErrorCode DEVICE_FEEDBACK_LOG_NOT_EXISTS = new ErrorCode(1001012015, "设备产量日志不存在");
+
 }

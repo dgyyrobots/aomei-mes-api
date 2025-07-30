@@ -11,11 +11,14 @@ import com.dofast.module.cal.dal.dataobject.team.TeamDO;
 import com.dofast.module.cal.dal.dataobject.teammember.TeamMemberDO;
 import com.dofast.module.cal.service.team.TeamService;
 import com.dofast.module.cal.service.teammember.TeamMemberService;
+import com.dofast.module.cmms.api.dvmachinery.DvMachineryApi;
 import com.dofast.module.mes.api.WorkStationAPi.WorkStationApi;
 import com.dofast.module.mes.api.WorkStationAPi.dto.WorkStationDTO;
 import com.dofast.module.mes.api.autocode.AutoCodeApi;
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
 import com.dofast.module.mes.dal.dataobject.mdworkstationworker.MdWorkstationWorkerDO;
+import com.dofast.module.mes.service.mditem.MdItemService;
 import com.dofast.module.mes.service.mdworkstationworker.MdWorkstationWorkerService;
 import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderBaseVO;
 import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderExportReqVO;
@@ -41,6 +44,12 @@ import com.dofast.module.system.api.user.AdminUserApi;
 import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import com.dofast.module.trade.api.mixinorder.MixinOrderApi;
 import com.dofast.module.trade.api.mixinorder.dto.MixinOrderDTO;
+import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
+import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineExportReqVO;
+import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
+import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
+import com.dofast.module.wms.service.issueheader.IssueHeaderService;
+import com.dofast.module.wms.service.issueline.IssueLineService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -127,6 +136,17 @@ public class TaskController {
     @Resource
     private TaskMapper taskMapper;
 
+    @Resource
+    private IssueHeaderService issueHeaderService;
+
+    @Resource
+    private IssueLineService issueLineService;
+
+    @Resource
+    private  DvMachineryApi dvMachineryApi;
+
+    @Resource
+    private MdItemService mdItemService;
 
 
     @PostMapping("/create")
@@ -137,7 +157,12 @@ public class TaskController {
             return error(ErrorCodeConstants.TASK_NUM_MORE_THAN_0);
         }
 
-        WorkStationDTO workStationDTO = workStationApi.getWorkstation(createReqVO.getWorkstationCode());
+        ProcessDO processDO = processService.getcess(createReqVO.getProcessId());
+        if(processDO == null){
+            return error(ErrorCodeConstants.CESS_NOT_EXISTS);
+        }
+
+        WorkStationDTO workStationDTO = workStationApi.getWorkstation(createReqVO.getWorkstationCode(), processDO.getProcessCode());
         createReqVO.setWorkstationId(workStationDTO.getId());
         //生产工单
         WorkorderDO order = workorderService.getWorkorder(createReqVO.getWorkorderId());
@@ -295,12 +320,14 @@ public class TaskController {
         if (updateReqVO.getQuantity().doubleValue() < 0) {
             return error(ErrorCodeConstants.TASK_NUM_MORE_THAN_0);
         }
-        TaskDO task = taskService.getTask(updateReqVO.getId());
-        task.setQuantityProduced(task.getQuantityProduced() + updateReqVO.getQuantityProduced().doubleValue());
+        String status = updateReqVO.getTaskStatus();
+        updateReqVO.setStatus(status);
+       /* TaskDO task = taskService.getTask(updateReqVO.getId());
+        task.setQuantityProduced(task.getQuantityProduced() + updateReqVO.getQuantityProduced().doubleValue());*/
+
         /*if(task.getQuantityProduced().compareTo(updateReqVO.getQuantity()) ==1){
             return error(ErrorCodeConstants.TASK_NUM_MORE);
         }*/
-
         taskService.updateTask(updateReqVO);
         return success(true);
     }
@@ -507,6 +534,8 @@ public class TaskController {
     public CommonResult<Boolean> updateTeamById(@RequestBody Map<String, Object> request) {
         String teamCode = (String) request.get("teamCode"); // 班组编码
         Integer taskId = (Integer) request.get("taskId"); // 任务ID
+        List<String> machineryCodes = (List<String>) request.get("machineryCodes");
+
         TaskDO taskDO = taskService.getTask(taskId.longValue());
         taskDO.setAttr1(teamCode); // 存储班组编码
         taskDO.setMachineryId(taskDO.getMachineryId());
@@ -516,9 +545,88 @@ public class TaskController {
         TeamDO team = teamService.getTeam(taskDO.getAttr1());
         taskDO.setMachineryCode(team.getMachineryCode());
         taskDO.setMachineryName(team.getMachineryName());
+        taskDO.setTaskStatus("Y");
+        taskDO.setMachineryCodes(machineryCodes.toString());
         taskDO.setMachineryId(String.valueOf(team.getMachineryId())); //更新任务单的机台设备ID
         taskService.updateTask(TaskConvert.INSTANCE.convert01(taskDO));
         return success(true);
+    }
+
+    @GetMapping("/count-month-task-lastYear")
+    @Operation(summary = "获取任务单去年产出总额")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<Map<String, Integer>> CountMonthTaskLastYear() {
+        return success(taskService.getCountMonthTaskLastYear());
+    }
+
+    @GetMapping("/count-month-task-thisYear")
+    @Operation(summary = "获取任务单今年产出总额")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<Map<String, Integer>> CountMonthTaskThisYear() {
+        return success(taskService.getCountMonthTaskThisYear());
+    }
+
+    @GetMapping("/getTaskDetail")
+    @Operation(summary = "获得生产任务")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('pro:task:query')")
+    public CommonResult<Map<String, Object>> getTaskDetail(String taskCode) {
+        Map<String, Object> resultMap = new HashMap<>();
+        TaskDO task = taskService.getTask(taskCode);
+        WorkorderDO workorderDO = workorderService.getWorkorder(task.getWorkorderCode());
+        MdItemDO itemDO = mdItemService.getMdItem(task.getItemCode());
+        resultMap.put("taskId" , task.getId());
+        resultMap.put("taskCode" , task.getTaskCode());
+        resultMap.put("taskName" , task.getTaskName());
+
+        resultMap.put("workorderCode" , task.getWorkorderCode());
+        resultMap.put("workorderName" , task.getWorkorderName());
+        resultMap.put("itemCode" , task.getItemCode());
+        resultMap.put("itemName" , task.getItemName());
+        resultMap.put("specification" , itemDO.getSpecification());
+        resultMap.put("unitOfMeasure" , itemDO.getUnitOfMeasure());
+
+        resultMap.put("workstationCode" , task.getWorkstationCode());
+        resultMap.put("workstationName" , task.getWorkstationName());
+
+        resultMap.put("processId" , task.getProcessId());
+        resultMap.put("processCode" , task.getProcessCode());
+        resultMap.put("processName" , task.getProcessName());
+        resultMap.put("teamCode" , task.getAttr1());
+
+        // 基于当前任务单获取领料单, 以最新的领料单行
+        IssueHeaderDO headerDO = Optional.ofNullable(issueHeaderService.getIssueHeaderList(new IssueHeaderExportReqVO().setTaskCode(taskCode)).get(0)).orElse(null);
+        if(headerDO == null){
+            return error(ErrorCodeConstants.ISSUE_NOT_EXISTS);
+        }
+
+        List<IssueLineDO> lineDOList = Optional.ofNullable(issueLineService.getIssueLineList(new IssueLineExportReqVO().setIssueId(headerDO.getId()).setStatus("Y").setFeedbackStatus("N"))).orElse(null);
+        if(lineDOList.isEmpty()){
+            return error(ErrorCodeConstants.TASK_NOT_RECEPT);
+        }
+
+
+        IssueLineDO line = Optional.ofNullable(lineDOList.get(0)).orElse(null);
+        if(line == null){
+            return error(ErrorCodeConstants.TASK_NOT_RECEPT);
+        }
+
+        resultMap.put("machineryId" , line.getMachineryId());
+        resultMap.put("machineryCode" , line.getMachineryCode());
+        resultMap.put("machineryName" , line.getMachineryName());
+        String erpMachineryName = dvMachineryApi.getMachineryInfo(line.getMachineryCode()).getErpMachineryCode();
+        resultMap.put("erpMachineryName" , erpMachineryName);
+
+        WorkStationDTO workStationDTO = workStationApi.getWorkstationByProcessCode(task.getProcessCode());
+        resultMap.put("workstationId" , workStationDTO.getId());
+        resultMap.put("workstationCode" , workStationDTO.getWorkstationCode());
+        resultMap.put("workstationName" , workStationDTO.getWorkstationName());
+
+        resultMap.put("workshopId" , workStationDTO.getWorkshopId());
+        resultMap.put("workshopCode" , workStationDTO.getWorkshopCode());
+        resultMap.put("workshopName" , workStationDTO.getWorkshopName());
+
+        return success(resultMap);
     }
 
 }

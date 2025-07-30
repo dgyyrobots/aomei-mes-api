@@ -1,5 +1,6 @@
 package com.dofast.module.purchase.dal.dataobject.retreatGoods;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -113,5 +114,40 @@ public class RetreatGoodsDO extends BaseDO {
      * 库位名称
      */
     private String areaName;
+
+    /**
+     * ERP采购单号
+     */
+    private String poNo;
+
+    /**
+     * ERP采购批次
+     */
+    private Integer purchaseBatch;
+
+    /**
+     * ERP采购批序
+     */
+    private Integer purchaseConsequence;
+
+    /**
+     * ERP采购分批序
+     */
+    private Integer purchaseBatchConsequence;
+
+    /**
+     * ERP收货单号
+     */
+    private String erpReceiveCode;
+
+    /**
+     * ERP收货项次
+     */
+    private Integer receiveSeq;
+
+    /**
+     * ERP理由码
+     */
+    private String reasonCode;
 
 }

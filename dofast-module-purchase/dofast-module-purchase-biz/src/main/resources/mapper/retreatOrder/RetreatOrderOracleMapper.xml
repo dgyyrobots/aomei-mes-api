@@ -3,14 +3,20 @@
 <mapper namespace="com.dofast.module.purchase.dal.oracle.retreatOrder.RetreatOrderOracleMapper">
 
     <select id="initRetreatOrder" parameterType="java.lang.String" resultType="java.util.HashMap">
-        select distinct pmdsdocno as RETREAT_CODE , pmds002 as RETREAT_USER ,  pmds007 as VENDOR_CODE , pmds100 as RETREAT_TYPE
+        select distinct a.pmdsdocno as RETREAT_CODE , b.pmdt006 as GOODS_NUMBER , pmdt019 as UNIT_OF_MEASURE , pmdt020 as RECEIVE_NUM ,
+                        pmdtseq as CONSEQUENCE , pmdt016 as LOCATION_CODE , pmdt017 as AREA_CODE , pmdt001 as PO_NO , pmdt002 as PURCHASE_BATCH ,
+                        pmdt003 AS PURCHASE_CONSEQUENCE , pmdt004 as PURCHASE_BATCH_CONSEQUENCE , pmdt027 as WAREHOUSING_CODE , pmdt028 AS WAREHOUSING_SEQUENCE , pmds007 as VENDOR_CODE
         from DSDATA.pmds_t a
+           left join DSDATA.pmdt_t b on a.pmdsdocno = b.pmdtdocno and a.pmdsent = b.pmdtent and a.pmdssite = b.pmdtsite
         where a.pmdsent = #{erpCode} and a.pmdssite = 'AM01' AND a.pmds000 in('7','14') and pmdsstus = 'Y'
     </select>
 
     <select id="initRetreatGoods" parameterType="java.lang.String" resultType="java.util.HashMap">
-        select distinct a.pmdsdocno as RETREAT_CODE , b.pmdt006 as GOODS_NUMBER , pmdt019 as UNIT_OF_MEASURE , pmdt020 as RECEIVE_NUM ,  pmdtseq as CONSEQUENCE , pmdt016 as LOCATION_CODE , pmdt017 as AREA_CODE
-        from DSDATA.pmds_t a                                                                                                                                                                                                         left join DSDATA.pmdt_t b on a.pmdsdocno = b.pmdtdocno and a.pmdsent = b.pmdtent and a.pmdssite = b.pmdtsite
+        select distinct a.pmdsdocno as RETREAT_CODE , b.pmdt006 as GOODS_NUMBER , pmdt019 as UNIT_OF_MEASURE , pmdt020 as RECEIVE_NUM ,
+                        pmdtseq as CONSEQUENCE , pmdt016 as LOCATION_CODE , pmdt017 as AREA_CODE , PMDS006 as ORIGIN_CODE , pmdt001 as PO_NO , pmdt002 as PURCHASE_BATCH ,
+                        pmdt003 AS PURCHASE_CONSEQUENCE , pmdt004 as PURCHASE_BATCH_CONSEQUENCE , pmdt027 as WAREHOUSING_CODE , pmdt028 AS WAREHOUSING_SEQUENCE , pmdt051 as REASON_CODE, pmdt018 as BATCH_CODE
+        from DSDATA.pmds_t a
+        left join DSDATA.pmdt_t b on a.pmdsdocno = b.pmdtdocno and a.pmdsent = b.pmdtent and a.pmdssite = b.pmdtsite
         where a.pmdsent = #{erpCode} and a.pmdssite = 'AM01' AND a.pmds000 in('7','14') and pmdsstus = 'Y'
     </select>
 

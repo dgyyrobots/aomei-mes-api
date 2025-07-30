@@ -1,12 +1,14 @@
 package com.dofast.module.mes.job;
 
 import com.dofast.framework.quartz.core.handler.JobHandler;
+import com.dofast.module.mes.convert.mdproductbom.MdProductBomConvert;
 import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
 import com.dofast.module.mes.dal.dataobject.mdproductbom.MdProductBomDO;
 import com.dofast.module.mes.dal.mysql.mditem.MdItemMapper;
 import com.dofast.module.mes.dal.mysql.mdproductbom.MdProductBomMapper;
 import com.dofast.module.mes.service.mdproductbom.MdProductBomOracleService;
 import com.dofast.module.mes.service.mdproductbom.MdProductBomOracleServiceImpl;
+import com.dofast.module.mes.service.mdproductbom.MdProductBomService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -25,6 +27,8 @@ public class mdProductBomJob implements JobHandler {
     @Resource
     private MdItemMapper mdItemMapper;
 
+    @Resource
+    private MdProductBomService mdProductBomService;
 
     @Resource
     private MdProductBomMapper mdProductBomMapper;
@@ -45,7 +49,10 @@ public class mdProductBomJob implements JobHandler {
                 continue;
             }
             // 校验当前产品料号是否存在
-            MdProductBomDO query = mdProductBomMapper.selectOne(MdProductBomDO::getItemId, product.getId(), MdProductBomDO::getBomItemCode, productBom.get("BOM_ITEM_CODE"), MdProductBomDO::getQuantity, productBom.get("BOM_QUANTITY"));
+            // MdProductBomDO::getQuantity, productBom.get("BOM_QUANTITY"),  MdProductBomDO::getInverted , productBom.get("INVERTED") ,
+            //MdProductBomDO query = mdProductBomMapper.selectOne(MdProductBomDO::getItemId, product.getId(), MdProductBomDO::getBomItemCode, productBom.get("BOM_ITEM_CODE"),  MdProductBomDO::getSequence , productBom.get("SEQUENCE") , MdProductBomDO::getUnitOfMeasure , productBom.get("UNIT_OF_MEASURE") , MdProductBomDO::getQuantity , productBom.get("BOM_QUANTITY"), MdProductBomDO::getInverted , productBom.get("INVERTED") );
+            MdProductBomDO query = mdProductBomMapper.selectOne(MdProductBomDO::getItemId, product.getId(), MdProductBomDO::getBomItemCode, productBom.get("BOM_ITEM_CODE"),  MdProductBomDO::getUnitOfMeasure , productBom.get("UNIT_OF_MEASURE") , MdProductBomDO::getSequence , productBom.get("SEQUENCE"), MdProductBomDO::getInverted , productBom.get("INVERTED") );
+
             if (query == null) {
                 // 插入产品BOM信息
                 MdProductBomDO mdProductBomDO = new MdProductBomDO();
@@ -68,10 +75,14 @@ public class mdProductBomJob implements JobHandler {
                 mdProductBomDO.setInverted((String) productBom.get("INVERTED"));
                 BigDecimal bigSequence = (BigDecimal) productBom.get("SEQUENCE");
                 mdProductBomDO.setSequence(bigSequence.longValue());
-                insertList.add(mdProductBomDO);
+                mdProductBomDO.setEnableFlag("Y");
+                BigDecimal measuereQuantity = (BigDecimal) productBom.get("BOM_QUANTITY");
+                mdProductBomDO.setQuantity(measuereQuantity.doubleValue());
+                mdProductBomService.createMdProductBom(MdProductBomConvert.INSTANCE.convert01(mdProductBomDO));
+                //insertList.add(mdProductBomDO);
             } else {
                 // 更新产品BOM信息
-                query.setItemId(Long.parseLong((String) productBom.get("ITEM_ID")));
+                query.setItemId(product.getId());
                 query.setBomItemCode((String) productBom.get("BOM_ITEM_CODE"));
                 // 根据物料料号获取当前的物料ID
                 MdItemDO item = mdItemMapper.selectOne(MdItemDO::getItemCode, productBom.get("BOM_ITEM_CODE"));
@@ -85,15 +96,18 @@ public class mdProductBomJob implements JobHandler {
                 BigDecimal bigSequence = (BigDecimal) productBom.get("SEQUENCE");
                 query.setSequence(bigSequence.longValue());
                 query.setItemOrProduct("PRODUCT");
-                updateList.add(query);
+                BigDecimal measuereQuantity = (BigDecimal) productBom.get("BOM_QUANTITY");
+                query.setQuantity(measuereQuantity.doubleValue());
+                //updateList.add(query);
+                mdProductBomService.updateMdProductBom(MdProductBomConvert.INSTANCE.convert02(query));
             }
         }
-        if (!insertList.isEmpty()) {
+       /* if (!insertList.isEmpty()) {
             mdProductBomMapper.insertBatch(insertList);
-        }
-        if (!updateList.isEmpty()) {
+        }*/
+        /*if (!updateList.isEmpty()) {
             mdProductBomMapper.updateBatch(updateList);
-        }
+        }*/
         return "success";
     }
 }

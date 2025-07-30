@@ -88,7 +88,6 @@ public class routeJob implements JobHandler {
         if (!editList.isEmpty()) {
             processMapper.updateBatch(editList);
         }
-        System.out.println("工序定时器执行成功");
 
         // 开始初始化工艺信息
         List<Map<String, Object>> routeList = routeOracleService.initRoute();
@@ -161,19 +160,22 @@ public class routeJob implements JobHandler {
         // 构建工艺路线
         List<Map<String, Object>> finRouteList = new ArrayList<>();
         finProcessMap.forEach((key, value) -> {
-            //if (value.size() > 1) {
-                //System.out.println("构筑工艺路线, 唯一标识码: " + key);
                 List<String> route = buildRoute(value);
                 if (route != null && !route.isEmpty()) {
                     Map<String, Object> routeInfo = new HashMap<>();
                     routeInfo.put("routeCode", key);
                     routeInfo.put("routeLine", route);
                     List<Long> sequenceList = new ArrayList<>();
+
+                    Map<String, Map<String, Object>> processRecordMap = new HashMap<>();
                     for (Map<String, Object> record : value) {
+                        String procCode = (String) record.get("PROCESS_CODE");
+                        processRecordMap.put(procCode, record);
                         BigDecimal sequence = new BigDecimal(record.get("SEQUENCE").toString());
                         sequenceList.add(sequence.longValue());
                     }
                     routeInfo.put("sequenceLine", sequenceList);
+                    routeInfo.put("processRecordMap", processRecordMap);
                     finRouteList.add(routeInfo);
                 }
         });
@@ -182,11 +184,29 @@ public class routeJob implements JobHandler {
         for (Map<String, Object> routeInfo : finRouteList) {
             List<String> route = (List<String>) routeInfo.get("routeLine");
             List<Long> sequenceList =  (List<Long>) routeInfo.get("sequenceLine");
+            Map<String, Map<String, Object>> processRecordMap = (Map<String, Map<String, Object>>) routeInfo.get("processRecordMap");
+
             // 开始校验当前唯一标识码下的工艺路线是否存在
             for (int i = 0; i < route.size(); i++) {
                 String processCode = route.get(i); // 当前工序编码
                 String routeCode = (String) routeInfo.get("routeCode"); // 当前工艺编码
                 Long sequence = sequenceList.get(i); // 当前工序顺序
+
+                // 追加单位换算逻辑
+                Map<String, Object> originalRecord = processRecordMap.get(processCode);
+                String receiveingUnits = Optional.ofNullable((String) originalRecord.get("RECEIVING_UNITS")).orElse(null);
+                BigDecimal receiveingUnitsConversionNumberator = originalRecord.get("RECEIVING_UNITS_CONVERSION_NUMERATOR") != null ?
+                        new BigDecimal(String.valueOf(originalRecord.get("RECEIVING_UNITS_CONVERSION_NUMERATOR"))) : null;
+                BigDecimal receiveingUnitsConversionDenominator = originalRecord.get("RECEIVING_UNITS_CONVERSION_DENOMINATOR") != null ?
+                        new BigDecimal(String.valueOf(originalRecord.get("RECEIVING_UNITS_CONVERSION_DENOMINATOR"))) : null;
+
+                String outUnits = Optional.ofNullable((String) originalRecord.get("OUT_UNITS")).orElse(null);
+                BigDecimal outUnitsConversionNumberator = originalRecord.get("OUT_UNITS_CONVERSION_NUMERATOR") != null ?
+                        new BigDecimal(String.valueOf(originalRecord.get("OUT_UNITS_CONVERSION_NUMERATOR"))) : null;
+                BigDecimal outUnitsConversionDenominator = originalRecord.get("OUT_UNITS_CONVERSION_DENOMINATOR") != null ?
+                        new BigDecimal(String.valueOf(originalRecord.get("OUT_UNITS_CONVERSION_DENOMINATOR"))) : null;
+
+                String nextProcessCodeInRecord = null;
                 // 根据工艺编码获取工艺Id
                 Long routeId = Optional.ofNullable(routeMapper.selectOne(RouteDO::getRouteCode, routeCode).getId()).orElse(0L);
                 if (routeId == 0L) {
@@ -219,6 +239,18 @@ public class routeJob implements JobHandler {
                     queryRouteProcess.setLinkType("FS");
                     queryRouteProcess.setColorCode("#00AEF3");
                     queryRouteProcess.setSequence(Long.valueOf(sequence));
+
+                    if(receiveingUnits!=null){
+                        queryRouteProcess.setReceivingUnits(receiveingUnits);
+                        queryRouteProcess.setReceivingUnitsConversionNumerator(receiveingUnitsConversionNumberator);
+                        queryRouteProcess.setReceivingUnitsConversionDenominator(receiveingUnitsConversionDenominator);
+                    }
+                    if(outUnits!=null){
+                        queryRouteProcess.setOutUnits(outUnits);
+                        queryRouteProcess.setOutUnitsConversionNumerator(outUnitsConversionNumberator);
+                        queryRouteProcess.setOutUnitsConversionDenominator(outUnitsConversionDenominator);
+                    }
+
                     if (nextProcess != null) {
                         queryRouteProcess.setNextProcessId(nextProcess.getId());
                         queryRouteProcess.setNextProcessCode(nextProcess.getProcessCode());
@@ -239,6 +271,17 @@ public class routeJob implements JobHandler {
                     addRouteProcess.setLinkType("FS");
                     addRouteProcess.setColorCode("#00AEF3");
                     addRouteProcess.setSequence(sequence);
+                    if(receiveingUnits!=null){
+                        addRouteProcess.setReceivingUnits(receiveingUnits);
+                        addRouteProcess.setReceivingUnitsConversionNumerator(receiveingUnitsConversionNumberator);
+                        addRouteProcess.setReceivingUnitsConversionDenominator(receiveingUnitsConversionDenominator);
+                    }
+                    if(outUnits!=null){
+                        addRouteProcess.setOutUnits(outUnits);
+                        addRouteProcess.setOutUnitsConversionNumerator(outUnitsConversionNumberator);
+                        addRouteProcess.setOutUnitsConversionDenominator(outUnitsConversionDenominator);
+                    }
+
                     if (nextProcess != null) {
                         addRouteProcess.setNextProcessId(nextProcess.getId());
                         addRouteProcess.setNextProcessCode(nextProcess.getProcessCode());
@@ -294,7 +337,6 @@ public class routeJob implements JobHandler {
         if (!editProdcutList.isEmpty()) {
             routeProductMapper.updateBatch(editProdcutList);
         }
-        System.out.println("工艺路线定时器执行成功");
 
         // 开始追加工单工作序
         List<WorkorderDO> workorderList = workorderService.getWorkorderList(new WorkorderListVO());
@@ -323,7 +365,6 @@ public class routeJob implements JobHandler {
         if(!editSequenceList.isEmpty()){
             routeProcessMapper.updateBatch(editSequenceList);
         }
-        System.out.println("工作序初始化完成");
         return "success";
     }
 

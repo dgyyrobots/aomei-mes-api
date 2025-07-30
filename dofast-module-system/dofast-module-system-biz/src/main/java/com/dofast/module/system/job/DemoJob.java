@@ -21,7 +21,7 @@ public class DemoJob implements JobHandler {
 
     @Override
     public String execute(String param) throws Exception {
-        System.out.println("当前租户：" + getTenantId());
+        //System.out.println("当前租户：" + getTenantId());
         List<AdminUserDO> users = adminUserMapper.selectList();
         return "用户数量：" + users.size();
     }

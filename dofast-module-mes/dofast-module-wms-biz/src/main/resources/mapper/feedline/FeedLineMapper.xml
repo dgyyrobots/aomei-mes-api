@@ -9,4 +9,106 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <resultMap id="MaterialUsageSummaryResult" type="com.dofast.module.wms.controller.admin.feedline.vo.FeedLineSummaryVO">
+        <result property="workorderCode" column="workorder_code" />
+        <result property="workorderName" column="workorder_name" />
+        <result property="itemCode" column="item_code" />
+        <result property="itemName" column="item_name" />
+        <result property="specification" column="specification" />
+        <result property="unitOfMeasure" column="unit_of_measure" />
+        <result property="actualQuantity" column="actual_quantity" />
+        <result property="planQuantity" column="plan_quantity" />
+        <result property="usagePercentage" column="usage_percentage" />
+        <result property="workstationCode" column="workstation_code" />
+        <result property="workstationName" column="workstation_name" />
+    </resultMap>
+
+    <select id="selectMaterialUsageSummary" resultMap="MaterialUsageSummaryResult">
+        SELECT
+        feed.workorder_code,
+        feed.task_code,
+        wo.workorder_name,
+        feed.item_code,
+        feed.item_name,
+        feed.specification,
+        feed.unit_of_measure,
+        feed.warehouse_id,
+        feed.warehouse_code,
+        feed.warehouse_name,
+        feed.location_id,
+        feed.location_code,
+        feed.location_name,
+        feed.area_id,
+        feed.area_code,
+        feed.area_name,
+        COALESCE(SUM(feed.quantity), 0) AS actual_quantity,
+        COALESCE(bom.plan_quantity, 0) AS plan_quantity,
+        CASE
+        WHEN bom.plan_quantity > 0
+        THEN ROUND(COALESCE(SUM(feed.quantity), 0) / bom.plan_quantity * 100, 2)
+        ELSE 0
+        END AS usage_percentage,
+        MAX(feed.workstation_code) AS workstation_code,
+        MAX(feed.workstation_name) AS workstation_name
+        FROM wms_feed_line feed
+        LEFT JOIN pro_workorder wo ON feed.workorder_code = wo.workorder_code
+        LEFT JOIN (
+        SELECT
+        workorder_id,
+        item_id,
+        SUM(quantity) AS plan_quantity
+        FROM pro_workorder_bom
+        WHERE deleted = 0
+        GROUP BY workorder_id, item_id
+        ) bom ON wo.id = bom.workorder_id AND feed.item_id = bom.item_id
+        WHERE
+        feed.deleted = 0
+        AND wo.deleted = 0
+        AND bom.plan_quantity > 0
+        <!-- 动态查询条件 -->
+        <if test="req.workorderCode != null and req.workorderCode != ''">
+            AND feed.workorder_code LIKE CONCAT('%', #{req.workorderCode}, '%')
+        </if>
+        <if test="req.itemCode != null and req.itemCode != ''">
+            AND feed.item_code LIKE CONCAT('%', #{req.itemCode}, '%')
+        </if>
+        <if test="req.itemName != null and req.itemName != ''">
+            AND feed.item_name LIKE CONCAT('%', #{req.itemName}, '%')
+        </if>
+        <if test="req.status != null and req.status != ''">
+            AND feed.status = #{req.status}
+        </if>
+        <if test="req.workstationCode != null and req.workstationCode != ''">
+            AND feed.workstation_code = #{req.workstationCode}
+        </if>
+        <if test="req.createTime != null">
+            AND feed.create_time &gt;= #{req.createTime[0]}
+        </if>
+        <if test="req.createTime != null">
+            AND feed.create_time &lt;= #{req.createTime[1]}
+        </if>
+        GROUP BY
+        feed.workorder_code,
+        feed.task_code,
+        wo.workorder_name,
+        feed.item_id,
+        feed.item_code,
+        feed.item_name,
+        feed.specification,
+        feed.unit_of_measure,
+        feed.warehouse_id,
+        feed.warehouse_code,
+        feed.warehouse_name,
+        feed.location_id,
+        feed.location_code,
+        feed.location_name,
+        feed.area_id,
+        feed.area_code,
+        feed.area_name,
+        bom.plan_quantity
+        ORDER BY
+        feed.workorder_code desc,
+        feed.item_code
+    </select>
+
 </mapper>

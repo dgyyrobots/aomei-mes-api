@@ -2,10 +2,14 @@ package com.dofast.module.pro.controller.admin.feedback.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.dofast.framework.common.pojo.PageParam;
 import java.time.LocalDateTime;
+
+import org.apache.poi.hpsf.Decimal;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import static com.dofast.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -162,5 +166,32 @@ public class FeedbackExportReqVO {
 
     @Schema(description = "ERP报工单")
     private String erpFeedback;
+
+    @Schema(description = "任务单状态")
+    private String taskStatus;
+
+    @Schema(description = "ERP报工状态")
+    private String erpFeedbackStatus;
+
+    @Schema(description = "ERP入库状态")
+    private String erpWarehousingStatus;
+
+    @ExcelProperty("合并需求")
+    private String mergeStatus;
+
+    @Schema(description = "转换数量")
+    private BigDecimal conversionQuantity;
+
+    @Schema(description = "转换单位")
+    private String conversionUnit;
+
+    @Schema(description = "转换不合格数量")
+    private BigDecimal conversionQuantityUnquanlified;
+
+    @Schema(description = "卷数编号")
+    private String volumesNumber;
+
+    @Schema(description = "数采标识")
+    private String iotFlag;
 
 }

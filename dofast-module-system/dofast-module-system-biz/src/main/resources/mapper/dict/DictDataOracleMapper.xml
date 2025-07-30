@@ -23,4 +23,8 @@
         where oobaent = #{erpCode} and ooba001 = 'S03' AND a.oobastus = 'Y' and c.oobxl002 = 'zh_CN'
     </select>
 
+
+    <select id = "initCloseDate" resultType="java.util.HashMap" >
+        select OOAB002 as CLOSE_DATE from DSDATA.ooab_t where  ooabent= #{erpCode} AND  ooabsite='AM01' and ooab001='S-MFG-0031'
+    </select>
 </mapper>

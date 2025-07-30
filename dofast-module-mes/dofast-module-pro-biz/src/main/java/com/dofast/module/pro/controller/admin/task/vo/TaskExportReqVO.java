@@ -158,4 +158,13 @@ public class TaskExportReqVO {
 
     @Schema(description = "设备Id")
     private String machineryId;
+
+    @Schema(description = "派工状态")
+    private String taskStatus;
+
+    @Schema(description = "派工设备列表")
+    private String machineryCodes;
+
+    @Schema(description = "报工流水号")
+    private String feedbackSerial;
 }

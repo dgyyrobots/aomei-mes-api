@@ -17,8 +17,22 @@
         FROM pro_feedback
         GROUP BY process_code, name
         ORDER BY process_code
-
     </select>
 
 
+    <select id="getFeedbackCount" resultType="java.util.Map">
+        select count(*) as count from pro_feedback
+        where workorder_code = #{workorderCode}
+          and task_code = #{taskCode}
+          and quantity_qualified > 0
+          and status in ('FINISHED' , 'PRINTED' , 'WAREHOUSED')
+          and deleted = 0
+    </select>
+
+    <select id="getIotFeedbackLog" resultType="java.util.Map">
+        select quantity as quantity from iot_device_feedback_log
+        where enable_status = 'CONFIRMED' and device_code = #{machineryCode}
+        ORDER BY CREATE_TIME DESC
+        limit 1
+    </select>
 </mapper>

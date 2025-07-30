@@ -2,6 +2,7 @@ package com.dofast.module.system.job;
 
 import com.dofast.framework.quartz.core.handler.JobHandler;
 
+import com.dofast.module.system.convert.dict.DictDataConvert;
 import com.dofast.module.system.convert.dict.DictTypeConvert;
 import com.dofast.module.system.dal.dataobject.dict.DictDataDO;
 import com.dofast.module.system.dal.dataobject.dict.DictTypeDO;
@@ -45,6 +46,7 @@ public class frontJob implements JobHandler {
         List<Map<String, Object>> erpList = adminUserOracleService.initUser(); // 从ERP获取人员信息
         List<Map<String, Object>> wareHouseReasonList = dictDataOracleService.initWarehouseReasonData(); // 从ERP获取仓退原因码
         List<Map<String, Object>> docTypeList = dictDataOracleService.initDocType(); // 从ERP获取单别
+        Map<String, Object> closeDateInfo = dictDataOracleService.initCloseDate(); // 从ERP获取仓库
 
         if (!erpList.isEmpty()) {
             List<AdminUserDO> addUserList = new ArrayList<>();
@@ -60,7 +62,8 @@ public class frontJob implements JobHandler {
                     addUserDO.setUsername(erpCOde); // 配置ERP编码
                     addUserDO.setNickname(username); // 配置ERP名称
                     addUserDO.setErpDept(dept); // 配置ERP部门
-                    addUserDO.setPassword(passwordEncoder.encode("AA123123")); // 配置默认密码
+                    addUserDO.setAvatar("http://172.18.12.250:9000/ammes/userAvatar_userBlob06310_21a3a05d2092420d8ca8220c1d23f478.");
+                    addUserDO.setPassword(passwordEncoder.encode("aa123123")); // 配置默认密码
                     addUserDO.setStatus(0);
                     addUserList.add(addUserDO);
                 } else {
@@ -77,9 +80,7 @@ public class frontJob implements JobHandler {
                 adminUserService.updateUserBatch(updateUserList);
             }
         }
-        System.out.println("用户导入成功！");
 
-        System.out.println("开始同步仓退/入库原因码");
         List<DictDataDO> addData = new ArrayList<>();
         List<DictDataDO> editData = new ArrayList<>();
         DictTypeDO warehouseReasonDO = dictTypeService.getDictType("erp_warehouse_reason");
@@ -115,7 +116,36 @@ public class frontJob implements JobHandler {
                 }
             }
         }
-        System.out.println("仓退/入库原因码加载完成!");
+
+        // 追加关账日期
+        if (closeDateInfo != null) {
+            String closeDate = (String) closeDateInfo.get("CLOSE_DATE");
+
+            DictTypeDO docTypeDO = dictTypeService.getDictType("erp_close_date");
+            if (docTypeDO == null) {
+                docTypeDO = new DictTypeDO();
+                // 追加数据字典信息
+                docTypeDO.setStatus(0); // 启用
+                docTypeDO.setType("erp_close_date"); // 类型名称
+                docTypeDO.setName("ERP关账日期"); // 类型名称
+                docTypeDO.setRemark("ERP关账日期"); // 备注
+                dictTypeService.createDictType(DictTypeConvert.INSTANCE.convert01(docTypeDO));
+            }
+
+            DictDataDO dataDO = dictDataService.getDictData("erp_close_date", "close_date");
+            if (dataDO == null) {
+                dataDO = new DictDataDO();
+                dataDO.setDictType("erp_close_date");
+                dataDO.setLabel(closeDate); // 标签名称
+                dataDO.setSort(0);
+                dataDO.setValue("close_date"); // 数据值
+                dictDataService.createDictData(DictDataConvert.INSTANCE.convert01(dataDO));
+            } else {
+                dataDO.setLabel(closeDate); // 标签名称
+                editData.add(dataDO);
+                dictDataService.updateDictData(DictDataConvert.INSTANCE.convert05(dataDO));
+            }
+        }
 
        /* System.out.println("开始追加ER单别");
         DictTypeDO docTypeDO = dictTypeService.getDictType("erp_doc_type");

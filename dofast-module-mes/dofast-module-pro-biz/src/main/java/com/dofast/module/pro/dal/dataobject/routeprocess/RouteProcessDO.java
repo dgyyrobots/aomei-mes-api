@@ -1,6 +1,9 @@
 package com.dofast.module.pro.dal.dataobject.routeprocess;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -108,6 +111,36 @@ public class RouteProcessDO extends BaseDO {
      * 工作序
      */
     private Long workorderSequence;
+
+    /**
+     * 转入单位
+     */
+    private String receivingUnits;
+
+    /**
+     * 转入单位分子
+     */
+    private BigDecimal receivingUnitsConversionNumerator;
+
+    /**
+     * 转入单位分母
+     */
+    private BigDecimal receivingUnitsConversionDenominator;
+
+    /**
+     * 转出单位
+     */
+    private String outUnits;
+
+    /**
+     * 转出单位分子
+     */
+    private BigDecimal outUnitsConversionNumerator;
+
+    /**
+     * 转出单位分母
+     */
+    private BigDecimal outUnitsConversionDenominator;
 
 
 

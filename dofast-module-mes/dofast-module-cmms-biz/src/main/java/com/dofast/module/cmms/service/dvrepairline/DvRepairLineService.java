@@ -67,4 +67,6 @@ public interface DvRepairLineService {
      */
     List<DvRepairLineDO> getDvRepairLineList(DvRepairLineExportReqVO exportReqVO);
 
+    void insertBatch(List<DvRepairLineDO> repairLineList);
+
 }

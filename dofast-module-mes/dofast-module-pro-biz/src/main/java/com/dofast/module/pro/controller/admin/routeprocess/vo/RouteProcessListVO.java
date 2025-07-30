@@ -4,6 +4,7 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 @Data
 public class RouteProcessListVO {
@@ -48,6 +49,18 @@ public class RouteProcessListVO {
     private Long sequence;
 
     private Long workorderSequence;
+
+    private String receivingUnits;
+
+    private BigDecimal receivingUnitsConversionNumerator;
+
+    private BigDecimal receivingUnitsConversionDenominator;
+
+    private String outUnits;
+
+    private BigDecimal outUnitsConversionNumerator;
+
+    private BigDecimal outUnitsConversionDenominator;
 
     private LocalDateTime createTime;
 

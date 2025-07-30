@@ -143,6 +143,15 @@ public class TransactionExcelVO {
     @ExcelProperty("预留字段4")
     private Integer attr4;
 
+    @ExcelProperty("入库母批次号")
+    private String parentBatchCode;
+
+    @ExcelProperty("仓库确认状态")
+    private String confirmStatus;
+
+    @ExcelProperty("来源单据ID")
+    private Long originId;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

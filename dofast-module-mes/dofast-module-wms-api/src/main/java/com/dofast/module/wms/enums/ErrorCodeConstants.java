@@ -86,6 +86,9 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_HEADER_NO_TASK = new ErrorCode(621001, "上料失败，当前领料单对应任务单不存在！");
     ErrorCode ISSUE_LINE_DELETE_ERROR = new ErrorCode(621001, "生产领料单已领料，无法删除！");
     ErrorCode ISSUE_ERR_INTERFACE_ERROR = new ErrorCode(621001, "ERP领料接口异常！");
+    ErrorCode ISSUE_LINE_NO_NEED_ERP = new ErrorCode(621001, "当前行无需调用ERP领料接口！");
+    ErrorCode ISSUE_HEADER_NEED_ERP = new ErrorCode(621001, "上料失败，当前领用物料需进行ERP过账！");
+    ErrorCode ISSUE_LINE_NOT_EXECUTE = new ErrorCode(621001, "存在未上料的物料，无需启用！");
 
 
     ErrorCode ALLOCATED_HEADER_NEED_PROCESS_LINE = new ErrorCode(621006, "没有需要处理的调拨单行");
@@ -97,7 +100,7 @@ public interface ErrorCodeConstants {
     ErrorCode RT_ISSUE_NO_LINE_PROCESS = new ErrorCode(622005, "没有需要处理的退料单行");
     ErrorCode RT_ISSUE_HAS_FEEDBACK = new ErrorCode(622006, "当前任务已报工, 无法进行退料操作!");
     ErrorCode RT_ISSUE_ERR_INTERFACE_ERROR = new ErrorCode(621001, "ERP退料接口异常！");
-
+    ErrorCode RT_ISSUE_NO_NEED_ERP = new ErrorCode(621001, "当前退料信息无需回传ERP！");
 
 
 
@@ -153,6 +156,10 @@ public interface ErrorCodeConstants {
     ErrorCode TOOL_NOT_ENOUGH = new ErrorCode(6320003, "电铸板库存不足, 请先生产!");
 
     ErrorCode ALLOCATED_INTERFACE_ERROR = new ErrorCode(6310001, "调拨单接口异常!");
+
+    ErrorCode ALLOCATED_MATERIAL_STOCK_NOT_EXISTS = new ErrorCode(6310001, "调拨物料对应库存不存在!");
+
+    ErrorCode USER_NO_POST = new ErrorCode(6320001, "请配置当前用户岗位!");
 
 
 }

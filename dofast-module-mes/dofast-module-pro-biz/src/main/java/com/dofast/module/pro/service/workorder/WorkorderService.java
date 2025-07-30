@@ -97,4 +97,8 @@ public interface WorkorderService {
      */
     List<WorkorderDO> getWorkorderBySourceCode(String sourceCode);
 
+    Map<String, Integer>  getCountMonthWorkorderLastYear();
+
+    Map<String, Integer>  getCountMonthWorkorderThisYear();
+
 }

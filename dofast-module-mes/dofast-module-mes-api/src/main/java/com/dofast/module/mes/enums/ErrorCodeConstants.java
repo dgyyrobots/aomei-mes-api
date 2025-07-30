@@ -65,4 +65,26 @@ public interface   ErrorCodeConstants {
 
     ErrorCode ELECTROPLATE_LOG_NOT_EXISTS = new ErrorCode(430004, "制版房记录不存在");
 
+    ErrorCode SUBCLASS_EXCEPTION_NOT_EXISTS = new ErrorCode(430005, "子类异常项配置不存在");
+
+    ErrorCode EXCEPTION_LEVEL_CONFIG_NOT_EXISTS = new ErrorCode(430006, "异常等级配置不存在");
+
+    ErrorCode EXCEPTION_NOT_EXISTS = new ErrorCode(430007, "异常登记不存在");
+
+    ErrorCode REGISTRATION_NOT_EXISTS = new ErrorCode(430008, "计时登记不存在");
+
+    ErrorCode REGISTRATION_TASK_EXISTS = new ErrorCode(430008, "已存在相同任务单, 登记类型的计时记录!");
+
+    ErrorCode REGISTRATION_NOT_SUPPORT = new ErrorCode(430008, "当前计时已完成!");
+
+    ErrorCode REGISTRATION_STATUS_STOP = new ErrorCode(430008, "请先开始计时!");
+
+    ErrorCode REGISTRATION_STATUS_START = new ErrorCode(430008, "选中行已开始计时!");
+
+
+    ErrorCode REGISTRATION_LINE_NOT_EXISTS = new ErrorCode(430009, "计时登记记录不存在");
+
+
+
+
 }

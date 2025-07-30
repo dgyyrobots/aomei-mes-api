@@ -70,6 +70,9 @@ public class DvMachineryExcelVO {
     @ExcelProperty("ERP设备编码")
     private String erpMachineryCode;
 
+    @ExcelProperty("产品ID")
+    private Long productId;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

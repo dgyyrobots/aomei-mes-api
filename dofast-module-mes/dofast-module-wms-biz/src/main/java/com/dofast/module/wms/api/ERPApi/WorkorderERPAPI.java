@@ -3,15 +3,21 @@ package com.dofast.module.wms.api.ERPApi;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.dofast.framework.common.util.http.HttpUtils;
+import com.dofast.framework.web.core.util.WebFrameworkUtils;
 import com.dofast.module.mes.constant.Constant;
 import com.dofast.module.mes.controller.admin.interfacelog.vo.InterfaceLogCreateReqVO;
 import com.dofast.module.mes.service.interfacelog.InterfaceLogService;
+import com.dofast.module.system.api.user.AdminUserApi;
+import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
+import com.dofast.module.system.dal.dataobject.dict.DictDataDO;
+import com.dofast.module.system.service.dict.DictDataService;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -21,11 +27,32 @@ public class WorkorderERPAPI {
     @Resource
     private InterfaceLogService interfaceLogService;
 
+    @Resource
+    private DictDataService dictDataService;
+
+    @Resource
+    private AdminUserApi adminUserApi;
+
     /**
      * 工单领/退料单生成接口
      */
     public String workOrderIssueCreate(Map<String, Object> params) {
         Map<String, Object> request = createBaseRequest("WorkOrderIssueCreate");
+
+        DictDataDO dataDO = dictDataService.getDictData("erp_close_date", "close_date");
+        String closeDateStr = null;
+        Date closeDateObj = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        if (dataDO != null) {
+            closeDateStr = dataDO.getLabel();
+            if (closeDateStr != null && !closeDateStr.isEmpty()) {
+                try {
+                    closeDateObj = sdf.parse(closeDateStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         // 构建details
         List<Map<String, Object>> details = new ArrayList<>();
@@ -42,16 +69,64 @@ public class WorkorderERPAPI {
             detail.put("sfdc015", good.get("sfdc015")); // 理由码
             detail.put("sfdc016", good.get("sfdc016")); // 库存管理特征
             detail.put("source_seq", good.get("source_seq")); // MES项次
+            detail.put("typeud001", good.get("typeud001"));
             details.add(detail);
         }
 
         // 构建master
         Map<String, Object> master = new HashMap<>();
         master.put("sfdadocno", params.get("sfdadocno")); // 单别
-        // 获取当前日期
-        master.put("sfdadocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date())); // 单据日期
-        master.put("sfda001", new SimpleDateFormat("yyyy-MM-dd").format(new Date())); // 过账日期
+
+
+        // 判断当前系统获取的时间与关账日期进行比对, 若当前时间大于关账日期则传递下个月1号的日期, 需要考虑跨年情况, 即12月跳转至下一年1月
+        // 追加判定, 若关账日期为上个月, 则忽略, 传递今日日期
+
+        // 判断关账日期是否为上个月
+        boolean isCloseDateLastMonth = false;
+        if (closeDateObj != null) {
+            Calendar closeDateCal = Calendar.getInstance();
+            closeDateCal.setTime(closeDateObj);
+
+            Calendar lastMonthCal = Calendar.getInstance();
+            lastMonthCal.add(Calendar.MONTH, -1);
+
+            isCloseDateLastMonth = (closeDateCal.get(Calendar.YEAR) == lastMonthCal.get(Calendar.YEAR))
+                    && (closeDateCal.get(Calendar.MONTH) == lastMonthCal.get(Calendar.MONTH));
+        }
+
+        // 设置过账日期（sfda001）
+        if (isCloseDateLastMonth) {
+            // 关账日期为上个月，直接使用当前日期
+            master.put("sfda001", sdf.format(new Date()));
+            master.put("sfdadocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        } else {
+            // 否则检查当前日期是否超过关账日期
+            /*if (closeDateObj != null && new Date().compareTo(closeDateObj) > 0) {
+                // 当前日期超过关账日期，设置为下个月1号
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.MONTH, 1);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                master.put("sfda001", sdf.format(calendar.getTime()));
+            } else {
+                // 否则使用当前日期
+                master.put("sfda001", sdf.format(new Date()));
+            }*/
+            // 2025-6-26 若当前存在关账日期, 则直接传递下个月
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MONTH, 1);
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            master.put("sfda001", sdf.format(calendar.getTime()));
+            // master.put("sfdadocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date())); // 单据日期
+            master.put("sfdadocdt", sdf.format(calendar.getTime())); // 单据日期
+
+        }
+
+        //master.put("sfda001", new SimpleDateFormat("yyyy-MM-dd").format(new Date())); // 过账日期
         master.put("sfda002", params.get("sfda002")); // 发退料类别
+
+        AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        master.put("sfda004", adminUserRespDTO.getUsername()); // 申请人员
+
         master.put("source_no", params.get("source_no")); // MES单号
         master.put("detail", details); // 将details放入master
 
@@ -68,11 +143,9 @@ public class WorkorderERPAPI {
         payload.put("std_data", stdData);
 
         request.put("payload", payload);
-        System.out.println(JSONObject.toJSONString(request));
+
         String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
         // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); //测试区
-
-        // String result = "ERROR";
 
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
@@ -112,6 +185,21 @@ public class WorkorderERPAPI {
         List<Map<String, Object>> workOrders = (List<Map<String, Object>>) params.get("workOrders");
         List<Map<String, Object>> masterList = new ArrayList<>();
 
+        DictDataDO dataDO = dictDataService.getDictData("erp_close_date", "close_date");
+        String closeDateStr = null;
+        Date closeDateObj = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        if (dataDO != null) {
+            closeDateStr = dataDO.getLabel();
+            if (closeDateStr != null && !closeDateStr.isEmpty()) {
+                try {
+                    closeDateObj = sdf.parse(closeDateStr);
+                } catch (ParseException e) {
+                    e.printStackTrace(); // Handle parsing exception as needed
+                }
+            }
+        }
+
         // 遍历每个工单构建数据
         for (Map<String, Object> order : workOrders) {
             // 构建details
@@ -135,8 +223,47 @@ public class WorkorderERPAPI {
             Map<String, Object> master = new HashMap<>();
             master.put("source_no", order.get("source_no"));    // MES单号
             master.put("sfeadocno", order.get("sfeadocno"));    // 单别
-            master.put("sfeadocdt", order.get("sfeadocdt"));    // 单据日期
-            master.put("sfea001", order.get("sfea001"));        // 过账日期
+
+
+
+            // 判断当前系统获取的时间与关账日期进行比对, 若当前时间大于关账日期则传递下个月1号的日期, 需要考虑跨年情况, 即12月跳转至下一年1月
+            // 追加判定, 若关账日期为上个月, 则忽略, 传递今日日期
+            // 判断关账日期是否为上个月
+            boolean isCloseDateLastMonth = false;
+            if (closeDateObj != null) {
+                Calendar closeDateCal = Calendar.getInstance();
+                closeDateCal.setTime(closeDateObj);
+                Calendar lastMonthCal = Calendar.getInstance();
+                lastMonthCal.add(Calendar.MONTH, -1);
+                isCloseDateLastMonth = (closeDateCal.get(Calendar.YEAR) == lastMonthCal.get(Calendar.YEAR))
+                        && (closeDateCal.get(Calendar.MONTH) == lastMonthCal.get(Calendar.MONTH));
+            }
+            // 设置过账日期（sfda001）
+            if (isCloseDateLastMonth) {
+                // 关账日期为上个月，直接使用当前日期
+                master.put("sfea001", sdf.format(new Date()));
+                master.put("sfeadocdt", order.get("sfeadocdt"));
+            } else {
+                // 否则检查当前日期是否超过关账日期
+                /*if (closeDateObj != null && new Date().compareTo(closeDateObj) > 0) {
+                    // 当前日期超过关账日期，设置为下个月1号
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.MONTH, 1);
+                    calendar.set(Calendar.DAY_OF_MONTH, 1);
+                    master.put("sfea001", sdf.format(calendar.getTime()));
+                } else {
+                    // 否则使用当前日期
+                    master.put("sfea001", sdf.format(new Date()));
+                }*/
+                // 2025-6-26 若当前存在关账日期, 则直接传递下个月
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.MONTH, 1);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                master.put("sfea001", sdf.format(calendar.getTime()));
+                // master.put("sfeadocdt", order.get("sfeadocdt"));    // 单据日期
+                master.put("sfeadocdt", sdf.format(calendar.getTime()));    // 单据日期
+            }
+            //master.put("sfea001", order.get("sfea001"));        // 过账日期
             master.put("sfea002", order.get("sfea002"));        // 申请人员
             master.put("detail", details);                      // 当前工单的明细
 
@@ -152,14 +279,12 @@ public class WorkorderERPAPI {
         Map<String, Object> stdData = new HashMap<>();
         stdData.put("parameter", parameter);
         payload.put("std_data", stdData);
-
         request.put("payload", payload);
-
-        System.out.println(JSONObject.toJSONString(request));
 
         // 发送请求
         String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
         // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
+        // String result = "ERROR";
 
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
@@ -196,6 +321,21 @@ public class WorkorderERPAPI {
     public String workOrderReportCreate(Map<String, Object> params) {
         Map<String, Object> request = createBaseRequest("WorkingProcedureCreate");
 
+        DictDataDO dataDO = dictDataService.getDictData("erp_close_date", "close_date");
+        String closeDateStr = null;
+        Date closeDateObj = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        if (dataDO != null) {
+            closeDateStr = dataDO.getLabel();
+            if (closeDateStr != null && !closeDateStr.isEmpty()) {
+                try {
+                    closeDateObj = sdf.parse(closeDateStr);
+                } catch (ParseException e) {
+                    e.printStackTrace(); // Handle parsing exception as needed
+                }
+            }
+        }
+
         // 构建master
         Map<String, Object> master = new HashMap<>();
         master.put("sffbdocno", ""); // 单别
@@ -210,15 +350,51 @@ public class WorkorderERPAPI {
         }
         master.put("sffb009", params.get("sffb009")); // 工作站
         master.put("sffb010", params.get("sffb010")); // 设备编码
-        master.put("sffb012", params.get("sffb012")); // 完成日期
+
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-        master.put("sffb013", timeFormat.format(new Date())); // 示例时间处理
+        master.put("sffb013", timeFormat.format(new Date()));
         master.put("sffb014", params.get("sffb014")); // 工时(分)
         master.put("sffb015", params.get("sffb015")); // 机时(分)
         master.put("sffb016", params.get("sffb016")); // 单位
         master.put("sffb017", params.get("sffb017")); // 良品数量
         master.put("sffb018", params.get("sffb018")); // 不良品数量
         master.put("source_no", params.get("source_no")); // MES单号
+
+        boolean isCloseDateLastMonth = false;
+        if (closeDateObj != null) {
+            Calendar closeDateCal = Calendar.getInstance();
+            closeDateCal.setTime(closeDateObj);
+            Calendar lastMonthCal = Calendar.getInstance();
+            lastMonthCal.add(Calendar.MONTH, -1);
+            isCloseDateLastMonth = (closeDateCal.get(Calendar.YEAR) == lastMonthCal.get(Calendar.YEAR))
+                    && (closeDateCal.get(Calendar.MONTH) == lastMonthCal.get(Calendar.MONTH));
+        }
+        // 设置过账日期（sfda001）
+        if (isCloseDateLastMonth) {
+            // 关账日期为上个月，直接使用当前日期
+            master.put("sfea001", sdf.format(new Date()));
+            master.put("sffbdocdt", sdf.format(new Date())); // 单据日期
+            master.put("sffb012", sdf.format(new Date())); // 完成日期
+        } else {
+            // 否则检查当前日期是否超过关账日期
+                /*if (closeDateObj != null && new Date().compareTo(closeDateObj) > 0) {
+                    // 当前日期超过关账日期，设置为下个月1号
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.MONTH, 1);
+                    calendar.set(Calendar.DAY_OF_MONTH, 1);
+                    master.put("sfea001", sdf.format(calendar.getTime()));
+                } else {
+                    // 否则使用当前日期
+                    master.put("sfea001", sdf.format(new Date()));
+                }*/
+            // 2025-6-26 若当前存在关账日期, 则直接传递下个月
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MONTH, 1);
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            master.put("sfea001", sdf.format(calendar.getTime()));
+            master.put("sffbdocdt", sdf.format(calendar.getTime())); // 单据日期
+            master.put("sffb012", sdf.format(calendar.getTime())); // 完成日期
+        }
         Map<String, Object> payload = new HashMap<>();
         Map<String, Object> stdData = new HashMap<>();
         Map<String, Object> parameter = new HashMap<>();
@@ -227,10 +403,10 @@ public class WorkorderERPAPI {
         payload.put("std_data", stdData);
         request.put("payload", payload);
 
-        System.out.println(JSONObject.toJSONString(request));
         // 发送请求
         // String url = "http://192.168.6.215/wtoptst/ws/r/awsp920"; // 测试地址
         String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
+        //String result = "ERROR";
         // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
 
         // 记录日志
@@ -276,6 +452,8 @@ public class WorkorderERPAPI {
         } else {
             return description != null ? description : "error";
         }
+        //return result;
+
     }
 
 
@@ -302,6 +480,7 @@ public class WorkorderERPAPI {
         System.out.println(JSONObject.toJSONString(request));
         // 发送请求
         String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); //正式区
+
         // String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request));
         // 记录日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
@@ -341,7 +520,9 @@ public class WorkorderERPAPI {
         hostInfo.put("prod", "MES");
         hostInfo.put("ip", getHostIp()); // 获取实际的IP地址
         hostInfo.put("lang", "zh_CN");
-        hostInfo.put("acct", "tiptop");
+        AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        hostInfo.put("acct", adminUserRespDTO.getUsername());
+        // hostInfo.put("acct", "tiptop");
         hostInfo.put("timestamp", String.valueOf(System.currentTimeMillis()));
         request.put("host", hostInfo);
 
@@ -353,7 +534,8 @@ public class WorkorderERPAPI {
         request.put("service", serviceInfo);
 
         Map<String, Object> dataKey = new HashMap<>();
-        dataKey.put("EntId", Constant.ERP_PROD_DODE); // 根据文档要求修改
+        // dataKey.put("EntId", Constant.ERP_PROD_DODE); // 根据文档要求修改
+        dataKey.put("EntId", Constant.ERP_PROD_DODE);
         dataKey.put("CompanyId", "AM01");
         request.put("datakey", dataKey);
 

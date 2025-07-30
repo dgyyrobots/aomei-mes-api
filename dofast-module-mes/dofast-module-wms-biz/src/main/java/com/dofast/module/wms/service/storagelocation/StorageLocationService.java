@@ -18,6 +18,9 @@ public interface StorageLocationService {
      * @return
      */
     public StorageLocationDO selectWmStorageLocationByLocationCode(String locationCode);
+
+    public StorageLocationDO selectWmStorageLocationByLocationCodeAndProcessCode(String locationCode, String processCode);
+
     /**
      * 根据仓库删除对应的库区
      * @param warehouseId

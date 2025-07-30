@@ -119,4 +119,9 @@ public interface TaskService {
      */
     List<TaskDO> getTaskByTeamCode(String teamCode);
 
+    Map<String, Integer>  getCountMonthTaskLastYear();
+
+    Map<String, Integer>  getCountMonthTaskThisYear();
+
+
 }

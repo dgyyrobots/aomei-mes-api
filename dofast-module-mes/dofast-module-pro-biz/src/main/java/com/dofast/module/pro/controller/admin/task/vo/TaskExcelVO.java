@@ -166,4 +166,13 @@ public class TaskExcelVO {
 
     @ExcelProperty("设备Id")
     private String machineryId;
+
+    @ExcelProperty("派工状态")
+    private String taskStatus;
+
+    @ExcelProperty("派工设备列表")
+    private String machineryCodes;
+
+    @ExcelProperty("报工流水号")
+    private String feedbackSerial;
 }

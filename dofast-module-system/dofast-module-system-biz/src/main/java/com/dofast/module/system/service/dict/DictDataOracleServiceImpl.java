@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import com.dofast.module.mes.constant.Constant;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,5 +31,9 @@ public class DictDataOracleServiceImpl implements DictDataOracleService {
         return dictDataOracleMapper.initDocType(erpCode);
     }
 
-
+    @Override
+    public Map<String, Object> initCloseDate() {
+        String erpCode = Constant.ERP_PROD_DODE;
+        return dictDataOracleMapper.initCloseDate(erpCode);
+    }
 }

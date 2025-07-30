@@ -46,6 +46,15 @@ public interface MdWorkshopService {
     MdWorkshopDO getMdWorkshop(Long id);
 
     /**
+     * 获得车间
+     *
+     * @param workshopCode 车间编号
+     * @return 车间
+     */
+    MdWorkshopDO getMdWorkshop(String workshopCode);
+
+
+    /**
      * 获得车间列表
      *
      * @param ids 编号

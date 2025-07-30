@@ -199,13 +199,13 @@ public class TransactionServiceImpl implements TransactionService {
             throw exception(TRANSACTION_QUANTITY_NOT_NULL);
         }
 
-        if(StrUtils.isNull(transaction.getSourceDocCode())){
+        /*if(StrUtils.isNull(transaction.getSourceDocCode())){
             throw exception(TRANSACTION_SourceDocCode_NOT_NULL);
-        }
+        }*/
 
-        if(StrUtils.isNull(transaction.getSourceDocLineId())){
+        /*if(StrUtils.isNull(transaction.getSourceDocLineId())){
             throw exception(TRANSACTION_SourceDocLineId_NOT_NULL);
-        }
+        }*/
 
         if(StrUtils.isNull(transaction.getTransactionDate())){
             transaction.setTransactionDate(LocalDateTime.now());

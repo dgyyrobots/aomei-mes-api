@@ -22,5 +22,10 @@ public interface ErrorCodeConstants {
     ErrorCode DV_CHECK_MACHINERY_NOT_EXISTS = new ErrorCode(426000, "点检设备不存在");
     ErrorCode DV_CHECK_MACHINERY_HAS_EXISTS = new ErrorCode(426000, "设备已设置过点检计划");
 
+    ErrorCode DV_CHECK_PLAN_HEADER_LOG_NOT_EXISTS = new ErrorCode(427001, "点检计划记录单头不存在");
+    ErrorCode DV_CHECK_PLAN_LINE_LOG_NOT_EXISTS = new ErrorCode(427002, "点检计划记录单身不存在");
+
+    ErrorCode DV_MACHINERY_NOT_CHECKPLAN = new ErrorCode(421001, "当前设备不存在点检计划");
+
 
 }

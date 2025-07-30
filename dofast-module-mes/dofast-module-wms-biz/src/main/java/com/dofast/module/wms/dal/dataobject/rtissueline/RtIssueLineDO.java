@@ -142,4 +142,14 @@ public class RtIssueLineDO extends BaseDO {
      */
     private String erpBatchCode;
 
+    /**
+     * 母批次
+     */
+    private String parentBatchCode;
+
+    /**
+     * ERP状态
+     */
+    private String erpStatus;
+
 }

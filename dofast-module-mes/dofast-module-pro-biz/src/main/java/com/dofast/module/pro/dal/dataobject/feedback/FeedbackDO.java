@@ -2,9 +2,9 @@ package com.dofast.module.pro.dal.dataobject.feedback;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
 import com.dofast.framework.mybatis.core.dataobject.BaseDO;
@@ -234,5 +234,50 @@ public class FeedbackDO extends BaseDO {
      * 设备编码
      */
     private String erpFeedback;
+
+    /**
+     * 任务单状态
+     */
+    private String taskStatus;
+
+    /**
+     * "ERP报工状态"
+     */
+    private String erpFeedbackStatus;
+
+    /**
+     * "ERP入库状态"
+     */
+    private String erpWarehousingStatus;
+
+    /**
+     * 合并需求
+     */
+    private String mergeStatus;
+
+    /**
+     * 转换数量
+     */
+    private BigDecimal conversionQuantity;
+
+    /**
+     * 转换单位
+     */
+    private String conversionUnit;
+
+    /**
+     * 转换不合格数量
+     */
+    private BigDecimal conversionQuantityUnquanlified;
+
+    /**
+     * 卷数编号
+     */
+    private String volumesNumber;
+
+    /**
+     * 数采标识
+     */
+    private String iotFlag;
 
 }

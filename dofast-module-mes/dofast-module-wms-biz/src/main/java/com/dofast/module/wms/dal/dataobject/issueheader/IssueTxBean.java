@@ -102,4 +102,8 @@ public class IssueTxBean extends BaseDO {
      */
     private String processName;
 
+    /**
+     * 母批次
+     */
+    private String parentBatchCode;
 }

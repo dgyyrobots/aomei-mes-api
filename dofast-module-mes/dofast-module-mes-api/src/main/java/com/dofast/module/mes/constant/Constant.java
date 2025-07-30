@@ -125,7 +125,7 @@ public class Constant {
     /**
      * ERP企业编码
      */
-    public static final String ERP_DEV_DODE = "24";
+    public static final String ERP_DEV_DODE = "32";
     public static final String ERP_PROD_DODE = "100";
 
 

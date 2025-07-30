@@ -40,6 +40,7 @@ import org.springframework.web.util.WebUtils;
 
 import static com.dofast.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.dofast.framework.common.pojo.CommonResult.success;
+import static com.dofast.framework.common.pojo.CommonResult.error;
 import static com.dofast.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static com.dofast.module.pro.enums.ErrorCodeConstants.*;
 
@@ -83,6 +84,7 @@ public class TaskServiceImpl implements TaskService {
         validateTaskExists(updateReqVO.getId());
         // 更新
         TaskDO updateObj = TaskConvert.INSTANCE.convert(updateReqVO);
+        System.out.println(updateObj.getStatus());
         int i = taskMapper.updateById(updateObj);
         if (i <= 0) {
             throw exception(TASK_UPDATE_COUNT);
@@ -139,19 +141,39 @@ public class TaskServiceImpl implements TaskService {
         // 2024-11-13改
         // 获取当前用户信息
         AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
-        // 获取当前用户所在的班组
-        TeamMemberExportReqVO req = new TeamMemberExportReqVO();
-        req.setUserId(adminUserRespDTO.getId());
-        List<TeamMemberDO> memberDO = teamMemberService.getTeamMemberList(req);
-        if (memberDO.isEmpty()) {
+        Set<Long> postIds =adminUserRespDTO.getPostIds();
+        if(postIds.isEmpty()){
             return PageResult.empty();
         }
-        TeamDO team = teamService.getTeam(memberDO.get(0).getTeamId());
-        if (team == null) {
-            return PageResult.empty();
+        // 校验postIds是否包含42(车间主任)
+        if (postIds.contains(42L)) {
+            // 获取所有的任务信息
+            return taskMapper.selectPage(pageReqVO);
+        }else{
+            // 获取当前用户所在的班组
+            TeamMemberExportReqVO req = new TeamMemberExportReqVO();
+            req.setUserId(adminUserRespDTO.getId());
+            List<TeamMemberDO> memberDO = teamMemberService.getTeamMemberList(req);
+            if (memberDO.isEmpty()) {
+                return PageResult.empty();
+            }
+            Set<Long> teamIds = new HashSet<>();
+            for(TeamMemberDO member : memberDO){
+                teamIds.add(member.getTeamId());
+            }
+            List<Long> teamList = new ArrayList<>(teamIds);
+            List<TeamDO> teams = teamService.getTeamList(teamList);
+            List<String> teamCodeList = teams.stream().map(TeamDO::getTeamCode).collect(Collectors.toList());
+
+            /*TeamDO team = teamService.getTeam(memberDO.get(0).getTeamId());
+
+            if (team == null) {
+                return PageResult.empty();
+            }*/
+            // 根据班组编码查询派工信息
+            return taskMapper.getTaskByTeamList(pageReqVO, teamCodeList);
         }
-        // 根据班组编码查询派工信息
-        return taskMapper.getTaskByTeamCode(pageReqVO, team.getTeamCode());
+
     }
 
     @Override
@@ -251,6 +273,16 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskDO> getTaskByTeamCode(String teamCode) {
         return taskMapper.getTaskByTeamCode(teamCode);
+    }
+
+    @Override
+    public  Map<String, Integer>  getCountMonthTaskLastYear(){
+        return taskMapper.getCountMonthTaskLastYear();
+    }
+
+    @Override
+    public  Map<String, Integer>  getCountMonthTaskThisYear(){
+        return taskMapper.getCountMonthTaskThisYear();
     }
 
 

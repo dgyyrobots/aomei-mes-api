@@ -2,6 +2,8 @@ package com.dofast.module.pro.controller.admin.routeprocess.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -81,4 +83,23 @@ public class RouteProcessExcelVO {
 
     @ExcelProperty("工作序")
     private Long workorderSequence;
+
+    @ExcelProperty("转入单位")
+    private String receivingUnits;
+
+    @ExcelProperty("转入单位分子")
+    private BigDecimal receivingUnitsConversionNumerator;
+
+    @ExcelProperty("转入单位分母")
+    private BigDecimal receivingUnitsConversionDenominator;
+
+    @ExcelProperty("转出单位")
+    private String outUnits;
+
+    @ExcelProperty("转出单位分子")
+    private BigDecimal outUnitsConversionNumerator;
+
+    @ExcelProperty("转出单位分母")
+    private BigDecimal outUnitsConversionDenominator;
+
 }

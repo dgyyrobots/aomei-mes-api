@@ -15,6 +15,11 @@ import com.dofast.framework.common.pojo.PageResult;
 
 import javax.annotation.Resource;
 import org.springframework.context.annotation.Import;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.*;
 import java.time.LocalDateTime;
 
@@ -147,5 +152,6 @@ public class DeviceGroupServiceImplTest extends BaseDbUnitTest {
        assertEquals(1, list.size());
        assertPojoEquals(dbDeviceGroup, list.get(0));
     }
+
 
 }

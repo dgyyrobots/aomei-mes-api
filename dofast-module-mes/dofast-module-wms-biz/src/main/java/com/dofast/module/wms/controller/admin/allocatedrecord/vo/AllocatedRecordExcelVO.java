@@ -85,4 +85,10 @@ public class AllocatedRecordExcelVO {
     @ExcelProperty("供应商编码")
     private String vendorCode;
 
+    @ExcelProperty("母批次")
+    private String parentBatchCode;
+
+    @ExcelProperty("ERP状态")
+    private String erpStatus;
+
 }

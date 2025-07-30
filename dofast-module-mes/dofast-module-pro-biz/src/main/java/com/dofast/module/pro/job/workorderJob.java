@@ -144,7 +144,6 @@ public class workorderJob implements JobHandler {
         if (!updateWorkorder.isEmpty()) {
             workorderMapper.updateBatch(updateWorkorder);
         }
-        System.out.println("工单定时器执行成功!");
 
         // 初始化工单BOM信息
         List<Map<String, Object>> workOrderBomList = workorderBomOracleService.initWorkorderBom();
@@ -208,7 +207,6 @@ public class workorderJob implements JobHandler {
         if (!updateWorkorderBom.isEmpty()) {
             workorderBomMapper.updateBatch(updateWorkorderBom);
         }
-        System.out.println("工单BOM定时器执行成功!");
         return "成功!";
 
         // 开始初始化变更工单BOM信息

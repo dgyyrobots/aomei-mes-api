@@ -192,4 +192,9 @@ public class FeedLineDO extends BaseDO {
      * ERP批次
      */
     private String erpBatchCode;
+
+    /**
+     * 母批次
+     */
+    private String parentBatchCode;
 }

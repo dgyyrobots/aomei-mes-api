@@ -113,7 +113,6 @@ public class mdUnitJob implements JobHandler {
         if(!converseToUp.isEmpty()){
             mdUnitConverseMapper.updateBatch(converseToUp);
         }
-        System.out.println("单位类型定时器执行成功!");
         return "success";
     }
 

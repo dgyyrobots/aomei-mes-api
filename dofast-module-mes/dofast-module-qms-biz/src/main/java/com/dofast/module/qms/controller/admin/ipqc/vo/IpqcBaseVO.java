@@ -28,7 +28,6 @@ import static com.dofast.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_
 public class IpqcBaseVO {
 
     @Schema(description = "检验单编号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "检验单编号不能为空")
     private String ipqcCode;
 
     @Schema(description = "检验单名称", example = "张三")

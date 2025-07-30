@@ -116,4 +116,15 @@ public class AllocatedRecordDO extends BaseDO {
      * 供应商编码
      */
     private String vendorCode;
+
+    /**
+     * 母批次
+     */
+    private String parentBatchCode;
+
+    /**
+     * ERP状态
+     */
+    private String erpStatus;
+
 }

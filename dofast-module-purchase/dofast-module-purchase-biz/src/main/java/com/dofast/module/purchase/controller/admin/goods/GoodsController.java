@@ -6,6 +6,7 @@ import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
 import com.dofast.module.mes.service.mditem.MdItemService;
 import com.dofast.module.pro.api.FeedbackApi.FeedbackApi;
 import com.dofast.module.pro.api.FeedbackApi.dto.FeedbackDTO;
+import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.purchase.convert.order.OrderConvert;
 import com.dofast.module.purchase.dal.dataobject.order.OrderDO;
 import com.dofast.module.purchase.dal.mysql.order.PurchaseOrderMapper;
@@ -15,6 +16,9 @@ import com.dofast.module.purchase.service.order.OrderService;
 import com.dofast.module.tm.dal.dataobject.tool.ToolDO;
 import com.dofast.module.tm.service.tool.ToolService;
 import com.dofast.module.wms.api.ERPApi.MaterialStockERPAPI;
+import com.dofast.module.wms.api.Issueheader.IssueApi;
+import com.dofast.module.wms.api.Issueheader.dto.IssueLineDTO;
+import com.dofast.module.wms.api.Issueheader.dto.IssueheaderDTO;
 import com.dofast.module.wms.api.RtIssue.RtIssueApi;
 import com.dofast.module.wms.api.RtIssue.dto.RtIssueLineDTO;
 import com.dofast.module.wms.api.StorageAreaApi.StorageAreaApi;
@@ -41,7 +45,10 @@ import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.transaction.TransactionService;
 import com.dofast.module.wms.service.warehouse.WarehouseService;
 import liquibase.pro.packaged.D;
+import liquibase.pro.packaged.G;
 import liquibase.pro.packaged.W;
+import liquibase.repackaged.org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -138,6 +145,11 @@ public class GoodsController {
     private RtIssueApi rtIssueApi;
 
     @Resource
+    private IssueApi issueApi;
+
+
+
+    @Resource
     private OrderOracleService orderOracleService;
 
     @PostMapping("/create")
@@ -158,7 +170,7 @@ public class GoodsController {
             }
 
             // 收货数量 + 已拆分数量不能大于采购数量
-            BigDecimal sum = updateReqVO.getReceiveNum().add(updateReqVO.getReceivedNum()==null?BigDecimal.ZERO:updateReqVO.getReceivedNum());
+            BigDecimal sum = updateReqVO.getReceiveNum().add(updateReqVO.getReceivedNum() == null ? BigDecimal.ZERO : updateReqVO.getReceivedNum());
 
             if (sum.compareTo(updateReqVO.getQuantity().multiply(new BigDecimal("1.05"))) > 0) {
                 return error(ErrorCodeConstants.RECEIVE_CANNOT_EXCEED);
@@ -206,11 +218,11 @@ public class GoodsController {
         // 原单据信息
         GoodsDO originGoods = goodsService.getGoods(updateReqVO.getId());
         // 追加校验: 若当前收货数量(receiveNum)为0, 已拆分数量(receivedNum)小于采购数量(quantity), 回滚单据为未收货(status = 0)
-        if(originGoods != null){
+        if (originGoods != null) {
             BigDecimal receiveNum = originGoods.getReceiveNum() == null ? BigDecimal.ZERO : originGoods.getReceiveNum();
             BigDecimal receivedNum = originGoods.getReceivedNum() == null ? BigDecimal.ZERO : originGoods.getReceivedNum();
             if (receiveNum.compareTo(BigDecimal.ZERO) == 0 && receivedNum.compareTo(originGoods.getQuantity()) < 0) {
-                    updateReqVO.setStatus(0);
+                updateReqVO.setStatus(0);
             }
         }
 
@@ -283,9 +295,9 @@ public class GoodsController {
         // 过滤list , 若list中的数据中符合received_num >= quantity AND receive_num = 0
         List<GoodsDO> editGoods = new ArrayList<>();
         for (GoodsDO goodsDO : list) {
-            BigDecimal receivedNum = goodsDO.getReceivedNum() == null? BigDecimal.ZERO:goodsDO.getReceivedNum();
-            BigDecimal quantity = goodsDO.getQuantity() == null? BigDecimal.ZERO:goodsDO.getQuantity();
-            BigDecimal receiveNum = goodsDO.getReceiveNum() == null? BigDecimal.ZERO:goodsDO.getReceiveNum();
+            BigDecimal receivedNum = goodsDO.getReceivedNum() == null ? BigDecimal.ZERO : goodsDO.getReceivedNum();
+            BigDecimal quantity = goodsDO.getQuantity() == null ? BigDecimal.ZERO : goodsDO.getQuantity();
+            BigDecimal receiveNum = goodsDO.getReceiveNum() == null ? BigDecimal.ZERO : goodsDO.getReceiveNum();
             if (receivedNum.compareTo(quantity) > -1 && receiveNum.compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
@@ -299,13 +311,13 @@ public class GoodsController {
     @PreAuthorize("@ss.hasPermission('purchase:goods:query')")
     public CommonResult<PageResult<GoodsRespVO>> getGoodsPage(@Valid GoodsPageReqVO pageVO) {
         PageResult<GoodsDO> pageResult = goodsService.getGoodsPage(pageVO);
-        List<GoodsDO> list =  pageResult.getList();
+        List<GoodsDO> list = pageResult.getList();
         // 过滤list , 若list中的数据中符合received_num >= quantity AND receive_num = 0
         List<GoodsDO> editGoods = new ArrayList<>();
         for (GoodsDO goodsDO : list) {
-            BigDecimal receivedNum = goodsDO.getReceivedNum() == null? BigDecimal.ZERO:goodsDO.getReceivedNum();
-            BigDecimal quantity = goodsDO.getQuantity() == null? BigDecimal.ZERO:goodsDO.getQuantity();
-            BigDecimal receiveNum = goodsDO.getReceiveNum() == null? BigDecimal.ZERO:goodsDO.getReceiveNum();
+            BigDecimal receivedNum = goodsDO.getReceivedNum() == null ? BigDecimal.ZERO : goodsDO.getReceivedNum();
+            BigDecimal quantity = goodsDO.getQuantity() == null ? BigDecimal.ZERO : goodsDO.getQuantity();
+            BigDecimal receiveNum = goodsDO.getReceiveNum() == null ? BigDecimal.ZERO : goodsDO.getReceiveNum();
             if (receivedNum.compareTo(quantity) > -1 && receiveNum.compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
@@ -326,6 +338,38 @@ public class GoodsController {
         return success(GoodsConvert.INSTANCE.convertList(pageResult));
     }
 
+    @GetMapping("/getGoodsSumQuantity")
+    @Operation(summary = "获得采购商品明细列表")
+    @PreAuthorize("@ss.hasPermission('purchase:goods:query')")
+    public CommonResult<List<GoodsRespVO>> getGoodsSumQuantity(@Valid GoodsDO goodsDO) {
+        // 根据采购单号查询原始商品列表
+        List<GoodsDO> queryGoods = goodsService.getGoodsList(new GoodsExportReqVO().setPoNo(goodsDO.getPoNo()).setStatus(2));
+        // 使用Map进行物料料号分组并汇总数量
+        Map<String, GoodsDO> goodsMap = new LinkedHashMap<>();
+        for (GoodsDO goods : queryGoods) {
+            String goodsNumber = goods.getGoodsNumber();
+            if (goodsMap.containsKey(goodsNumber)) {
+                // 若存在相同料号，累加数量
+                GoodsDO existGoods = goodsMap.get(goodsNumber);
+                BigDecimal existQuantity = existGoods.getQuantity() != null ? existGoods.getQuantity() : BigDecimal.ZERO;
+                BigDecimal newQuantity = goods.getQuantity() != null ? goods.getQuantity() : BigDecimal.ZERO;
+                existGoods.setQuantity(existQuantity.add(newQuantity));
+
+                BigDecimal existReceive = existGoods.getReceivedNum() != null ? existGoods.getReceivedNum() : BigDecimal.ZERO;
+                BigDecimal newReceive = goods.getReceivedNum() != null ? goods.getReceivedNum() : BigDecimal.ZERO;
+                existGoods.setQuantity(existReceive.add(newReceive));
+
+            } else {
+                // 出现的物料料号，创建新对象加入Map
+                GoodsDO newGoods = new GoodsDO();
+                BeanUtils.copyProperties(goods, newGoods);  // 复制属性
+                goodsMap.put(goodsNumber, newGoods);
+            }
+        }
+        // 转换为结果列表
+        List<GoodsDO> resultGoodsList = new ArrayList<>(goodsMap.values());
+        return success(GoodsConvert.INSTANCE.convertList(resultGoodsList));
+    }
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出采购商品明细 Excel")
@@ -339,18 +383,14 @@ public class GoodsController {
         ExcelUtils.write(response, "采购商品明细.xls", "数据", GoodsExcelVO.class, datas);
     }
 
-    // 入库功能. 测试能否调用ERP接口
     @PostMapping("/wareHousing")
     public String wareHousing(@RequestBody Map<String, Object> params) {
-        // 根据当前的入库单号获取入库单详情, 做入库操作
         String poNo = params.get("poNo").toString();
         Integer wareHouseId = (Integer) params.get("warehouseId");
         Integer locationId = (Integer) params.get("locationId");
         Integer areaId = (Integer) params.get("areaId");
 
-        // 初始化订单详情
         OrderDO orderDO = orderMapper.selectOne(OrderDO::getPoNo, poNo);
-        //Integer supplierId = Optional.ofNullable(orderDO.getSupplierId()).orElse(0);
         String supplierCode = Optional.ofNullable(orderDO.getSupplierCode()).orElse("");
 
         GoodsExportReqVO exportReqVO = new GoodsExportReqVO();
@@ -358,168 +398,246 @@ public class GoodsController {
         exportReqVO.setStatus(2); // 2-已打印
         List<GoodsDO> goodsList = goodsService.getGoodsList(exportReqVO);
 
-        // 开始过滤数据
-        // 当前goodsMapList中存在多行单身信息, 但其收货单不同, 请根据poNo与收货单erpReceiveCode进行过滤
-        // 创建一个Map来存储不同组合的List
-        Map<String, List<Map<String, Object>>> groupedGoodsMap = new HashMap<>();
+        // 双层分组结构：外层(poNo_erpReceiveCode) -> 内层(料号_项次_项序_母批次)
+        Map<String, Map<String, Map<String, Object>>> outerGroupMap = new HashMap<>();
+        // 原始记录映射：外层Key -> 原始GoodsDO列表
+        Map<String, List<GoodsDO>> originalGroupMap = new HashMap<>();
+
         for (GoodsDO goodsDO : goodsList) {
-            BigDecimal receiveNum = goodsDO.getReceiveNum() == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.getReceiveNum()));
+            BigDecimal receiveNum = goodsDO.getReceiveNum() == null ?
+                    BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.getReceiveNum()));
             if (receiveNum.compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
-            String erpReceiveCode = goodsDO.getErpReceiveCode();
-            String key = poNo + "_" + erpReceiveCode;
 
-            // 如果Map中还没有这个组合的List，创建一个新的List
-            if (!groupedGoodsMap.containsKey(key)) {
-                groupedGoodsMap.put(key, new ArrayList<>());
+            String erpReceiveCode = goodsDO.getErpReceiveCode();
+            String outerKey = poNo + "_" + erpReceiveCode;
+
+            // 构建内层分组Key
+            String innerKey = createWareHousingInnerKey(goodsDO);
+
+            // 初始化外层分组
+            if (!outerGroupMap.containsKey(outerKey)) {
+                outerGroupMap.put(outerKey, new HashMap<>());
+                originalGroupMap.put(outerKey, new ArrayList<>());
             }
-            // 将当前的商品信息添加到对应的List中
-            Map<String, Object> goodsMap = new HashMap<>();
-            goodsMap.put("id", goodsDO.getId());
-            goodsMap.put("poNo", poNo);
-            goodsMap.put("goodsNumber", goodsDO.getGoodsNumber());
-            goodsMap.put("goodsName", goodsDO.getGoodsName());
-            goodsMap.put("unitOfMeasure", goodsDO.getUnitOfMeasure());
-            goodsMap.put("receiveNum", goodsDO.getReceiveNum());
-            goodsMap.put("batchCode", goodsDO.getBatchCode());
-            goodsMap.put("consequence", goodsDO.getReceiveSeq());
-            goodsMap.put("purchaseBatch", goodsDO.getPurchaseBatch());
-            goodsMap.put("purchaseConsequence", goodsDO.getPurchaseConsequence());
-            goodsMap.put("purchaseBatchConsequence", goodsDO.getPurchaseBatchConsequence());
-            goodsMap.put("supplierCode", goodsDO.getVendorCode());
-            goodsMap.put("erpReceiveCode", goodsDO.getErpReceiveCode());
-            groupedGoodsMap.get(key).add(goodsMap);
+
+            // 保存原始记录
+            originalGroupMap.get(outerKey).add(goodsDO);
+
+            // 处理内层分组
+            Map<String, Map<String, Object>> innerGroup = outerGroupMap.get(outerKey);
+            if (innerGroup.containsKey(innerKey)) {
+                // 存在相同特征：累加数量
+                Map<String, Object> mergedGoods = innerGroup.get(innerKey);
+                BigDecimal currentNum = (BigDecimal) mergedGoods.get("receiveNum");
+                mergedGoods.put("receiveNum", currentNum.add(receiveNum));
+            } else {
+                // 新建汇总记录
+                Map<String, Object> mergedGoods = createWareHousingGoodsMap(goodsDO, poNo);
+                innerGroup.put(innerKey, mergedGoods);
+            }
         }
-        System.out.println(groupedGoodsMap.toString());
-        for (List<Map<String, Object>> goodsMapList : groupedGoodsMap.values()) {
+
+        // 调用ERP接口（使用汇总数据）
+        for (Map.Entry<String, Map<String, Map<String, Object>>> outerEntry : outerGroupMap.entrySet()) {
+            String outerKey = outerEntry.getKey();
+            List<Map<String, Object>> mergedList = new ArrayList<>(outerEntry.getValue().values());
+
             Map<String, Object> erpParams = new HashMap<>(params);
-            erpParams.put("goodsList", goodsMapList);
-            erpParams.put("sourceNo", goodsMapList.get(0).get("erpReceiveCode"));
-            erpParams.put("warehousingCode", goodsMapList.get(0).get("erpReceiveCode"));
-            erpParams.put("supplierCode", goodsMapList.get(0).get("supplierCode"));
-            erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
+            erpParams.put("goodsList", mergedList);
+            erpParams.put("sourceNo", mergedList.get(0).get("erpReceiveCode"));
+            erpParams.put("warehousingCode", mergedList.get(0).get("erpReceiveCode"));
+            erpParams.put("supplierCode", mergedList.get(0).get("supplierCode"));
+            erpParams.put("poNo", mergedList.get(0).get("poNo"));
             erpParams.put("pmds000", "6"); // 采购入库
-            System.out.println(erpParams.toString());
-            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+
+            String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+            // String result ="success";
             if (!result.contains("success")) {
                 return result;
-            }*/
+            }
         }
 
+        // 处理库存事务（使用原始数据）
         List<ItemRecptTxBean> transactionList = new ArrayList<>();
-        // 将数据库的数据追加到库存现有量中
         for (GoodsDO goodsDO : goodsList) {
-
             BigDecimal receiveNum = goodsDO.getReceiveNum() == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.getReceiveNum()));
             if (receiveNum.compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
-            String batchCode = goodsDO.getBatchCode(); // 子批次号
-            String itemCode = goodsDO.getGoodsNumber();
-            MdItemDO mdItemDO = Optional.ofNullable(mdItemService.getMdItemByItemCode(itemCode)).orElse(null); // 根据商品编码获取商品信息
-            String itemName = goodsDO.getGoodsName();
-            String specification = goodsDO.getGoodsSpecs();
-            String unitOfMeasure = goodsDO.getUnitOfMeasure(); // 收货单位
-            BigDecimal quantity = goodsDO.getReceiveNum(); // 收货数量
-            // 构建事务对象
-            ItemRecptTxBean bean = new ItemRecptTxBean();
-            bean.setId(goodsDO.getId().longValue()); // 物料Id
-            bean.setItemCode(itemCode);
-            bean.setItemName(itemName);
-            bean.setSpecification(specification);
-            bean.setUnitOfMeasure(unitOfMeasure);
-            BigDecimal transactionQuantity = new BigDecimal(String.valueOf(goodsDO.getReceiveNum()));
-            bean.setTransactionQuantity(transactionQuantity); // 事务数量
-            bean.setBatchCode(batchCode); // 子批次号
-            bean.setSourceDocCode(poNo);// 来源单据
-            bean.setSourceDocType("PURCHASE"); // 来源单据类型
-            bean.setSourceDocId(orderDO.getId().longValue()); // 来源单据行号
-            bean.setSourceDocLineId(goodsDO.getId().longValue()); // 来源单据单身行号
-            System.out.println("aaa:" + supplierCode);
-            /*if (supplierId != 0) {
-                bean.setVendorId(supplierId.longValue()); // 供应商ID
-            }*/
-            // TODO: 2025-1-6 获取供应商信息
-            bean.setVendorCode(supplierCode); // 供应商编码
-            // 追加库区库位
-            //仓库
-            WarehouseDTO warehouse = warehouseApi.getWarehouse(wareHouseId.longValue());
-            bean.setWarehouseId(wareHouseId.longValue());
-            bean.setWarehouseCode(warehouse.getWarehouseCode());
-            bean.setWarehouseName(warehouse.getWarehouseName());
-            //库区
-            StorageLocationDTO location = storageLocationApi.getLocation(locationId.longValue());
-            bean.setLocationId(locationId.longValue());
-            bean.setLocationCode(location.getLocationCode());
-            bean.setLocationName(location.getLocationName());
-            //库位
-            StorageAreaDTO area = storageAreaApi.getArea(areaId.longValue());
-            bean.setAreaId(areaId.longValue());
-            bean.setAreaCode(area.getAreaCode());
-            bean.setAreaName(area.getAreaName());
-            transactionList.add(bean);
-            // 更新当前条码状态为已入库
+            // 更新商品状态
             goodsDO.setStatus(3); // 已入库
             goodsService.updateGoods(GoodsConvert.INSTANCE.convert01(goodsDO));
+
+            // 生成库存事务记录
+            ItemRecptTxBean bean = createTransactionBean(goodsDO, orderDO, poNo,
+                    wareHouseId, locationId, areaId, supplierCode);
+            transactionList.add(bean);
+
         }
-        //调用库存核心
+
+        // 调用库存核心
         storageCoreService.processItemRecpt(transactionList);
 
         return "success";
     }
 
+    // 构建内层分组Key：料号_项次_项序_母批次
+    private String createWareHousingInnerKey(GoodsDO goodsDO) {
+        return goodsDO.getGoodsNumber() + "_" +
+                goodsDO.getPurchaseBatch() + "_" +
+                goodsDO.getPurchaseConsequence() + "_" +
+                goodsDO.getParentBatchCode();
+    }
+
+    // 创建ERP接口使用的商品Map
+    private Map<String, Object> createWareHousingGoodsMap(GoodsDO goodsDO, String poNo) {
+        Map<String, Object> goodsMap = new HashMap<>();
+        goodsMap.put("id", goodsDO.getId());
+        goodsMap.put("poNo", poNo);
+        goodsMap.put("goodsNumber", goodsDO.getGoodsNumber());
+        goodsMap.put("goodsName", goodsDO.getGoodsName());
+        goodsMap.put("unitOfMeasure", goodsDO.getUnitOfMeasure());
+        goodsMap.put("receiveNum", goodsDO.getReceiveNum());
+        goodsMap.put("batchCode", goodsDO.getParentBatchCode());
+        goodsMap.put("consequence", goodsDO.getReceiveSeq());
+        goodsMap.put("purchaseBatch", goodsDO.getPurchaseBatch());
+        goodsMap.put("purchaseConsequence", goodsDO.getPurchaseConsequence());
+        goodsMap.put("purchaseBatchConsequence", goodsDO.getPurchaseBatchConsequence());
+        goodsMap.put("supplierCode", goodsDO.getVendorCode());
+        goodsMap.put("erpReceiveCode", goodsDO.getErpReceiveCode());
+        return goodsMap;
+    }
+
+    // 创建库存事务对象
+    private ItemRecptTxBean createTransactionBean(GoodsDO goodsDO, OrderDO orderDO, String poNo,
+                                                  Integer wareHouseId, Integer locationId, Integer areaId,
+                                                  String supplierCode) {
+        String batchCode = goodsDO.getBatchCode();
+        String parentBatchCode = goodsDO.getParentBatchCode();
+        String itemCode = goodsDO.getGoodsNumber();
+        MdItemDO mdItemDO = Optional.ofNullable(mdItemService.getMdItemByItemCode(itemCode)).orElse(null);
+        String itemName = goodsDO.getGoodsName();
+        String specification = goodsDO.getGoodsSpecs();
+        String unitOfMeasure = goodsDO.getUnitOfMeasure();
+        BigDecimal quantity = goodsDO.getReceiveNum();
+
+        ItemRecptTxBean bean = new ItemRecptTxBean();
+        bean.setId(mdItemDO != null ? mdItemDO.getId().longValue() : 0L);
+        bean.setItemCode(itemCode);
+        bean.setItemName(itemName);
+        bean.setSpecification(specification);
+        bean.setUnitOfMeasure(unitOfMeasure);
+        bean.setTransactionQuantity(quantity);
+        bean.setBatchCode(batchCode);
+        bean.setParentBatchCode(parentBatchCode);
+        bean.setSourceDocCode(poNo);
+        bean.setSourceDocType("PURCHASE");
+        bean.setSourceDocId(orderDO.getId().longValue());
+        bean.setSourceDocLineId(goodsDO.getId().longValue());
+        bean.setOriginId(goodsDO.getId().longValue());
+        bean.setVendorCode(supplierCode);
+
+        // 仓库信息
+        WarehouseDTO warehouse = warehouseApi.getWarehouse(wareHouseId.longValue());
+        bean.setWarehouseId(wareHouseId.longValue());
+        bean.setWarehouseCode(warehouse.getWarehouseCode());
+        bean.setWarehouseName(warehouse.getWarehouseName());
+
+        // 库区信息
+        StorageLocationDTO location = storageLocationApi.getLocation(locationId.longValue());
+        bean.setLocationId(locationId.longValue());
+        bean.setLocationCode(location.getLocationCode());
+        bean.setLocationName(location.getLocationName());
+
+        // 库位信息
+        StorageAreaDTO area = storageAreaApi.getArea(areaId.longValue());
+        bean.setAreaId(areaId.longValue());
+        bean.setAreaCode(area.getAreaCode());
+        bean.setAreaName(area.getAreaName());
+
+        return bean;
+    }
+
+
     @PostMapping("/getStockByPurchaseId")
     @Operation(summary = "获得库存记录")
     public CommonResult<MaterialStockRespVO> getStockByPurchaseId(@RequestBody Map<String, Object> params) {
+        if (MapUtils.isEmpty(params)) {
+            return error(ErrorCodeConstants.PARAMS_ERROR);
+        }
         // 根据采购单身Id
-        Integer id = (Integer) params.get("id");
-        String type = (String) params.get("type");
-        String itemCode = "";
-        String batchCode = "";
+        Integer id = null;
+        Object idObj = params.get("id");
+        if (idObj instanceof Integer) {
+            id = (Integer) idObj;
+        } else if (idObj instanceof Long) {
+            id = ((Long) idObj).intValue();
+        }
+        String type = StringUtils.defaultString((String) params.get("type"), "");
+        String transBatchCode = StringUtils.defaultString((String) params.get("batchCode"), "");
+        String itemCode = null;
+        String batchCode = null;
         String method = (String) params.get("method");
         boolean toolFlag = false;
         String recpt = Optional.ofNullable((String) params.get("recpt")).orElse("");
 
         MaterialStockRespVO toolResponse = new MaterialStockRespVO();
 
-        switch (type) {
-            case "purchase":
-                GoodsDO orderDO = goodsService.getGoods(id);
-                itemCode = orderDO.getGoodsNumber();
-                batchCode = orderDO.getBatchCode();
-                break;
-            case "feedback":
-                FeedbackDTO feedbackDO = feedbackApi.getFeedBack(id.longValue());
-                itemCode = feedbackDO.getItemCode();
-                batchCode = feedbackDO.getBatchCode();
-                break;
-            case "eject":
-                RtIssueLineDTO query = new RtIssueLineDTO();
-                query.setId(id.longValue());
-                RtIssueLineDTO rtIssueLineDTO = rtIssueApi.listRtIssueLine(query).get(0);
-                itemCode = rtIssueLineDTO.getItemCode();
-                batchCode = rtIssueLineDTO.getBatchCode();
-                break;
-            case "tool":
-                ToolDO toolDO = toolService.getTool(id.longValue());
-                if(toolDO.getQuantityAvail() < 1){
-                    return error(ErrorCodeConstants.TOOL_NOT_ENOUGH);
-                }
-                toolResponse.setId(toolDO.getId().longValue());
-                toolResponse.setItemCode(toolDO.getToolCode());
-                toolResponse.setItemName(toolDO.getToolName());
-                toolResponse.setQuantityOnhand(BigDecimal.ONE);
-                toolResponse.setUnitOfMeasure("张");
-                StorageLocationDO locationDO = storageLocationService.getStorageLocation("AM007");
-                StorageAreaExportReqVO exportReqVO = new StorageAreaExportReqVO();
-                exportReqVO.setLocationId(locationDO.getId());
-                StorageAreaDO areaDO = storageAreaService.getStorageAreaList(exportReqVO).get(0);
-                toolResponse.setLocationId(locationDO.getId());
-                toolResponse.setWarehouseId(locationDO.getWarehouseId());
-                toolResponse.setAreaId(areaDO.getId());
-                toolFlag = true;
-                break;
+        if(StringUtils.isBlank(type) && StringUtils.isBlank(transBatchCode)){
+            return error(ErrorCodeConstants.PARAMS_ERROR);
+        }
+
+        if (transBatchCode != "" && transBatchCode != null) {
+            batchCode = transBatchCode.trim();
+        } else {
+            switch (type) {
+                case "purchase":
+                    GoodsDO orderDO = goodsService.getGoods(id);
+                    itemCode = orderDO.getGoodsNumber();
+                    batchCode = orderDO.getBatchCode();
+                    break;
+                case "feedback":
+                    FeedbackDTO feedbackDO = feedbackApi.getFeedBack(id.longValue());
+                    itemCode = feedbackDO.getItemCode();
+                    batchCode = feedbackDO.getBatchCode();
+                    break;
+                case "eject":
+                    RtIssueLineDTO query = new RtIssueLineDTO();
+                    query.setId(id.longValue());
+                    RtIssueLineDTO rtIssueLineDTO = rtIssueApi.listRtIssueLine(query).get(0);
+                    itemCode = rtIssueLineDTO.getItemCode();
+                    batchCode = rtIssueLineDTO.getBatchCode();
+                    break;
+                case "warehouse":
+                    MaterialStockDO materialStockDO = materialStockService.getMaterialStock(Long.valueOf(id));
+                    if (materialStockDO == null) {
+                        return error(ErrorCodeConstants.MATERIAL_NOT_WAREHOUSE);
+                    }
+                    BeanUtils.copyBeanProp(toolResponse , materialStockDO);
+                    toolFlag = true;
+                    break;
+                case "tool":
+                    ToolDO toolDO = toolService.getTool(id.longValue());
+                    if (toolDO.getQuantityAvail() < 1) {
+                        return error(ErrorCodeConstants.TOOL_NOT_ENOUGH);
+                    }
+                    toolResponse.setId(toolDO.getId().longValue());
+                    toolResponse.setItemCode(toolDO.getToolCode());
+                    toolResponse.setItemName(toolDO.getToolName());
+                    toolResponse.setQuantityOnhand(BigDecimal.ONE);
+                    toolResponse.setUnitOfMeasure("张");
+                    StorageLocationDO locationDO = storageLocationService.getStorageLocation("AM007");
+                    StorageAreaExportReqVO exportReqVO = new StorageAreaExportReqVO();
+                    exportReqVO.setLocationId(locationDO.getId());
+                    StorageAreaDO areaDO = storageAreaService.getStorageAreaList(exportReqVO).get(0);
+                    toolResponse.setLocationId(locationDO.getId());
+                    toolResponse.setWarehouseId(locationDO.getWarehouseId());
+                    toolResponse.setAreaId(areaDO.getId());
+                    toolFlag = true;
+                    break;
+            }
         }
 
         if (toolFlag) {
@@ -554,8 +672,12 @@ public class GoodsController {
                 }
             }
         }*/
-
         return success(MaterialStockConvert.INSTANCE.convert(materialStock.get(0)));
+       /* MaterialStockDO stockDO = materialStock.get(0);
+        MaterialStockRespVO respVO = new MaterialStockRespVO();
+        BeanUtils.copyBeanProp(respVO, stockDO);
+        System.out.println(respVO);
+        return success(respVO);*/
     }
 
 
@@ -590,7 +712,9 @@ public class GoodsController {
             goodsDO.setPurchaseId(parent.getPurchaseId());
             goodsDO.setGoodsSpecs(parent.getGoodsSpecs());
             goodsDO.setParentBatchCode(orderDO.getParentBatchCode());
-            goodsDO.setReceiveTime(parent.getReceiveTime());
+            // goodsDO.setReceiveTime(parent.getReceiveTime());
+            // setReceiveTime修改为获取当前日期 要求LocalDateTime格式
+            goodsDO.setReceiveTime(LocalDateTime.now());
             goodsDO.setStatus(parent.getStatus());
             goodsDO.setVendorCode(parent.getVendorCode());
             goodsDO.setVendorName(parent.getVendorName());
@@ -608,7 +732,7 @@ public class GoodsController {
                 serialInt++;
                 serial = String.format("%03d", serialInt);
             }
-            goodsDO.setBatchCode(orderDO.getParentBatchCode() + "-" + orderDO.getSerial());
+            goodsDO.setBatchCode(orderDO.getParentBatchCode() + "-" + serial);
             orderDO.setSerial(serial);
             orderService.updateOrder(OrderConvert.INSTANCE.convert01(orderDO));
             Integer lineId = goodsService.createGoods(GoodsConvert.INSTANCE.convert02(goodsDO));
@@ -740,60 +864,102 @@ public class GoodsController {
     }
 
     @PostMapping("/receiving")
-    public String receiving(@RequestBody Map<String, Object> params) {
+    public CommonResult<String> receiving(@RequestBody Map<String, Object> params) {
         List<Map<String, Object>> goodsList = (List<Map<String, Object>>) params.get("list");
-        // 创建一个Map来存储不同组合的List
-        Map<String, List<Map<String, Object>>> groupedGoodsMap = new HashMap<>();
+        // 外层分组：采购单号_供应商编码 -> 内层分组：料号_项次_项序_母批次 -> 汇总后的商品
+        Map<String, Map<String, Map<String, Object>>> outerGroupMap = new HashMap<>();
+        // 原始数据分组：采购单号_供应商编码 -> 原始商品列表
+        Map<String, List<Map<String, Object>>> originalGroupMap = new HashMap<>();
+
+        for (Map<String, Object> goodsDO : goodsList) {
+            String poNo = goodsDO.get("poNo").toString();
+            String goodsNumber =(String) goodsDO.get("goodsNumber");
+
+            List<GoodsDO> list = goodsService.getGoodsList(new GoodsExportReqVO().setPoNo(poNo).setGoodsNumber(goodsNumber));
+            if(list.isEmpty()){
+                return error(ErrorCodeConstants.GOODS_NOT_EXISTS);
+            }
+            // list根据创建时间排序
+            list.sort(Comparator.comparing(GoodsDO::getCreateTime));
+            GoodsDO goods = list.get(0);
+            if(goodsDO.get("id").equals(goods.getId())){
+                return error(ErrorCodeConstants.FIND_ORIGIN_GOODS);
+            }
+        }
 
         for (Map<String, Object> goodsDO : goodsList) {
             BigDecimal receiveNum = goodsDO.get("receiveNum") == null ? BigDecimal.ZERO : new BigDecimal(String.valueOf(goodsDO.get("receiveNum")));
             if (receiveNum.compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
+
             String poNo = goodsDO.get("poNo").toString();
             String vendorCode = Optional.ofNullable(goodsDO.get("vendorCode").toString()).orElse("");
-            String key = poNo + "_" + vendorCode;
-            // 如果Map中还没有这个组合的List，创建一个新的List
-            if (!groupedGoodsMap.containsKey(key)) {
-                groupedGoodsMap.put(key, new ArrayList<>());
+            String outerKey = poNo + "_" + vendorCode;
+
+            // 构建原始商品Map（不汇总）
+            Map<String, Object> originalGoodsMap = createGoodsMap(goodsDO, poNo, vendorCode);
+
+            // 保存原始数据到分组
+            if (!originalGroupMap.containsKey(outerKey)) {
+                originalGroupMap.put(outerKey, new ArrayList<>());
             }
-            // 将当前的商品信息添加到对应的List中
-            Map<String, Object> goodsMap = new HashMap<>();
-            goodsMap.put("id", goodsDO.get("id"));
-            goodsMap.put("poNo", poNo);
-            goodsMap.put("goodsNumber", goodsDO.get("goodsNumber"));
-            goodsMap.put("goodsName", goodsDO.get("goodsName"));
-            goodsMap.put("unitOfMeasure", goodsDO.get("unitOfMeasure"));
-            goodsMap.put("receiveNum", goodsDO.get("receiveNum"));
-            goodsMap.put("batchCode", goodsDO.get("batchCode"));
-            goodsMap.put("consequence", goodsDO.get("consequence"));
-            goodsMap.put("purchaseBatch", goodsDO.get("purchaseBatch"));
-            goodsMap.put("purchaseConsequence", goodsDO.get("purchaseConsequence"));
-            goodsMap.put("purchaseBatchConsequence", goodsDO.get("purchaseBatchConsequence"));
-            goodsMap.put("supplierCode", vendorCode);
-            groupedGoodsMap.get(key).add(goodsMap);
+            originalGroupMap.get(outerKey).add(originalGoodsMap);
+
+            // 构建内层分组Key：料号_项次_项序_母批次
+            String innerKey = createInnerKey(goodsDO);
+
+            // 初始化外层分组
+            if (!outerGroupMap.containsKey(outerKey)) {
+                outerGroupMap.put(outerKey, new HashMap<>());
+            }
+            Map<String, Map<String, Object>> innerGroupMap = outerGroupMap.get(outerKey);
+
+            // 处理内层分组：存在则累加数量，不存在则新建
+            if (innerGroupMap.containsKey(innerKey)) {
+                Map<String, Object> mergedGoods = innerGroupMap.get(innerKey);
+                Number mergedNum = (Number) mergedGoods.get("receiveNum");
+                BigDecimal mergedNumBigDecimal = mergedNum == null ? BigDecimal.ZERO : new BigDecimal(mergedNum.toString());
+                mergedGoods.put("receiveNum", mergedNumBigDecimal.add(receiveNum));
+            } else {
+                // 新建汇总商品（使用原始商品数据）
+                Map<String, Object> mergedGoods = createGoodsMap(goodsDO, poNo, vendorCode);
+                innerGroupMap.put(innerKey, mergedGoods);
+            }
         }
-        // 调用ERP接口, 先收货
-        for (List<Map<String, Object>> goodsMapList : groupedGoodsMap.values()) {
+
+        // 准备最终的分组数据（将内层Map转换为List）
+        Map<String, List<Map<String, Object>>> groupedGoodsMap = new HashMap<>();
+        for (Map.Entry<String, Map<String, Map<String, Object>>> outerEntry : outerGroupMap.entrySet()) {
+            groupedGoodsMap.put(outerEntry.getKey(), new ArrayList<>(outerEntry.getValue().values()));
+        }
+
+        // 调用ERP接口
+        for (Map.Entry<String, List<Map<String, Object>>> entry : groupedGoodsMap.entrySet()) {
+            String outerKey = entry.getKey();
+            List<Map<String, Object>> mergedList = entry.getValue();
+
             Map<String, Object> erpParams = new HashMap<>(params);
-            erpParams.put("goodsList", goodsMapList);
-            erpParams.put("sourceNo", goodsMapList.get(0).get("poNo"));
-            erpParams.put("supplierCode", goodsMapList.get(0).get("supplierCode"));
-            erpParams.put("poNo", goodsMapList.get(0).get("poNo"));
+            erpParams.put("goodsList", mergedList);
+            erpParams.put("sourceNo", mergedList.get(0).get("poNo"));
+            erpParams.put("supplierCode", mergedList.get(0).get("supplierCode"));
+            erpParams.put("poNo", mergedList.get(0).get("poNo"));
             erpParams.put("pmds000", "1"); // 采购收货
-            System.out.println(erpParams.toString());
-             // 注释接口
-            /*String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+
+            String result = materialStockERPAPI.purchaseDeliveryCreate(erpParams);
+            //String result = "ERROR";
             if (!result.contains("success")) {
-                return result;
+                // return result;
+                return error(500 , result);
             }
-            String warehousingCode = result.split(",")[1];*/
-            String warehousingCode = null;
-            // 将当前单身信息与收货单号绑定
+            String warehousingCode = result.split(",")[1];
+
+            // 使用原始分组数据进行更新
+            List<Map<String, Object>> originalList = originalGroupMap.get(outerKey);
             List<GoodsDO> update = new ArrayList<>();
-            // 将当前单身信息与收货项次绑定
             List<GoodsDO> updateSeq = new ArrayList<>();
-            for (Map<String, Object> goodsMap : goodsMapList) {
+
+            for (Map<String, Object> goodsMap : originalList) {
                 Integer id = (Integer) goodsMap.get("id");
                 GoodsDO goodsDO = goodsService.getGoods(id);
                 goodsDO.setErpReceiveCode(warehousingCode);
@@ -801,23 +967,177 @@ public class GoodsController {
                 update.add(goodsDO);
             }
             goodsService.updateBatch(update);
-            // 开始追加物料收获项次
-            // 注释接口
-           /* for (Map<String, Object> goodsMap : goodsMapList) {
+
+            for (Map<String, Object> goodsMap : originalList) {
                 Integer id = (Integer) goodsMap.get("id");
                 GoodsDO goodsDO = goodsService.getGoods(id);
-                Map<String,Object> seqMap =  orderOracleService.getReceiveSeq(goodsDO);
-                BigDecimal receiveSeqBigDecimal = (BigDecimal) seqMap.get("RECEIVE_SEQ");
-                System.out.println(receiveSeqBigDecimal);
+                Map<String,Object> seqMap = orderOracleService.getReceiveSeq(goodsDO);
+                Number receiveSeqBigDecimal = (Number) seqMap.get("RECEIVE_SEQ");
                 goodsDO.setReceiveSeq(receiveSeqBigDecimal.intValue());
                 updateSeq.add(goodsDO);
             }
-            if(!updateSeq.isEmpty()){
+
+            if (!updateSeq.isEmpty()) {
                 goodsService.updateBatch(updateSeq);
-            }*/
+            }
         }
-        return "success";
+        // return "success";
+        return success("success");
+
     }
+
+    private String createInnerKey(Map<String, Object> goodsDO) {
+        return StringUtils.defaultString(goodsDO.get("goodsNumber").toString()) + "_" +
+                StringUtils.defaultString(goodsDO.get("purchaseBatch").toString()) + "_" +
+                StringUtils.defaultString(goodsDO.get("purchaseConsequence").toString()) + "_" +
+                StringUtils.defaultString(goodsDO.get("parentBatchCode").toString());
+    }
+
+    // 构建商品Map（原始结构）
+    private Map<String, Object> createGoodsMap(Map<String, Object> goodsDO, String poNo, String vendorCode) {
+        Map<String, Object> goodsMap = new HashMap<>();
+        goodsMap.put("id", goodsDO.get("id"));
+        goodsMap.put("poNo", poNo);
+        goodsMap.put("goodsNumber", goodsDO.get("goodsNumber"));
+        goodsMap.put("goodsName", goodsDO.get("goodsName"));
+        goodsMap.put("unitOfMeasure", goodsDO.get("unitOfMeasure"));
+        goodsMap.put("receiveNum", goodsDO.get("receiveNum"));
+        goodsMap.put("batchCode", goodsDO.get("parentBatchCode"));
+        goodsMap.put("consequence", goodsDO.get("consequence"));
+        goodsMap.put("purchaseBatch", goodsDO.get("purchaseBatch"));
+        goodsMap.put("purchaseConsequence", goodsDO.get("purchaseConsequence"));
+        goodsMap.put("purchaseBatchConsequence", goodsDO.get("purchaseBatchConsequence"));
+        goodsMap.put("supplierCode", vendorCode);
+        return goodsMap;
+    }
+
+
+    /**
+     * 物料追溯
+     *
+     * @param pageVO
+     * @return
+     */
+    @GetMapping("/traceGoodsPage")
+    @Operation(summary = "获得采购商品明细分页")
+    @PreAuthorize("@ss.hasPermission('purchase:goods:query')")
+    public CommonResult<PageResult<GoodsRespVO>> getTraceGoodsPage(@Valid GoodsPageReqVO pageVO) {
+        // 已知参数: 工单号, 任务编号, 批次号
+        String workorderCode = pageVO.getWorkorderCode();
+        String taskCode = pageVO.getTaskCode();
+        String batchCode = pageVO.getBatchCode();
+
+        if(workorderCode == null && taskCode == null && batchCode == null){
+            return success();
+        }
+
+        // 查询批次信息 - 使用Set避免重复
+        Set<String> batchSet = new HashSet<>();
+
+        if (workorderCode != null && !"".equals(workorderCode)) {
+            // 基于工单获取所有领料单上料详情
+            List<IssueheaderDTO> issueheaderDTOS = issueApi.listIssueHeader(new IssueheaderDTO().setWorkorderCode(workorderCode));
+            for (IssueheaderDTO issueheaderDTO : issueheaderDTOS) {
+                // 找寻上料详情(已领料已报工)
+                List<IssueLineDTO> issueLineDTOS = issueApi.listIssueLine(new IssueLineDTO().setIssueId(issueheaderDTO.getId()).setStatus("Y").setFeedbackStatus("Y"));
+                for (IssueLineDTO issueLineDTO : issueLineDTOS) {
+                    batchSet.add(issueLineDTO.getBatchCode());
+                }
+            }
+        }
+
+        if (taskCode != null && !"".equals(taskCode)) {
+            // 基于任务单获取领料详情
+            List<IssueheaderDTO> issueheaderDTOS = issueApi.listIssueHeader(new IssueheaderDTO().setTaskCode(taskCode));
+            if (!issueheaderDTOS.isEmpty()) {
+                // 一个任务单对应一个领料单头
+                IssueheaderDTO issueheaderDTO = issueheaderDTOS.get(0);
+                List<IssueLineDTO> issueLineDTOS = issueApi.listIssueLine(new IssueLineDTO().setIssueId(issueheaderDTO.getId()).setStatus("Y").setFeedbackStatus("Y"));
+                for (IssueLineDTO issueLineDTO : issueLineDTOS) {
+                    batchSet.add(issueLineDTO.getBatchCode());
+                }
+            }
+        }
+
+        Set<String> finalBatchSet = new HashSet<>();
+        if (batchCode != null) {
+            batchSet.add(batchCode);
+        }
+
+        if (!batchSet.isEmpty()) {
+            Set<String> visited = new HashSet<>();
+            Queue<String> queue = new LinkedList<>(batchSet);
+            while (!queue.isEmpty()) {
+                String current = queue.poll();
+                if (visited.contains(current)) continue;
+                visited.add(current);
+                if (!current.startsWith("TASK")) {
+                    finalBatchSet.add(current);
+                    continue;
+                }
+                List<String> origins = getOriginBatchCode(current);
+                for (String origin : origins) {
+                    if (origin != null && !visited.contains(origin)) {
+                        queue.add(origin);
+                    }
+                }
+            }
+        }
+        List<String> batchList = new ArrayList<>(finalBatchSet);
+        if(batchList.isEmpty()){
+            return success();
+        }
+        GoodsPageReqVO queryVO = new GoodsPageReqVO();
+        queryVO.setPageNo(pageVO.getPageNo()).setPageSize(pageVO.getPageSize());
+        queryVO.setBatchCodeList(batchList);
+        PageResult<GoodsDO> pageResult = goodsService.getGoodsPage(queryVO);
+        return success(GoodsConvert.INSTANCE.convertPage(pageResult));
+    }
+
+    public List<String> getOriginBatchCode(String batchCode) {
+        List<String> batchCodeList = new ArrayList<>();
+        if (batchCode != null) {
+            // 判定批次号是否以TASK开头
+            if (batchCode.startsWith("TASK")) {
+                FeedbackDTO feedbackDTO = Optional.ofNullable(feedbackApi.getFeedBackByBatchCode(batchCode)).orElse(null);
+                if (feedbackDTO != null) {
+                    // 找寻对应领料单行, 获取采购项
+                    List<IssueLineDTO> issueLineDTOS = issueApi.listIssueLine(new IssueLineDTO().setFeedbackCode(feedbackDTO.getFeedbackCode()));
+                    if (!issueLineDTOS.isEmpty()) {
+                        for (IssueLineDTO issueLineDTO : issueLineDTOS) {
+                            batchCodeList.add(issueLineDTO.getBatchCode());
+                        }
+                    }
+                }
+            } else {
+                // 如果批次号不以TASK开头，停止搜索
+                return batchCodeList;
+            }
+        }
+        return batchCodeList;
+    }
+
+    @GetMapping("/initIqcQuantity")
+    @Operation(summary = "来料检初始化某单据某物料总数")
+    @PreAuthorize("@ss.hasPermission('purchase:goods:query')")
+    public CommonResult<BigDecimal> initIqcQuantity(@Valid GoodsDO goodsDO) {
+        // 检查采购单号和物料编号是否为空
+        if (goodsDO.getPoNo() == null || goodsDO.getGoodsNumber() == null) {
+            return error(ErrorCodeConstants.GOODS_NOT_EXISTS);
+        }
+        // 根据采购单号查询原始商品列表
+        List<GoodsDO> queryGoods = goodsService.getGoodsList(new GoodsExportReqVO().setPoNo(goodsDO.getPoNo()).setGoodsNumber(goodsDO.getGoodsNumber()).setStatus(2));
+        if (queryGoods == null || queryGoods.isEmpty()) {
+            return error(ErrorCodeConstants.GOODS_NOT_EXISTS);
+        }
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        for (GoodsDO goods : queryGoods) {
+            BigDecimal receiveNum = Optional.ofNullable(goods.getReceiveNum()).orElse(BigDecimal.ZERO);
+            totalQuantity = totalQuantity.add(receiveNum);
+        }
+        return success(totalQuantity);
+    }
+
 
 
 }

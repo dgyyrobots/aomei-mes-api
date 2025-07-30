@@ -214,6 +214,8 @@
             <groupId>vip.huizhizao</groupId>
             <artifactId>dofast-spring-boot-starter-protection</artifactId>
         </dependency>
+
+
     </dependencies>
 
     <build>

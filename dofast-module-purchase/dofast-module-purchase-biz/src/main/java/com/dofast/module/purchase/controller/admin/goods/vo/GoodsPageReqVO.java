@@ -107,4 +107,15 @@ public class GoodsPageReqVO extends PageParam {
     @Schema(description = "已收数量")
     private BigDecimal receivedNum;
 
+    // 虚拟字段
+    @Schema(description = "工单号")
+    private String workorderCode;
+
+    @Schema(description = "任务单号")
+    private String taskCode;
+
+    @Schema(description = "批次详情")
+    private List<String> batchCodeList;
+
+
 }

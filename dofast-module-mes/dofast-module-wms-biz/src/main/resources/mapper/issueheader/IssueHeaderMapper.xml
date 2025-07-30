@@ -42,7 +42,7 @@
                irl.`warehouse_id`,irl.`warehouse_code`,irl.`warehouse_name`,irl.`location_id`,irl.`location_code`,irl.`location_name`,irl.`area_id`,irl.`area_code`,irl.`area_name`,
                'ISSUE' AS source_doc_type,ir.`id` AS source_doc_id,ir.`issue_code` AS source_doc_code,irl.`id` AS source_doc_line_id,
                irl.`quantity_issued` AS transaction_quantity,ir.workorder_id,ir.workorder_code,
-               ir.`creator`,ir.`create_time`,ir.`updater`,ir.`update_time`, irl.vendor_code
+               ir.`creator`,ir.`create_time`,ir.`updater`,ir.`update_time`, irl.vendor_code , irl.parent_batch_code
         FROM wms_issue_header ir
                  LEFT JOIN wms_issue_line irl
                            ON ir.id = irl.`issue_id`  and irl.deleted = 0

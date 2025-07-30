@@ -1,6 +1,8 @@
 package com.dofast.module.qms.dal.dataobject.defectrecord;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -50,7 +52,7 @@ public class DefectRecordDO extends BaseDO {
     /**
      * 缺陷数量
      */
-    private Integer defectQuantity;
+    private BigDecimal defectQuantity;
     /**
      * 备注
      */

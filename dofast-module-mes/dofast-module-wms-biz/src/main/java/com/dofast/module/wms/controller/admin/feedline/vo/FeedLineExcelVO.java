@@ -139,4 +139,7 @@ public class FeedLineExcelVO {
     @ExcelProperty("ERP批次")
     private String erpBatchCode;
 
+    @ExcelProperty("母批次")
+    private String parentBatchCode;
+
 }

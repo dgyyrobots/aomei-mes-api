@@ -1,5 +1,6 @@
 package com.dofast.module.qms.dal.dataobject.iqc;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -88,11 +89,11 @@ public class IqcDO extends BaseDO {
     /**
      * 最低检测数
      */
-    private Integer quantityMinCheck;
+    private BigDecimal quantityMinCheck;
     /**
      * 最大不合格数
      */
-    private Integer quantityMaxUnqualified;
+    private BigDecimal quantityMaxUnqualified;
     /**
      * 本次接收数量
      */
@@ -100,11 +101,11 @@ public class IqcDO extends BaseDO {
     /**
      * 本次检测数量
      */
-    private Integer quantityCheck;
+    private BigDecimal quantityCheck;
     /**
      * 不合格数
      */
-    private Integer quantityUnqualified;
+    private BigDecimal quantityUnqualified;
     /**
      * 致命缺陷率
      */
@@ -120,15 +121,15 @@ public class IqcDO extends BaseDO {
     /**
      * 致命缺陷数量
      */
-    private Integer crQuantity;
+    private BigDecimal crQuantity;
     /**
      * 严重缺陷数量
      */
-    private Integer majQuantity;
+    private BigDecimal majQuantity;
     /**
      * 轻微缺陷数量
      */
-    private Integer minQuantity;
+    private BigDecimal minQuantity;
     /**
      * 检测结果
      */
@@ -174,5 +175,10 @@ public class IqcDO extends BaseDO {
      * 附件
      */
     private String adjuncts;
+
+    /**
+     * 采购单号
+     */
+    private String poNo;
 
 }

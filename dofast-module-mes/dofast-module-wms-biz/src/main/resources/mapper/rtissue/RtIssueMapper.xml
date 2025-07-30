@@ -36,6 +36,7 @@
                irl.`specification`,
                irl.`unit_of_measure`,
                irl.`batch_code`,
+               irl.`parent_batch_code`,
                irl.`warehouse_id`,irl.`warehouse_code`,irl.`warehouse_name`,
                irl.`location_id`,irl.`location_code`,irl.`location_name`,
                irl.`area_id`,irl.`area_code`,irl.`area_name`,

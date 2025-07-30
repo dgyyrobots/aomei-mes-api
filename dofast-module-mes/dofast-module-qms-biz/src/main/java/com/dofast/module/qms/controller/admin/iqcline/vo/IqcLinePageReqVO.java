@@ -51,13 +51,13 @@ public class IqcLinePageReqVO extends PageParam {
     private BigDecimal thresholdMin;
 
     @Schema(description = "致命缺陷数量")
-    private Integer crQuantity;
+    private BigDecimal crQuantity;
 
     @Schema(description = "严重缺陷数量")
-    private Integer majQuantity;
+    private BigDecimal majQuantity;
 
     @Schema(description = "轻微缺陷数量")
-    private Integer minQuantity;
+    private BigDecimal minQuantity;
 
     @Schema(description = "备注", example = "你猜")
     private String remark;
@@ -73,6 +73,24 @@ public class IqcLinePageReqVO extends PageParam {
 
     @Schema(description = "预留字段4")
     private Integer attr4;
+
+    @Schema(description = "检验数值1")
+    private BigDecimal inspectionValue1;
+
+    @Schema(description = "检验数值2")
+    private BigDecimal inspectionValue2;
+
+    @Schema(description = "检验数值3")
+    private BigDecimal inspectionValue3;
+
+    @Schema(description = "检验数值4")
+    private BigDecimal inspectionValue4;
+
+    @Schema(description = "检验数值5")
+    private BigDecimal inspectionValue5;
+
+    @Schema(description = "检验结果")
+    private String inspectionResult;
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)

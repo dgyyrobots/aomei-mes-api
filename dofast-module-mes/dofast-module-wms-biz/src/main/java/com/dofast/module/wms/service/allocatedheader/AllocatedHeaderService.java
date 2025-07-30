@@ -80,4 +80,6 @@ public interface AllocatedHeaderService {
     List<AllocatedTxBean> getTxBeans(Long allocatedId);
 
 
+    List<AllocatedHeaderDO> getAllocatedHeaderListByBatchCodeList(List<String> batchCodeList);
+
 }

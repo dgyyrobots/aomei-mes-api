@@ -8,6 +8,10 @@ import com.dofast.module.cmms.controller.admin.dvmachinery.vo.*;
 import com.dofast.module.cmms.convert.dvmachinery.DvMachineryConvert;
 import com.dofast.module.cmms.dal.dataobject.dvmachinery.DvMachineryDO;
 import com.dofast.module.cmms.service.dvmachinery.DvMachineryService;
+import com.dofast.module.mes.api.WorkShopApi.MdWorkshopApi;
+import com.dofast.module.mes.api.WorkShopApi.dto.MdWorkshopDTO;
+import com.dofast.module.mes.api.WorkStationAPi.WorkStationApi;
+import com.dofast.module.mes.api.WorkStationAPi.dto.WorkStationDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +37,12 @@ public class DvMachineryController {
 
     @Resource
     private DvMachineryService dvMachineryService;
+
+    @Resource
+    private WorkStationApi workStationApi;
+
+    @Resource
+    private MdWorkshopApi workshopApi;
 
 //    @Autowired
 //    private WmBarCodeUtil wmBarCodeUtil;
@@ -94,11 +104,24 @@ public class DvMachineryController {
     @PreAuthorize("@ss.hasPermission('cmms:dv-machinery:export')")
     @OperateLog(type = EXPORT)
     public void exportDvMachineryExcel(@Valid DvMachineryExportReqVO exportReqVO,
-              HttpServletResponse response) throws IOException {
+                                       HttpServletResponse response) throws IOException {
         List<DvMachineryDO> list = dvMachineryService.getDvMachineryList(exportReqVO);
         // 导出 Excel
         List<DvMachineryExcelVO> datas = DvMachineryConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "设备台账.xls", "数据", DvMachineryExcelVO.class, datas);
+    }
+
+    @GetMapping("/getListByProcessCode")
+    @Operation(summary = "获得设备台账列表")
+    @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
+    @PreAuthorize("@ss.hasPermission('cmms:dv-machinery:query')")
+    public CommonResult<List<DvMachineryDO>> getListByProcessCode(@RequestParam String processCode) {
+        // 基于工序编码获取工作站, 基于工作站获取车间, 找寻所属车间的所有设备信息
+        WorkStationDTO workStationDTO = workStationApi.getWorkstationByProcessCode(processCode);
+        MdWorkshopDTO workshopDTO = workshopApi.getWorkShopById(workStationDTO.getWorkshopId());
+        // 找寻当下所属车间的所有设备
+        List<DvMachineryDO> list = dvMachineryService.getDvMachineryList(new DvMachineryExportReqVO().setWorkshopId(workshopDTO.getId()));
+        return success(list);
     }
 
 }

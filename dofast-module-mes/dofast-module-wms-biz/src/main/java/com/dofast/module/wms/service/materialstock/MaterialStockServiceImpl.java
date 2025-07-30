@@ -79,4 +79,16 @@ public class MaterialStockServiceImpl implements MaterialStockService {
         return materialStockMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public List<MaterialStockDO> getMaterialStockListContainZero(MaterialStockExportReqVO exportReqVO){
+        return materialStockMapper.selectListContainZero(exportReqVO);
+    }
+
+
+    @Override
+    public Long getOriginIdByBatchCode(String batchCode){
+        return materialStockMapper.getOriginIdByBatchCode(batchCode);
+    }
+
+
 }

@@ -56,6 +56,12 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getNextProcessId, reqVO.getNextProcessId())
                 .eqIfPresent(RouteProcessDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(RouteProcessDO::getWorkorderSequence, reqVO.getWorkorderSequence())
+                .eqIfPresent(RouteProcessDO::getReceivingUnits, reqVO.getReceivingUnits())
+                .eqIfPresent(RouteProcessDO::getReceivingUnitsConversionNumerator, reqVO.getReceivingUnitsConversionNumerator())
+                .eqIfPresent(RouteProcessDO::getReceivingUnitsConversionDenominator, reqVO.getReceivingUnitsConversionDenominator())
+                .eqIfPresent(RouteProcessDO::getOutUnits, reqVO.getOutUnits())
+                .eqIfPresent(RouteProcessDO::getOutUnitsConversionNumerator, reqVO.getOutUnitsConversionNumerator())
+                .eqIfPresent(RouteProcessDO::getOutUnitsConversionDenominator, reqVO.getOutUnitsConversionDenominator())
                 .orderByDesc(RouteProcessDO::getId));
     }
     default List<RouteProcessDO> selectList(RouteProcessListVO reqVO) {
@@ -80,6 +86,13 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getAttr4, reqVO.getAttr4())
                 .eqIfPresent(RouteProcessDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(RouteProcessDO::getWorkorderSequence, reqVO.getWorkorderSequence())
+                .eqIfPresent(RouteProcessDO::getReceivingUnits, reqVO.getReceivingUnits())
+                .eqIfPresent(RouteProcessDO::getReceivingUnitsConversionNumerator, reqVO.getReceivingUnitsConversionNumerator())
+                .eqIfPresent(RouteProcessDO::getReceivingUnitsConversionDenominator, reqVO.getReceivingUnitsConversionDenominator())
+                .eqIfPresent(RouteProcessDO::getOutUnits, reqVO.getOutUnits())
+                .eqIfPresent(RouteProcessDO::getOutUnitsConversionNumerator, reqVO.getOutUnitsConversionNumerator())
+                .eqIfPresent(RouteProcessDO::getOutUnitsConversionDenominator, reqVO.getOutUnitsConversionDenominator())
+
                 .eqIfPresent(RouteProcessDO::getCreateTime, reqVO.getCreateTime())
                 .orderByAsc(RouteProcessDO::getOrderNum));
     }
@@ -107,6 +120,12 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getNextProcessId, reqVO.getNextProcessId())
                 .eqIfPresent(RouteProcessDO::getSequence, reqVO.getSequence())
                 .eqIfPresent(RouteProcessDO::getWorkorderSequence, reqVO.getWorkorderSequence())
+                .eqIfPresent(RouteProcessDO::getReceivingUnits, reqVO.getReceivingUnits())
+                .eqIfPresent(RouteProcessDO::getReceivingUnitsConversionNumerator, reqVO.getReceivingUnitsConversionNumerator())
+                .eqIfPresent(RouteProcessDO::getReceivingUnitsConversionDenominator, reqVO.getReceivingUnitsConversionDenominator())
+                .eqIfPresent(RouteProcessDO::getOutUnits, reqVO.getOutUnits())
+                .eqIfPresent(RouteProcessDO::getOutUnitsConversionNumerator, reqVO.getOutUnitsConversionNumerator())
+                .eqIfPresent(RouteProcessDO::getOutUnitsConversionDenominator, reqVO.getOutUnitsConversionDenominator())
                 .orderByDesc(RouteProcessDO::getId));
     }
 

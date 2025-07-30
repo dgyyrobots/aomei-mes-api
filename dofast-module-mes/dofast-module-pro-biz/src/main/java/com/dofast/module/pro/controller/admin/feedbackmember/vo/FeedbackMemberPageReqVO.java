@@ -1,6 +1,8 @@
 package com.dofast.module.pro.controller.admin.feedbackmember.vo;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.dofast.framework.common.pojo.PageParam;
@@ -35,6 +37,9 @@ public class FeedbackMemberPageReqVO extends PageParam {
 
     @Schema(description = "岗位Id")
     private String postIds;
+
+    @Schema(description = "生产产量")
+    private BigDecimal quantity;
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)

@@ -110,4 +110,12 @@ public class WorkorderPageReqVO extends PageParam {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    // 虚拟字段
+    @Schema(description = "任务单号")
+    private String taskCode;
+
+    @Schema(description = "工单列表")
+    private List<String> workorderList;
+
+
 }

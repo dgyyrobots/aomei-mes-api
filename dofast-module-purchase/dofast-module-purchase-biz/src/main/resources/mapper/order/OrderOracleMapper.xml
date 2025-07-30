@@ -74,7 +74,7 @@
         WHERE PMDTENT = #{erpCode}  AND PMDTSITE = 'AM01'
             AND PMDTDOCNO = #{goodsDO.erpReceiveCode} AND PMDT001 = #{goodsDO.poNo}
             AND PMDT002 = #{goodsDO.consequence} AND PMDT003 =  #{goodsDO.purchaseConsequence} AND PMDT004 = #{goodsDO.purchaseBatchConsequence}
-            AND PMDT006 =  #{goodsDO.goodsNumber} AND PMDT018 = #{goodsDO.batchCode}
+            AND PMDT006 =  #{goodsDO.goodsNumber} AND PMDT018 = #{goodsDO.parentBatchCode}
     </select>
 
 

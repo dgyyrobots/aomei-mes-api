@@ -191,7 +191,6 @@ public class ItemConsumeServiceImpl implements ItemConsumeService {
         itemConsume.setConsumeDate(LocalDateTime.now());
         itemConsume.setStatus(UserConstants.ORDER_STATUS_PREPARE);
         itemConsumeMapper.insert(itemConsume);
-        System.out.println("Generated ItemConsume ID: " + itemConsume.getId());
 
         //生成行信息
         //先获取当前生产的产品在此道工序中配置的物料BOM

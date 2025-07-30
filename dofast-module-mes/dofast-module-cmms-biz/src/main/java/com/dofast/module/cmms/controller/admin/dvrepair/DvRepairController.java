@@ -1,6 +1,15 @@
 package com.dofast.module.cmms.controller.admin.dvrepair;
 
+import com.dofast.module.cmms.controller.admin.dvchecksubject.vo.DvCheckSubjectExportReqVO;
+import com.dofast.module.cmms.dal.dataobject.dvcheckmachinery.DvCheckMachineryDO;
+import com.dofast.module.cmms.dal.dataobject.dvcheckplan.DvCheckPlanDO;
+import com.dofast.module.cmms.dal.dataobject.dvchecksubject.DvCheckSubjectDO;
+import com.dofast.module.cmms.dal.dataobject.dvrepairline.DvRepairLineDO;
 import com.dofast.module.cmms.enums.ErrorCodeConstants;
+import com.dofast.module.cmms.service.dvcheckmachinery.DvCheckMachineryService;
+import com.dofast.module.cmms.service.dvcheckplan.DvCheckPlanService;
+import com.dofast.module.cmms.service.dvchecksubject.DvCheckSubjectService;
+import com.dofast.module.cmms.service.dvrepairline.DvRepairLineService;
 import com.dofast.module.mes.constant.Constant;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -41,6 +50,16 @@ public class DvRepairController {
     @Resource
     private DvRepairService dvRepairService;
 
+    @Resource
+    private DvCheckMachineryService dvCheckMachineryService;
+
+    @Resource
+    private DvCheckSubjectService dvCheckSubjectService;
+
+    @Resource
+    private DvRepairLineService dvRepairLineService;
+
+
     @PostMapping("/create")
     @Operation(summary = "创建设备维修单")
     @PreAuthorize("@ss.hasPermission('cmms:dv-repair:create')")
@@ -48,7 +67,30 @@ public class DvRepairController {
         if(Constant.NOT_UNIQUE.equals(dvRepairService.checkCodeUnique(createReqVO))){
             return error(ErrorCodeConstants.DV_REPAIR_CODE_NOT_UNIQUE);
         }
-        return success(dvRepairService.createDvRepair(createReqVO));
+        Long repairId = dvRepairService.createDvRepair(createReqVO);
+        // 根据当前设备编码, 获取点检计划信息
+        DvCheckMachineryDO machineryDO = Optional.ofNullable(dvCheckMachineryService.getDvCheckMachineryByMachineryCode(createReqVO.getMachineryCode())).orElse(null);
+        if(machineryDO == null){
+            return error(ErrorCodeConstants.DV_MACHINERY_NOT_CHECKPLAN);
+        }
+        // 基于当前点检计划, 获取检验项目
+        List<DvCheckSubjectDO> subjectList = dvCheckSubjectService.getDvCheckSubjectList(new DvCheckSubjectExportReqVO().setPlanId(machineryDO.getPlanId()));
+
+        List<DvRepairLineDO> addList = new ArrayList<>();
+        // 开始添加维修单身行信息
+        for(DvCheckSubjectDO subjectDO : subjectList){
+            DvRepairLineDO line = new DvRepairLineDO();
+            line.setSubjectId(subjectDO.getSubjectId());
+            line.setRepairId(repairId);
+            line.setSubjectCode(subjectDO.getSubjectCode());
+            line.setSubjectName(subjectDO.getSubjectName());
+            line.setSubjectType(subjectDO.getSubjectType());
+            line.setSubjectContent(subjectDO.getSubjectContent());
+            line.setSubjectStandard(subjectDO.getSubjectStandard());
+            addList.add(line);
+        }
+        dvRepairLineService.insertBatch(addList);
+        return success();
     }
 
     @PutMapping("/update")

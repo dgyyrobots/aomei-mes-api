@@ -1,6 +1,7 @@
 package com.dofast.module.cmms.api.dvmachinery;
 
 import com.dofast.module.cmms.api.dvmachinery.dto.DvMachineryDTO;
+import com.dofast.module.cmms.controller.admin.dvmachinery.vo.DvMachineryExportReqVO;
 import com.dofast.module.cmms.convert.dvmachinery.DvMachineryConvert;
 import com.dofast.module.cmms.dal.dataobject.dvmachinery.DvMachineryDO;
 import com.dofast.module.cmms.service.dvmachinery.DvMachineryService;
@@ -17,6 +18,12 @@ public class DvMachineryApiImpl  implements DvMachineryApi {
     @Override
     public DvMachineryDTO getMachineryInfo(String machineryCode){
         DvMachineryDO dvMachineryDO =  dvMachineryService.getDvMachinery(machineryCode);
+        return DvMachineryConvert.INSTANCE.convert01(dvMachineryDO);
+    }
+
+    @Override
+    public DvMachineryDTO getErpMachineryInfo(String machineryCode){
+        DvMachineryDO dvMachineryDO =  dvMachineryService.getDvMachineryList(new DvMachineryExportReqVO().setErpMachineryCode(machineryCode)).get(0);
         return DvMachineryConvert.INSTANCE.convert01(dvMachineryDO);
     }
 

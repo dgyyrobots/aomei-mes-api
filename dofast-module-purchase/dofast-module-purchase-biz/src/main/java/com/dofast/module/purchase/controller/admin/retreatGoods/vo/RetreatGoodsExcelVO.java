@@ -87,4 +87,28 @@ public class RetreatGoodsExcelVO {
     @ExcelProperty("库位名称")
     private String areaName;
 
+    @ExcelProperty("ERP采购单号")
+    private String poNo;
+
+    @ExcelProperty("ERP采购批次")
+    private Integer purchaseBatch;
+
+    @ExcelProperty("ERP采购批序")
+    private Integer purchaseConsequence;
+
+    @ExcelProperty("ERP采购分批序")
+    private Integer purchaseBatchConsequence;
+
+    @ExcelProperty("ERP采购单号")
+    private String erpReceiveCode;
+
+    @ExcelProperty("ERP收货项次")
+    private Integer receiveSeq;
+
+    @ExcelProperty("已收数量")
+    private BigDecimal receivedNum;
+
+    @ExcelProperty("ERP仓退理由码")
+    private String reasonCode;
+
 }

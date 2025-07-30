@@ -83,6 +83,8 @@ public class RtIssueTxBean extends BaseDO {
     /** 事务数量 */
     private BigDecimal transactionQuantity;
 
+    private String parentBatchCode;
+
     /** 入库日期 */
     @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
     private Date recptDate;

@@ -8,6 +8,7 @@ import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.wms.dal.dataobject.allocatedline.AllocatedLineDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.wms.controller.admin.allocatedline.vo.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 调拨单身 Mapper

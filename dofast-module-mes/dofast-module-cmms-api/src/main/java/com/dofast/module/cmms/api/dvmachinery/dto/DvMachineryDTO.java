@@ -77,4 +77,9 @@ public class DvMachineryDTO {
      */
     private String erpMachineryCode;
 
+    /**
+     * 产品ID
+     */
+    private Long productId;
+
 }

@@ -1,5 +1,6 @@
 package com.dofast.module.iot.controller.admin.device;
 
+import com.dofast.module.iot.service.device.DeviceTdengineService;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -11,6 +12,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import javax.validation.constraints.*;
 import javax.validation.*;
 import javax.servlet.http.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.*;
 import java.io.IOException;
 
@@ -36,6 +41,9 @@ public class DeviceController {
 
     @Resource
     private DeviceService deviceService;
+
+    @Resource
+    private DeviceTdengineService deviceTdengineService;
 
     @PostMapping("/create")
     @Operation(summary = "创建设备")
@@ -98,5 +106,16 @@ public class DeviceController {
         List<DeviceExcelVO> datas = DeviceConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "设备.xls", "数据", DeviceExcelVO.class, datas);
     }
+
+
+    @GetMapping("/getIotDevice")
+    @Operation(summary = "获得设备列表")
+    public CommonResult<List> getDeviceList() {
+        List<Map<String, Object>> list = deviceTdengineService.initDeviceMeter();
+        System.out.println(list);
+        return success(list);
+    }
+
+
 
 }

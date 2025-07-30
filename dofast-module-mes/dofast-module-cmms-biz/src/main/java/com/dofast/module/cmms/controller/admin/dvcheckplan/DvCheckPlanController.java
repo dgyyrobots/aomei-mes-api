@@ -1,6 +1,8 @@
 package com.dofast.module.cmms.controller.admin.dvcheckplan;
 
 import com.dofast.module.cmms.enums.ErrorCodeConstants;
+import com.dofast.module.cmms.service.dvcheckmachinery.DvCheckMachineryService;
+import com.dofast.module.cmms.service.dvsubject.DvSubjectService;
 import com.dofast.module.mes.constant.Constant;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -41,13 +43,16 @@ public class DvCheckPlanController {
     @Resource
     private DvCheckPlanService dvCheckPlanService;
 
+
+
+
     @PostMapping("/create")
     @Operation(summary = "创建设备点检保养计划头")
     @PreAuthorize("@ss.hasPermission('cmms:dv-check-plan:create')")
     public CommonResult<Long> createDvCheckPlan(@Valid @RequestBody DvCheckPlanCreateReqVO createReqVO) {
-        if(Constant.NOT_UNIQUE.equals(dvCheckPlanService.checkPlanCodeUnique(createReqVO))){
+        /*if(Constant.NOT_UNIQUE.equals(dvCheckPlanService.checkPlanCodeUnique(createReqVO))){
             return error(ErrorCodeConstants.DV_CHECK_PLAN_NOT_EXISTS);
-        }
+        }*/
         return success(dvCheckPlanService.createDvCheckPlan(createReqVO));
     }
 

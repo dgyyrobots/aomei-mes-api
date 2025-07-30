@@ -1,5 +1,6 @@
 package com.dofast.module.purchase.controller.admin.retreatGoods.vo;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -82,4 +83,24 @@ public class RetreatGoodsExportReqVO {
     @Schema(description = "库位名称", example = "赵六")
     private String areaName;
 
+    @Schema(description = "ERP采购单号")
+    private String poNo;
+
+    @Schema(description = "ERP采购批次")
+    private Integer purchaseBatch;
+
+    @Schema(description = "ERP采购批序")
+    private Integer purchaseConsequence;
+
+    @Schema(description = "ERP采购分批序")
+    private Integer purchaseBatchConsequence;
+
+    @Schema(description = "ERP采购单号")
+    private String erpReceiveCode;
+
+    @Schema(description = "ERP收货项次")
+    private Integer receiveSeq;
+
+    @Schema(description = "ERP仓退理由码")
+    private String reasonCode;
 }

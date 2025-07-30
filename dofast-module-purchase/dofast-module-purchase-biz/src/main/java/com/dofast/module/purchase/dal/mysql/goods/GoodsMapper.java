@@ -44,6 +44,7 @@ public interface GoodsMapper extends BaseMapperX<GoodsDO> {
                 .likeIfPresent(GoodsDO::getVendorName, reqVO.getVendorName())
                 .eqIfPresent(GoodsDO::getReceiveSeq, reqVO.getReceiveSeq())
                 .eqIfPresent(GoodsDO::getReceivedNum, reqVO.getReceivedNum())
+                .inIfPresent(GoodsDO::getBatchCode , reqVO.getBatchCodeList())
                 .orderByDesc(GoodsDO::getId));
     }
 

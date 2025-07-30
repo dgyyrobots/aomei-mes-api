@@ -85,4 +85,9 @@ public class ItemRecptTxBean extends BaseDO {
     private Date recptDate;
 
     private Date expireDate;
+
+    private Long originId;
+
+    /** 入库母批次号 */
+    private String parentBatchCode;
 }

@@ -74,4 +74,7 @@ public interface IssueLineService {
     List<IssueLineDO> getIssueLineByHeaderId(Long headerId);
 
     void updateIssueLineBatch(List<IssueLineDO> issueLineDOS);
+
+    List<IssueLineDO> getIssueLineListByFeedbackCodes(List<String> feedbackCodes);
+
 }

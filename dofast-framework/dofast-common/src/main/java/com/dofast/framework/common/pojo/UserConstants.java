@@ -1,6 +1,7 @@
 package com.dofast.framework.common.pojo;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 用户常量信息
@@ -111,6 +112,7 @@ public class UserConstants
     public static final String ORDER_STATUS_APPROVING="APPROVING";
     public static final String ORDER_STATUS_APPROVED="APPROVED";
     public static final String ORDER_STATUS_FINISHED="FINISHED";
+    public static final String ORDER_STATUS_WAREHOUSED="WAREHOUSED";
 
     /**
      * 维护类型
@@ -241,5 +243,5 @@ public class UserConstants
     /**
      * erp同步日期
      */
-    public static final LocalDate BATCH_CODE_SWITCH_DATE = LocalDate.of(2025, 4, 28);
+    public static final LocalDateTime BATCH_CODE_SWITCH_DATE = LocalDateTime.of(2025, 6, 24, 15, 0, 0);
 }

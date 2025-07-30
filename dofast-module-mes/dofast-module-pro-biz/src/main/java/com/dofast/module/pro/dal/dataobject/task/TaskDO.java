@@ -1,6 +1,7 @@
 package com.dofast.module.pro.dal.dataobject.task;
 
 import cn.hutool.core.date.DateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.math.BigDecimal;
@@ -224,4 +225,20 @@ public class TaskDO extends BaseDO {
      * 设备Id
      */
     private String machineryId;
+
+    /**
+     * 派工状态
+     */
+    private String taskStatus;
+
+    /**
+     * 派工设备列表
+     */
+    private String machineryCodes;
+
+    /**
+     * 报工单流水号
+     */
+    private String feedbackSerial;
+
 }

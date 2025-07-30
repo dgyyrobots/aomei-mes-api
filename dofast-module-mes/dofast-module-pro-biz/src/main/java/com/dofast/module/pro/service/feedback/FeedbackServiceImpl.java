@@ -130,6 +130,14 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackMapper.selectBatchIds(ids);
     }
 
+
+    @Override
+    public List<FeedbackDO> getFeedbackListByFeedbackCodes(Collection<String> feedbackCodes){
+        return feedbackMapper.selectListByFeedbackCodes(feedbackCodes);
+    }
+
+
+
     @Override
     public PageResult<FeedbackDO> getFeedbackPage(FeedbackPageReqVO pageReqVO) {
         return feedbackMapper.selectPage(pageReqVO);
@@ -179,5 +187,18 @@ public class FeedbackServiceImpl implements FeedbackService {
     public List<Map<String, Object>> getCapacity(){
         return feedbackMapper.getCapacity();
     }
+
+    @Override
+    public Map<String, Object> getFeedbackCount(String workorderCode, String taskCode){
+        return feedbackMapper.getFeedbackCount(workorderCode, taskCode);
+    }
+
+    @Override
+    public Map<String, Object> getIotFeedbackLog(String machineryCode){
+        return feedbackMapper.getIotFeedbackLog(machineryCode);
+    }
+
+
+
 
 }

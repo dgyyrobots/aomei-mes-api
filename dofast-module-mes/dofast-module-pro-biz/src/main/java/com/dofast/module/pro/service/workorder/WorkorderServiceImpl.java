@@ -147,4 +147,18 @@ public class WorkorderServiceImpl implements WorkorderService {
         return workorderMapper.selectList(new WorkorderListVO().setSourceCode(sourceCode));
     }
 
+
+    @Override
+    public Map<String, Integer>  getCountMonthWorkorderLastYear(){
+        return workorderMapper.getCountMonthWorkorderLastYear();
+    }
+
+    @Override
+    public Map<String, Integer>  getCountMonthWorkorderThisYear(){
+        return workorderMapper.getCountMonthWorkorderThisYear();
+    }
+
+
+
+
 }

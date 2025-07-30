@@ -86,6 +86,13 @@ public class MdWorkshopServiceImpl implements MdWorkshopService {
         return mdWorkshopMapper.selectById(id);
     }
 
+
+    @Override
+    public MdWorkshopDO getMdWorkshop(String workshopCode){
+        return mdWorkshopMapper.selectOne(MdWorkshopDO::getWorkshopCode, workshopCode);
+    }
+
+
     @Override
     public List<MdWorkshopDO> getMdWorkshopList(Collection<Long> ids) {
         return mdWorkshopMapper.selectBatchIds(ids);

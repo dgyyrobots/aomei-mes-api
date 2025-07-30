@@ -32,10 +32,12 @@ public class DvCheckPlanServiceImpl implements DvCheckPlanService {
     public String checkPlanCodeUnique(DvCheckPlanBaseVO baseVO) {
         DvCheckPlanDO plan = dvCheckPlanMapper.checkPlanCodeUnique(baseVO);
         Long planId = baseVO.getId()==null?-1L:baseVO.getId();
+        System.out.println("planId="+planId);
+        System.out.println("plan="+plan);
         if(null != (plan) && plan.getId().longValue()==planId.longValue()){
-            return Constant.NOT_UNIQUE;
+            return Constant.UNIQUE;
         }
-        return Constant.UNIQUE;
+        return Constant.NOT_UNIQUE;
     }
 
     @Override

@@ -98,4 +98,10 @@ public class RtIssueLineBaseVO {
     @Schema(description = "ERP批次")
     private String erpBatchCode;
 
+    @Schema(description = "母批次")
+    private String parentBatchCode;
+
+    @Schema(description = "ERP状态")
+    private String erpStatus;
+
 }

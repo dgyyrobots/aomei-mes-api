@@ -23,6 +23,7 @@ import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineListVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExportReqVO;
 import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockUpdateReqVO;
 import com.dofast.module.wms.convert.allocatedheader.AllocatedHeaderConvert;
+import com.dofast.module.wms.convert.issueline.IssueLineConvert;
 import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedHeaderDO;
 import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
@@ -59,9 +60,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.IOException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.dofast.framework.common.pojo.PageResult;
@@ -179,7 +182,9 @@ public class IssueHeaderController {
             createReqVO.setAreaCode(storageAreaDO.getAreaCode());
             createReqVO.setAreaName(storageAreaDO.getAreaName());
         }
-
+        // 将任务单实际开工时间进行记录
+        taskDTO.setActualStartTime(LocalDateTime.now());
+        taskApi.updateTask(taskDTO);
         return success(issueHeaderService.createIssueHeader(createReqVO));
     }
 
@@ -291,6 +296,7 @@ public class IssueHeaderController {
             lineExportReqVO.setSequence(line.getSequence()); // 卡控项次与项序
             lineExportReqVO.setSequenceOrder(line.getSequenceOrder());
             lineExportReqVO.setStatus("Y"); // 已上料
+            lineExportReqVO.setErpEnable("Y"); // 已同步ERP
             List<IssueLineDO> lineDOList = issueLineService.getIssueLineList(lineExportReqVO);
 
             // 循环lineDOlist, 获取每一行数据的使用量并进行汇总
@@ -328,6 +334,7 @@ public class IssueHeaderController {
                 Map<String, Object> item = buildErpItem(header, line, "H01", h01Qty);
                 if (item != null) {
                     goodsList.add(item);
+                    erpEnableList.add(line);
                 }
             }
 
@@ -336,10 +343,9 @@ public class IssueHeaderController {
                 Map<String, Object> item = buildErpItem(header, line, "H02", h02Qty);
                 if (item != null) {
                     goodsList.add(item);
+                    erpEnableList.add(line);
                 }
             }
-
-            erpEnableList.add(line);
         }
 
         // 按领料类型分组（H01/H02）
@@ -350,28 +356,28 @@ public class IssueHeaderController {
         erpParams.put("sfda002", "11");  // 保持原值，根据实际情况调整
         erpParams.put("source_no", header.getIssueCode());
 
-        /*if(true){
-            return error(ErrorCodeConstants.RT_ISSUE_CODE_EXISTS);
-        }*/
+        Map<Long, IssueLineDO> lineMap = lines.stream().collect(Collectors.toMap(IssueLineDO::getId, Function.identity()));
 
         // 遍历分组进行接口调用
         for (Map.Entry<String, List<Map<String, Object>>> entry : groupedData.entrySet()) {
             // 设置当前分组的领料数据
             erpParams.put("goodsList", entry.getValue());
-            System.out.println("发送分组数据：" + erpParams);
             // 调用ERP接口
-            /*String erpResult = workorderERPAPI.workOrderIssueCreate(erpParams);
-            if (!erpResult.contains("SUCCESS")) {
-                return error(ErrorCodeConstants.ISSUE_ERR_INTERFACE_ERROR);
-            }*/
-        }
-
-        if(!erpEnableList.isEmpty()){
-            // 将当前领料信息追加ERP调用标识
-            erpEnableList.forEach(line -> {
-                line.setErpEnable("Y");
-            });
-            issueLineService.updateIssueLineBatch(erpEnableList);
+            List<Map<String, Object>> list = entry.getValue();
+            String erpResult = workorderERPAPI.workOrderIssueCreate(erpParams);
+            // String erpResult ="ERROR";
+            if (erpResult.contains("SUCCESS")) {
+                // 接口调用成功, 追加ERP同步标识
+                List<IssueLineDO> lineDOList = new ArrayList<>();
+                for (Map<String, Object> map : list){
+                    Number lineId = (Number) map.get("issueLineId");
+                    IssueLineDO line = lineMap.get(lineId.longValue());
+                    if (line != null) {
+                        line.setErpEnable("Y");
+                        issueLineService.updateIssueLine(IssueLineConvert.INSTANCE.convert01(line));
+                    }
+                }
+            }
         }
 
         // 追加上料详情
@@ -414,6 +420,8 @@ public class IssueHeaderController {
             lineDO.setSequenceOrder(issueLine.getSequenceOrder());
             // 2025-04-25: 追加ERP母批次
             lineDO.setErpBatchCode(issueLine.getErpBatchCode());
+            // 2025-06-08 追加母批次
+            lineDO.setParentBatchCode(issueLine.getParentBatchCode());
             createReqVOList.add(lineDO);
         }
         feedLineService.insertBatch(createReqVOList);
@@ -452,6 +460,12 @@ public class IssueHeaderController {
         DvMachineryDTO dvMachineryDTO =  dvMachineryApi.getMachineryInfo(task.getMachineryCode());
         dvMachineryDTO.setStatus("WORKING"); //扫码上料视为生产中
         dvMachineryApi.updateMachineryInfo(dvMachineryDTO);*/
+
+        // 将对应任务单状态改为生产中
+        TaskDTO taskDO = taskApi.getTask(header.getTaskCode());
+        taskDO.setStatus("STARTED");
+        taskApi.updateTask(taskDO);
+
         issuLineMapper.updateBatch(lines);
         return success(true);
     }
@@ -463,21 +477,28 @@ public class IssueHeaderController {
         MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
         exportReqVO.setItemCode(line.getItemCode());
         exportReqVO.setBatchCode(line.getBatchCode());
+
         exportReqVO.setRecptStatus("Y");
-        MaterialStockDO stockDO = materialStockService.getMaterialStockList(exportReqVO) == null ? null : materialStockService.getMaterialStockList(exportReqVO).get(0);
-        if(stockDO==null){
+        //MaterialStockDO stockDO = materialStockService.getMaterialStockList(exportReqVO) == null ? null : materialStockService.getMaterialStockList(exportReqVO).get(0);
+        List<MaterialStockDO> stockDOList = materialStockService.getMaterialStockListContainZero(exportReqVO) == null ? null : materialStockService.getMaterialStockListContainZero(exportReqVO);
+        if(stockDOList.isEmpty()){
             return null;
         }
-        if (stockDO.getCreateTime().isBefore(BATCH_CODE_SWITCH_DATE.atStartOfDay())) {
+        stockDOList.sort(Comparator.comparing(MaterialStockDO::getCreateTime));
+        MaterialStockDO stockDO = stockDOList.get(0);
+
+        if (stockDO.getCreateTime().isBefore(BATCH_CODE_SWITCH_DATE)) {
             batchCode = stockDO.getErpBatchCode();
             // 关键校验：当需要erpBatchCode但为空时返回null
-            if (StringUtils.isBlank(batchCode)) {
+            if (batchCode == null) {
                 System.out.println("ERP批次号缺失 | 领料单行ID：" +  line.getId());
                 return null;
             }
         } else {
-            batchCode = line.getBatchCode();
-            if (StringUtils.isBlank(batchCode)) {
+            // 2025-06-08 修改为母批
+            // batchCode = line.getBatchCode();
+            batchCode = line.getParentBatchCode();
+            if (batchCode == null) {
                 System.out.println("批次号缺失 | 领料单行ID：" +  line.getId());
                 return null;
             }
@@ -490,14 +511,11 @@ public class IssueHeaderController {
         item.put("sfdc007", qty);                       // 数量
         item.put("sfdc012", line.getLocationCode());    // 库区
         item.put("sfdc013", line.getAreaCode());        // 库位
-        // 校验当前line行的创建时间, 若时间小于2025-04-26, 则传递erpBatchCode字段
-        if (line.getCreateTime().isBefore(LocalDateTime.of(2025, 4, 26, 0, 0, 0))) {
-            item.put("sfdc014", line.getErpBatchCode());       // 批次
-        }else{
-            item.put("sfdc014", batchCode);       // 批次
-        }
+        item.put("sfdc014", batchCode);                 // 批次
         item.put("sfdc015", reasonCode);                // 理由码
         item.put("source_seq", "");   // MES项次
+        item.put("issueLineId", line.getId());
+        item.put("typeud001" , line.getUnitOfMeasure()); // 追加单位
         return item;
     }
 
@@ -578,4 +596,92 @@ public class IssueHeaderController {
         issueHeaderService.updateIssueHeader(IssueHeaderConvert.INSTANCE.convert01(issueHeader));
         return success(true);
     }
+
+    @GetMapping("/traceIssueHeaderPage")
+    @Operation(summary = "获得生产领料单头分页")
+    @PreAuthorize("@ss.hasPermission('wms:issue-header:query')")
+    public CommonResult<PageResult<IssueHeaderRespVO>> traceIssueHeaderPage(@Valid IssueHeaderPageReqVO pageVO) {
+        String workorderCode = pageVO.getWorkorderCode();
+        String taskCode = pageVO.getTaskCode();
+        String batchCode = pageVO.getBatchCode();
+
+        if (workorderCode == null && taskCode == null && batchCode == null) {
+            return success();
+        }
+
+        Set<String> issueCodeSet = new HashSet<>();
+
+        if(workorderCode!= null && !"".equals(workorderCode)){
+            // 基于工单获取所有领料单
+            List<IssueHeaderDO> issueHeaderDOList = issueHeaderService.getIssueHeaderList(new IssueHeaderExportReqVO().setWorkorderCode(workorderCode));
+            if (!issueHeaderDOList.isEmpty()) {
+                for (IssueHeaderDO issueHeaderDO : issueHeaderDOList) {
+                    issueCodeSet.add(issueHeaderDO.getIssueCode());
+                }
+            }
+        }
+
+        if(taskCode!= null && !"".equals(taskCode)){
+            // 基于任务单获取领料单
+            List<IssueHeaderDO> issueHeaderDOList = issueHeaderService.getIssueHeaderList(new IssueHeaderExportReqVO().setTaskCode(taskCode));
+            if (!issueHeaderDOList.isEmpty()) {
+                for (IssueHeaderDO issueHeaderDO : issueHeaderDOList) {
+                    issueCodeSet.add(issueHeaderDO.getIssueCode());
+                }
+            }
+        }
+
+        if(batchCode!= null && !"".equals(batchCode)){
+            List<IssueLineDO> issueLineDOList = issueLineService.getIssueLineList(new IssueLineExportReqVO().setBatchCode(batchCode));
+            if(!issueLineDOList.isEmpty()){
+                for (IssueLineDO issueLineDO : issueLineDOList) {
+                    IssueHeaderDO issueHeaderDO = Optional.ofNullable(issueHeaderService.getIssueHeader(issueLineDO.getIssueId())).orElse(null);
+                    if(issueHeaderDO!=null){
+                        issueCodeSet.add(issueHeaderDO.getIssueCode());
+                    }
+                }
+            }
+        }
+
+        if(issueCodeSet.isEmpty()){
+            return success();
+        }
+
+        List<String> issueHeaderDOList = new ArrayList<>(issueCodeSet);
+        pageVO.setIssueCodeList(issueHeaderDOList);
+        pageVO.setWorkorderCode(null);
+        pageVO.setTaskCode(null);
+        pageVO.setBatchCode(null);
+        PageResult<IssueHeaderDO> pageResult = issueHeaderService.getIssueHeaderPage(pageVO);
+        return success(IssueHeaderConvert.INSTANCE.convertPage(pageResult));
+    }
+
+
+
+    /**
+     * 获取任务单状态
+     * @param
+     * @return
+     */
+    @GetMapping("/initTaskInfoByIssueId")
+    @Operation(summary = "更新调拨单头")
+    @PreAuthorize("@ss.hasPermission('wms:allocated-header:update')")
+    public CommonResult<Map<String, Object>> initTaskInfoByIssueId(@RequestParam("id") Long issueId) {
+        IssueHeaderDO issueHeader = issueHeaderService.getIssueHeader(issueId);
+        TaskDTO task = taskApi.getTask(issueHeader.getTaskCode());
+        Map<String, Object> map = new HashMap<>();
+        map.put("issueCode" , issueHeader.getIssueCode());
+        map.put("issueName" , issueHeader.getIssueName());
+        map.put("id", task.getId());
+        map.put("taskCode" , issueHeader.getTaskCode());
+        map.put("taskName", task.getTaskName());
+        map.put("taskStatus", task.getStatus());
+        map.put("quantity", task.getQuantity());
+        map.put("quantityProduced", 0);
+        map.put("produced", task.getQuantityProduced());
+        return success(map);
+    }
+
 }
+
+

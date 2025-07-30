@@ -2,6 +2,8 @@ package com.dofast.module.pro.dal.dataobject.feedbackmember;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -57,5 +59,10 @@ public class FeedbackMemberDO extends BaseDO {
      * 岗位Id
      */
     private String postIds;
+
+    /**
+     * 生产数量
+     */
+    private BigDecimal quantity;
 
 }

@@ -82,6 +82,24 @@ public class IpqcLineExcelVO {
     @ExcelProperty("预留字段4")
     private Integer attr4;
 
+    @ExcelProperty("检验数值1")
+    private BigDecimal inspectionValue1;
+
+    @ExcelProperty("检验数值2")
+    private BigDecimal inspectionValue2;
+
+    @ExcelProperty("检验数值3")
+    private BigDecimal inspectionValue3;
+
+    @ExcelProperty("检验数值4")
+    private BigDecimal inspectionValue4;
+
+    @ExcelProperty("检验数值5")
+    private BigDecimal inspectionValue5;
+
+    @ExcelProperty("检验结果")
+    private String inspectionResult;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

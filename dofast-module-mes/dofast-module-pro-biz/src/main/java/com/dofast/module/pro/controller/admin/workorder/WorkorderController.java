@@ -2,19 +2,33 @@ package com.dofast.module.pro.controller.admin.workorder;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.alibaba.fastjson2.JSONObject;
 import com.dofast.framework.common.util.io.MinioUtil;
 import com.dofast.module.mes.api.ProductBomApi.ProductBomApi;
 import com.dofast.module.mes.api.ProductBomApi.dto.MdProductBomDTO;
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.pro.api.TaskApi.TaskApi;
+import com.dofast.module.pro.controller.admin.feedback.vo.FeedbackExportReqVO;
+import com.dofast.module.pro.controller.admin.routeprocess.vo.RouteProcessExportReqVO;
 import com.dofast.module.pro.controller.admin.task.vo.TaskExportReqVO;
 import com.dofast.module.pro.controller.admin.task.vo.TaskRespVO;
 import com.dofast.module.pro.controller.admin.workorderbom.vo.WorkorderBomBaseVO;
 import com.dofast.module.pro.controller.admin.workorderbom.vo.WorkorderBomCreateReqVO;
+import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
+import com.dofast.module.pro.dal.dataobject.route.RouteDO;
+import com.dofast.module.pro.dal.dataobject.routeprocess.RouteProcessDO;
 import com.dofast.module.pro.dal.dataobject.task.TaskDO;
 import com.dofast.module.pro.enums.ErrorCodeConstants;
+import com.dofast.module.pro.service.feedback.FeedbackService;
+import com.dofast.module.pro.service.route.RouteService;
+import com.dofast.module.pro.service.routeprocess.RouteProcessService;
 import com.dofast.module.pro.service.task.TaskService;
 import com.dofast.module.pro.service.workorderbom.WorkorderBomService;
 import com.dofast.module.report.api.PrintLog.PrintLogApi;
+import com.dofast.module.wms.controller.admin.issueline.vo.IssueLineExportReqVO;
+import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
+import com.dofast.module.wms.service.issueline.IssueLineService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -30,6 +44,7 @@ import javax.validation.*;
 import javax.servlet.http.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.*;
 import java.io.IOException;
 import java.util.stream.Collectors;
@@ -73,6 +88,18 @@ public class WorkorderController {
 
     @Resource
     private MinioUtil minioUtil;
+
+    @Resource
+    private FeedbackService feedbackService;
+
+    @Resource
+    private IssueLineService issueLineService;
+
+    @Resource
+    private RouteService routeService;
+
+    @Resource
+    private RouteProcessService routeProcessService;
 
     @PostMapping("/create")
     @Operation(summary = "创建生产工单")
@@ -346,6 +373,25 @@ public class WorkorderController {
         workorderService.updateWorkorder(WorkorderConvert.INSTANCE.convert1(workorder));
         return success();
     }
+
+    @GetMapping("/count-month-workorder-lastYear")
+    @Operation(summary = "获取工单去年产出总额")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<Map<String, Integer>> CountMonthWorkorderLastYear() {
+        return success(workorderService.getCountMonthWorkorderLastYear());
+    }
+
+    @GetMapping("/count-month-workorder-thisYear")
+    @Operation(summary = "获取工单今年产出总额")
+    @PreAuthorize("@ss.hasPermission('pro:workorder:query')")
+    public CommonResult<Map<String, Integer>> CountMonthWorkorderThisYear() {
+        return success(workorderService.getCountMonthWorkorderThisYear());
+    }
+
+
+
+
+
 
 
 }

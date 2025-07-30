@@ -67,4 +67,10 @@ public interface MaterialStockService {
      */
     List<MaterialStockDO> getMaterialStockList(MaterialStockExportReqVO exportReqVO);
 
+
+    List<MaterialStockDO> getMaterialStockListContainZero(MaterialStockExportReqVO exportReqVO);
+
+
+    Long getOriginIdByBatchCode(String batchCode);
+
 }

@@ -134,4 +134,7 @@ public class FeedLineBaseVO {
     @Schema(description = "ERP批次")
     private String erpBatchCode;
 
+    @Schema(description = "母批次")
+    private String parentBatchCode;
+
 }

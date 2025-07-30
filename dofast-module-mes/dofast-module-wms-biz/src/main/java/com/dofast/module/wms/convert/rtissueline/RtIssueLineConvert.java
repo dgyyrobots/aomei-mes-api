@@ -25,6 +25,8 @@ public interface RtIssueLineConvert {
 
     RtIssueLineRespVO convert(RtIssueLineDO bean);
 
+    RtIssueLineUpdateReqVO convert01(RtIssueLineDO bean);
+
     List<RtIssueLineRespVO> convertList(List<RtIssueLineDO> list);
 
     PageResult<RtIssueLineRespVO> convertPage(PageResult<RtIssueLineDO> page);

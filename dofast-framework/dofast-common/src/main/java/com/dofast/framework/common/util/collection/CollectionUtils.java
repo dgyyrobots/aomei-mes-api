@@ -313,4 +313,43 @@ public class CollectionUtils {
         return from.stream().map(func).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
+
+    /*数组复制*/
+    public static String[] copy(String[] source){
+        if(isEmpty(source)){
+            return null;
+        }
+        int len = source.length;
+        String[] arr = new String[len];
+        for(int i=0; i < len; i ++){
+            arr[i] = source[i];
+        }
+        return arr;
+    }
+
+
+    public static boolean isEmpty(String[] source){
+        if(null == source){
+            return true;
+        }
+        if(0 == source.length){
+            return true;
+        }
+        return false;
+    }
+
+    /*数组连接*/
+    public static String concat(String[] source, String split){
+        if(isEmpty(source)){
+            return null;
+        }
+        String result = "";
+        for(int i=0; i < source.length; i ++){
+            result = result.concat(source[i]);
+            if(i != source.length - 1){
+                result = result.concat(split);
+            }
+        }
+        return result;
+    }
 }

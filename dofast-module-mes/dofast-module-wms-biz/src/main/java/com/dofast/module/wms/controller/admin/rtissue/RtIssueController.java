@@ -17,6 +17,8 @@ import com.dofast.module.wms.controller.admin.materialstock.vo.MaterialStockExpo
 import com.dofast.module.wms.controller.admin.rtissueline.vo.RtIssueLineCreateReqVO;
 import com.dofast.module.wms.controller.admin.rtissueline.vo.RtIssueLineExportReqVO;
 import com.dofast.module.wms.controller.admin.rtissueline.vo.RtIssueLineListVO;
+import com.dofast.module.wms.convert.issueline.IssueLineConvert;
+import com.dofast.module.wms.convert.rtissueline.RtIssueLineConvert;
 import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
@@ -36,6 +38,7 @@ import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
 import com.dofast.module.wms.service.warehouse.WarehouseService;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.apache.poi.sl.usermodel.Line;
 import org.redisson.executor.TasksService;
 import org.springframework.transaction.annotation.Transactional;
@@ -172,6 +175,8 @@ public class RtIssueController {
             req.setAreaName(area.getAreaName());
             req.setRtId(rtissueId);
             req.setBatchCode((String) line.get("batchCode"));
+            // 2025-06-08 追加母批次
+            req.setParentBatchCode((String) line.get("parentBatchCode"));
             req.setItemCode((String) line.get("itemCode"));
             req.setItemName((String) line.get("itemName"));
             req.setSpecification((String) line.get("specification"));
@@ -182,7 +187,7 @@ public class RtIssueController {
             MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
             exportReqVO.setBatchCode((String) line.get("batchCode"));
             exportReqVO.setItemCode((String) line.get("itemCode"));
-            List<MaterialStockDO> materialStockList = materialStockService.getMaterialStockList(exportReqVO);
+            List<MaterialStockDO> materialStockList = materialStockService.getMaterialStockListContainZero(exportReqVO);
             if(materialStockList.isEmpty()){
                 continue;
             }
@@ -233,6 +238,9 @@ public class RtIssueController {
         Map<String, List<RtIssueLineDO>> materialGroups = lines.stream()
                 .filter(line -> line.getSequence() != null && line.getSequenceOrder() != null)
                 .collect(Collectors.groupingBy(RtIssueLineDO::getItemCode));
+
+        // ERP接口调用标识
+        List<Map<String, Object>> erpEnableList = new ArrayList<>();
 
         // 处理每个物料批次组
         for (Map.Entry<String, List<RtIssueLineDO>> entry : materialGroups.entrySet()) {
@@ -302,6 +310,7 @@ public class RtIssueController {
                 Map<String, Object> item = buildErpItem(rtIssue, sampleLine, "Y01", y01Qty);
                 if (item != null) {
                     list.add(item);
+                    erpEnableList.add(item);
                 }
             }
 
@@ -309,6 +318,7 @@ public class RtIssueController {
                 Map<String, Object> item = buildErpItem(rtIssue, sampleLine, "Y02", y02Qty);
                 if (item != null) {
                     list.add(item);
+                    erpEnableList.add(item);
                 }
             }
         }
@@ -321,15 +331,36 @@ public class RtIssueController {
             List<Map<String, Object>> items = entry.getValue();
             Map<String, Object> erpParams = new HashMap<>();
             erpParams.put("goodsList", items);
-            erpParams.put("sfda002", "21");
+
+            String sfda002Value = "Y01".equals(type) ? "21" : "22";
+
+            erpParams.put("sfda002", sfda002Value);
             erpParams.put("source_no", rtIssue.getRtCode());
-            /*if (!items.isEmpty()) {
+
+            List<Map<String, Object>> rtIssueList = entry.getValue();
+            if (!items.isEmpty()) {
                 String erpResult = workorderERPAPI.workOrderIssueCreate(erpParams);
-                if (!erpResult.contains("SUCCESS")) {
-                    return error(ErrorCodeConstants.RT_ISSUE_ERR_INTERFACE_ERROR);
+                // String erpResult = "SUCCESS";
+                if (erpResult.contains("SUCCESS")) {
+                    for (Map<String, Object> map : rtIssueList){
+                        Number lineId = (Number) map.get("rtissueId");
+                        RtIssueLineDO queryLine = rtIssueLineService.getRtIssueLine(lineId.longValue());
+                        queryLine.setErpStatus("Y");
+                        rtIssueLineService.updateRtIssueLine(RtIssueLineConvert.INSTANCE.convert01(queryLine));
+                    }
                 }
-            }*/
+            }
         }
+
+        /*if(!erpEnableList.isEmpty()){
+            // 将当前领料信息追加ERP调用标识
+            for (Map<String, Object> map: erpEnableList){
+                Integer id = (Integer) map.get("id");
+                RtIssueLineDO lineDO = rtIssueLineService.getRtIssueLine(id.longValue());
+                lineDO.setErpStatus("Y");
+                rtIssueLineService.updateRtIssueLine(RtIssueLineConvert.INSTANCE.convert01(lineDO));
+            }
+        }*/
 
         List<RtIssueTxBean> beans = rtIssueService.getTxBeans(rtId);
 
@@ -349,7 +380,7 @@ public class RtIssueController {
         // 将feedLineList与param进行对比, 若当前的物料料号相同, 则将feedLineList中对应的数量减去param中的数量
         for(FeedLineDO feedLine : feedLineList){
             for(RtIssueLineDO line : lines){
-                if(feedLine.getItemCode().equals(line.getItemCode())){
+                if(feedLine.getItemCode().equals(line.getItemCode()) && feedLine.getBatchCode().equals(line.getBatchCode())){
                     BigDecimal feedQuantity = new BigDecimal(feedLine.getQuantity());
                     BigDecimal finQuantity = feedQuantity.subtract(line.getQuantityRt());
                     feedLine.setQuantity(finQuantity.doubleValue());
@@ -386,24 +417,34 @@ public class RtIssueController {
                                              String reasonCode, BigDecimal qty) {
         // 前置校验批次号
         String batchCode;
+
         MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
         exportReqVO.setItemCode(line.getItemCode());
         exportReqVO.setBatchCode(line.getBatchCode());
+        // 2025-06-08 母批次
+        exportReqVO.setParentBatchCode(line.getParentBatchCode());
+
         exportReqVO.setRecptStatus("Y");
-        MaterialStockDO stockDO = materialStockService.getMaterialStockList(exportReqVO) == null ? null : materialStockService.getMaterialStockList(exportReqVO).get(0);
-        if(stockDO==null){
+        //MaterialStockDO stockDO = materialStockService.getMaterialStockList(exportReqVO) == null ? null : materialStockService.getMaterialStockList(exportReqVO).get(0);
+        List<MaterialStockDO> stockDOList = materialStockService.getMaterialStockListContainZero(exportReqVO) == null ? null : materialStockService.getMaterialStockListContainZero(exportReqVO);
+        if(stockDOList.isEmpty()){
             return null;
         }
-        if (stockDO.getCreateTime().isBefore(BATCH_CODE_SWITCH_DATE.atStartOfDay())) {
+        stockDOList.sort(Comparator.comparing(MaterialStockDO::getCreateTime));
+        MaterialStockDO stockDO = stockDOList.get(0);
+
+        if (stockDO.getCreateTime().isBefore(BATCH_CODE_SWITCH_DATE)) {
             batchCode = stockDO.getErpBatchCode();
             // 关键校验：当需要erpBatchCode但为空时返回null
-            if (StringUtils.isBlank(batchCode)) {
+            if (batchCode == null) {
                 System.out.println("ERP批次号缺失 | 要退料单行ID：" +  line.getId());
                 return null;
             }
         } else {
-            batchCode = line.getBatchCode();
-            if (StringUtils.isBlank(batchCode)) {
+            // 2025-06-08 修改为母批
+            // batchCode = line.getBatchCode();
+            batchCode = stockDO.getParentBatchCode();
+            if (batchCode == null) {
                 System.out.println("批次号缺失 | 要退料单行ID：" +  line.getId());
                 return null;
             }
@@ -418,6 +459,8 @@ public class RtIssueController {
         item.put("sfdc014", batchCode); // 批次
         item.put("sfdc015", reasonCode); // 理由码
         item.put("sfdc016", ""); // 库存管理特征
+        item.put("rtissueId", line.getId());
+        item.put("typeud001" , line.getUnitOfMeasure()); // 追加单位
         return item;
     }
 
@@ -508,12 +551,12 @@ public class RtIssueController {
             }
         }
 
-// 更新现有记录
+        // 更新现有记录
         if (!updateRt.isEmpty()) {
             rtIssueLineService.updateRtIssueLineBatch(updateRt);
         }
 
-// 添加新记录
+        // 添加新记录
         if (!addRt.isEmpty()) {
             rtIssueLineService.insertRtIssueLineBatch(addRt);
         }
@@ -593,6 +636,7 @@ public class RtIssueController {
             map.put("areaCode", rtIssueLine.getAreaCode());
             map.put("areaName", rtIssueLine.getAreaName());
             map.put("areaId", rtIssueLine.getAreaId());
+            map.put("erpStatus", rtIssueLine.getErpStatus());
             rtIssueLineMapList.add(map);
         }
         // 初始化退料信息
@@ -627,6 +671,151 @@ public class RtIssueController {
         // 导出 Excel
         List<RtIssueExcelVO> datas = RtIssueConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "生产退料单头.xls", "数据", RtIssueExcelVO.class, datas);
+    }
+
+    @GetMapping("/rtissueErp")
+    @Operation(summary = "同步ERP退料接口")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('wms:rt-issue:query')")
+    public CommonResult<RtIssueRespVO> rtissueErp(@RequestParam("id") Long id) {
+        RtIssueDO rtIssue = rtIssueService.getRtIssue(id);
+        RtIssueRespVO respVO = RtIssueConvert.INSTANCE.convert(rtIssue);
+
+        // 基于单身表初始化退料信息
+        RtIssueLineListVO param = new RtIssueLineListVO();
+        param.setRtId(id);
+        param.setErpStatus("N"); // 卡控未同步ERP的退料信息
+        List<RtIssueLineDO> lines = rtIssueLineService.selectList(param);
+        // 将rtIssueLineList转为List<Map<String, Object>
+        List<Map<String, Object>> rtIssueLineMapList = new ArrayList<>();
+        if(CollUtil.isEmpty(lines)){
+            return error(ErrorCodeConstants.RT_ISSUE_NEED_MAT);
+        }
+
+        // 追加ERP接口调用
+        Map<String, Object> params = new HashMap<>();
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        // 获取工单BOM信息
+        List<WorkorderBomDTO> bomList = workorderApi.getWorkorderBom(rtIssue.getWorkorderId());
+
+        // 按物料维度分组处理
+        Map<String, List<RtIssueLineDO>> materialGroups = lines.stream()
+                .filter(line -> line.getSequence() != null && line.getSequenceOrder() != null)
+                .collect(Collectors.groupingBy(RtIssueLineDO::getItemCode));
+
+        // ERP接口调用标识
+        List<Map<String, Object>> erpEnableList = new ArrayList<>();
+
+        // 处理每个物料批次组
+        for (Map.Entry<String, List<RtIssueLineDO>> entry : materialGroups.entrySet()) {
+            String key = entry.getKey();
+            List<RtIssueLineDO> rtLines = entry.getValue();
+            // 获取首行基本信息
+            RtIssueLineDO sampleLine = rtLines.get(0);
+            // 获取工单BOM应发量
+            BigDecimal bomQty = BigDecimal.ZERO;
+            for (WorkorderBomDTO bom : bomList) {
+                if (bom.getSequence().equals(sampleLine.getSequence()) && bom.getSequenceOrder().equals(sampleLine.getSequenceOrder())) {
+                    bomQty = new BigDecimal(bom.getQuantity());
+                    break;
+                }
+            }
+            // 获取历史已退量
+            // 获取当前已完成的退料单信息
+            RtIssueExportReqVO usedRtIssue = new RtIssueExportReqVO();
+            usedRtIssue.setTaskCode(rtIssue.getTaskCode());
+            usedRtIssue.setWorkorderCode(rtIssue.getAreaCode());
+            usedRtIssue.setStatus("FINISHED"); // 仅获取已完成物料
+            List<RtIssueDO> usedRtIssueDOList = rtIssueService.getRtIssueList(usedRtIssue);
+
+            BigDecimal totalReturned = BigDecimal.ZERO;
+            for (RtIssueDO usedRtIssueHeader : usedRtIssueDOList) {
+                RtIssueLineExportReqVO usedLineExportReqVO = new RtIssueLineExportReqVO();
+                usedLineExportReqVO.setItemCode(sampleLine.getItemCode());
+                //usedLineExportReqVO.setBatchCode(sampleLine.getBatchCode());
+                usedLineExportReqVO.setRtId(usedRtIssueHeader.getId());
+                usedLineExportReqVO.setSequence(sampleLine.getSequence());
+                usedLineExportReqVO.setSequenceOrder(sampleLine.getSequenceOrder());
+                List<RtIssueLineDO> rtIssueLine = rtIssueLineService.getRtIssueLineList(usedLineExportReqVO) == null ? new ArrayList<>() : rtIssueLineService.getRtIssueLineList(usedLineExportReqVO);
+
+                if (!rtIssueLine.isEmpty()) {
+                    for (RtIssueLineDO rt : rtIssueLine) {
+                        totalReturned = totalReturned.add(rt.getQuantityRt());
+                    }
+                }
+            }
+
+            // 计算当前物料待退总量
+            BigDecimal currentTotal = BigDecimal.ZERO;
+            for (RtIssueLineDO line : rtLines) {
+                currentTotal = currentTotal.add(line.getQuantityRt());
+            }
+
+            // 计算可退量分配
+            BigDecimal remaining = bomQty.subtract(totalReturned);
+            BigDecimal y01Qty = BigDecimal.ZERO;
+            BigDecimal y02Qty = BigDecimal.ZERO;
+
+            if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+                // 全部超退
+                y02Qty = currentTotal;
+            } else if (currentTotal.compareTo(remaining) <= 0) {
+                // 全部正常退
+                y01Qty = currentTotal;
+            } else {
+                // 拆分退料
+                y01Qty = remaining;
+                y02Qty = currentTotal.subtract(remaining);
+            }
+
+            // 生成H01报文
+            if (y01Qty.compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> item = buildErpItem(rtIssue, sampleLine, "Y01", y01Qty);
+                if (item != null) {
+                    list.add(item);
+                    erpEnableList.add(item);
+                }
+            }
+
+            if (y02Qty.compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> item = buildErpItem(rtIssue, sampleLine, "Y02", y02Qty);
+                if (item != null) {
+                    list.add(item);
+                    erpEnableList.add(item);
+                }
+            }
+        }
+        // 按退料类型分组调用
+        Map<String, List<Map<String, Object>>> typeGroups = list.stream()
+                .collect(Collectors.groupingBy(item -> (String) item.get("sfdc015")));
+        // 执行分组调用
+        for (Map.Entry<String, List<Map<String, Object>>> entry : typeGroups.entrySet()) {
+            String type = entry.getKey();
+            List<Map<String, Object>> items = entry.getValue();
+            Map<String, Object> erpParams = new HashMap<>();
+            erpParams.put("goodsList", items);
+            String sfda002Value = "Y01".equals(type) ? "21" : "22";
+            erpParams.put("sfda002", sfda002Value);
+            erpParams.put("source_no", rtIssue.getRtCode());
+            List<Map<String, Object>> rtIssueList = entry.getValue();
+            if (!items.isEmpty()) {
+                String erpResult = workorderERPAPI.workOrderIssueCreate(erpParams);
+                if (erpResult.contains("SUCCESS")) {
+                    for (Map<String, Object> map : rtIssueList){
+                        Number lineId = (Number) map.get("rtissueId");
+                        RtIssueLineDO queryLine = rtIssueLineService.getRtIssueLine(lineId.longValue());
+                        queryLine.setErpStatus("Y");
+                        rtIssueLineService.updateRtIssueLine(RtIssueLineConvert.INSTANCE.convert01(queryLine));
+                    }
+                }
+            }
+        }
+        if(erpEnableList.isEmpty()){
+            return error(ErrorCodeConstants.RT_ISSUE_NO_NEED_ERP);
+        }
+
+        return success();
     }
 
 }

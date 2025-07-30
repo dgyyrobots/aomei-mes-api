@@ -79,4 +79,10 @@ public class DvRepairLineServiceImpl implements DvRepairLineService {
         return dvRepairLineMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public void insertBatch(List<DvRepairLineDO> repairLineList){
+        dvRepairLineMapper.insertBatch(repairLineList);
+    }
+
+
 }

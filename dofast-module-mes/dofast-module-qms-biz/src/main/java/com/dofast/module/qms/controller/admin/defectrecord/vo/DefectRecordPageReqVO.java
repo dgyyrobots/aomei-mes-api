@@ -1,6 +1,8 @@
 package com.dofast.module.qms.controller.admin.defectrecord.vo;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.dofast.framework.common.pojo.PageParam;
@@ -31,7 +33,7 @@ public class DefectRecordPageReqVO extends PageParam {
     private String defectLevel;
 
     @Schema(description = "缺陷数量")
-    private Integer defectQuantity;
+    private BigDecimal defectQuantity;
 
     @Schema(description = "备注", example = "你猜")
     private String remark;

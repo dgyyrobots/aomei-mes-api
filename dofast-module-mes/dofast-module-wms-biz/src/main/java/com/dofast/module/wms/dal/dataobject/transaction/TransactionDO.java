@@ -190,4 +190,10 @@ public class TransactionDO extends BaseDO {
      * 如果设置为True则库存不允许为负
      */
     private boolean storageCheckFlag;
+
+    private Long originId;
+
+    private String confirmStatus;
+
+    private String parentBatchCode;
 }

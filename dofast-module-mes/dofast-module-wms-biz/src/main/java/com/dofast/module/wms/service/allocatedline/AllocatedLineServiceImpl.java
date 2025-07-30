@@ -101,4 +101,5 @@ public class AllocatedLineServiceImpl implements AllocatedLineService {
     public void createAllocatedBatch(List<AllocatedLineDO> allocatedLineDOList){
         allocatedLineMapper.insertBatch(allocatedLineDOList);
     }
+
 }

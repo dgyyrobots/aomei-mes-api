@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
 
+import com.dofast.module.cal.api.team.dto.TeamMemberDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.dofast.module.cal.controller.admin.teammember.vo.*;
@@ -30,5 +31,8 @@ public interface TeamMemberConvert {
     PageResult<TeamMemberRespVO> convertPage(PageResult<TeamMemberDO> page);
 
     List<TeamMemberExcelVO> convertList02(List<TeamMemberDO> list);
+
+    List<TeamMemberDTO> convertList03(List<TeamMemberDO> list);
+
 
 }

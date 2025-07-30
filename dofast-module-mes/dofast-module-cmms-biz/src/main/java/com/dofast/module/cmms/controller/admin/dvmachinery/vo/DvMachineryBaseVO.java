@@ -70,4 +70,7 @@ public class DvMachineryBaseVO {
     @Schema(description = "ERP设备编码")
     private String erpMachineryCode;
 
+    @Schema(description = "产品ID")
+    private Long productId;
+
 }

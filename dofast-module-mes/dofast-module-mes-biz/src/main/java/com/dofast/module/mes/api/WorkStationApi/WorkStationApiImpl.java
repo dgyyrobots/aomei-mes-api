@@ -26,10 +26,15 @@ public class WorkStationApiImpl implements WorkStationApi {
     }
 
     @Override
-    public WorkStationDTO getWorkstation(String workStationCode) {
-        MdWorkstationDO mdWorkstationDO = mdWorkstationMapper.selectOne(MdWorkstationDO::getWorkstationCode, workStationCode);
+    public WorkStationDTO getWorkstation(String workStationCode, String processCode) {
+        MdWorkstationDO mdWorkstationDO = mdWorkstationMapper.selectOne(MdWorkstationDO::getWorkstationCode,workStationCode , MdWorkstationDO::getProcessCode, processCode);
         return MdWorkstationConvert.INSTANCE.convert01(mdWorkstationDO);
     }
 
+    @Override
+    public WorkStationDTO getWorkstationByProcessCode(String processCode){
+        MdWorkstationDO mdWorkstationDO = mdWorkstationMapper.selectOne(MdWorkstationDO::getProcessCode, processCode);
+        return MdWorkstationConvert.INSTANCE.convert01(mdWorkstationDO);
+    }
 
 }

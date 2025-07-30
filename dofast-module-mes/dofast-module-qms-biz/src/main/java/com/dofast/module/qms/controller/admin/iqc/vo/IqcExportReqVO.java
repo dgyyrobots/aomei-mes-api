@@ -54,19 +54,19 @@ public class IqcExportReqVO {
     private String unitOfMeasure;
 
     @Schema(description = "最低检测数")
-    private Integer quantityMinCheck;
+    private BigDecimal quantityMinCheck;
 
     @Schema(description = "最大不合格数")
-    private Integer quantityMaxUnqualified;
+    private BigDecimal quantityMaxUnqualified;
 
     @Schema(description = "本次接收数量")
     private BigDecimal quantityRecived;
 
     @Schema(description = "本次检测数量")
-    private Integer quantityCheck;
+    private BigDecimal quantityCheck;
 
     @Schema(description = "不合格数")
-    private Integer quantityUnqualified;
+    private BigDecimal quantityUnqualified;
 
     @Schema(description = "致命缺陷率")
     private BigDecimal crRate;
@@ -78,13 +78,13 @@ public class IqcExportReqVO {
     private BigDecimal minRate;
 
     @Schema(description = "致命缺陷数量")
-    private Integer crQuantity;
+    private BigDecimal crQuantity;
 
     @Schema(description = "严重缺陷数量")
-    private Integer majQuantity;
+    private BigDecimal majQuantity;
 
     @Schema(description = "轻微缺陷数量")
-    private Integer minQuantity;
+    private BigDecimal minQuantity;
 
     @Schema(description = "检测结果")
     private String checkResult;
@@ -124,5 +124,8 @@ public class IqcExportReqVO {
 
     @Schema(description = "附件")
     private String adjuncts;
+
+    @Schema(description = "采购单号")
+    private String poNo;
 
 }

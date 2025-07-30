@@ -56,13 +56,13 @@ public class IqcLineExcelVO {
     private BigDecimal thresholdMin;
 
     @ExcelProperty("致命缺陷数量")
-    private Integer crQuantity;
+    private BigDecimal crQuantity;
 
     @ExcelProperty("严重缺陷数量")
-    private Integer majQuantity;
+    private BigDecimal majQuantity;
 
     @ExcelProperty("轻微缺陷数量")
-    private Integer minQuantity;
+    private BigDecimal minQuantity;
 
     @ExcelProperty("备注")
     private String remark;
@@ -81,5 +81,23 @@ public class IqcLineExcelVO {
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
+
+    @ExcelProperty("检验数值1")
+    private BigDecimal inspectionValue1;
+
+    @ExcelProperty("检验数值2")
+    private BigDecimal inspectionValue2;
+
+    @ExcelProperty("检验数值3")
+    private BigDecimal inspectionValue3;
+
+    @ExcelProperty("检验数值4")
+    private BigDecimal inspectionValue4;
+
+    @ExcelProperty("检验数值5")
+    private BigDecimal inspectionValue5;
+
+    @ExcelProperty("检验结果")
+    private String inspectionResult;
 
 }

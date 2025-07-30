@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
 
+import com.dofast.module.wms.api.Issueheader.dto.IssueLineDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import com.dofast.module.wms.controller.admin.issueline.vo.*;
@@ -26,6 +27,8 @@ public interface IssueLineConvert {
     IssueLineRespVO convert(IssueLineDO bean);
 
     IssueLineUpdateReqVO convert01(IssueLineDO bean);
+
+    IssueLineUpdateReqVO convert02(IssueLineDTO bean);
 
     List<IssueLineRespVO> convertList(List<IssueLineDO> list);
 

@@ -97,4 +97,9 @@ public class DvMachineryDO extends BaseDO {
      */
     private String erpMachineryCode;
 
+    /**
+     * 产品ID
+     */
+    private Long productId;
+
 }

@@ -6,6 +6,7 @@ import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.qms.dal.dataobject.ipqcline.IpqcLineDO;
+import com.dofast.module.qms.dal.dataobject.iqcline.IqcLineDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.qms.controller.admin.ipqcline.vo.*;
 
@@ -38,6 +39,12 @@ public interface IpqcLineMapper extends BaseMapperX<IpqcLineDO> {
                 .eqIfPresent(IpqcLineDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(IpqcLineDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(IpqcLineDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(IpqcLineDO::getInspectionValue1, reqVO.getInspectionValue1())
+                .eqIfPresent(IpqcLineDO::getInspectionValue2, reqVO.getInspectionValue2())
+                .eqIfPresent(IpqcLineDO::getInspectionValue3, reqVO.getInspectionValue3())
+                .eqIfPresent(IpqcLineDO::getInspectionValue4, reqVO.getInspectionValue4())
+                .eqIfPresent(IpqcLineDO::getInspectionValue5, reqVO.getInspectionValue5())
+                .eqIfPresent(IpqcLineDO::getInspectionResult, reqVO.getInspectionResult())
                 .betweenIfPresent(IpqcLineDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(IpqcLineDO::getId));
     }
@@ -75,6 +82,12 @@ public interface IpqcLineMapper extends BaseMapperX<IpqcLineDO> {
                 .eqIfPresent(IpqcLineDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(IpqcLineDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(IpqcLineDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(IpqcLineDO::getInspectionValue1, reqVO.getInspectionValue1())
+                .eqIfPresent(IpqcLineDO::getInspectionValue2, reqVO.getInspectionValue2())
+                .eqIfPresent(IpqcLineDO::getInspectionValue3, reqVO.getInspectionValue3())
+                .eqIfPresent(IpqcLineDO::getInspectionValue4, reqVO.getInspectionValue4())
+                .eqIfPresent(IpqcLineDO::getInspectionValue5, reqVO.getInspectionValue5())
+                .eqIfPresent(IpqcLineDO::getInspectionResult, reqVO.getInspectionResult())
                 .betweenIfPresent(IpqcLineDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(IpqcLineDO::getId));
     }

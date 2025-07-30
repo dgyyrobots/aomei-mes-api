@@ -7,10 +7,12 @@ import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedHeaderDO;
 import com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedTxBean;
+import com.dofast.module.wms.dal.dataobject.allocatedline.AllocatedLineDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueTxBean;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.wms.controller.admin.allocatedheader.vo.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 调拨单头 Mapper
@@ -50,6 +52,7 @@ public interface AllocatedHeaderMapper extends BaseMapperX<AllocatedHeaderDO> {
                 .eqIfPresent(AllocatedHeaderDO::getTaskName, reqVO.getTaskName())
                 .eqIfPresent(AllocatedHeaderDO::getBindWorkorder, reqVO.getBindWorkorder())
                 .betweenIfPresent(AllocatedHeaderDO::getCreateTime, reqVO.getCreateTime())
+                .inIfPresent(AllocatedHeaderDO::getAllocatedCode , reqVO.getAllocatedCodeList())
                 .orderByDesc(AllocatedHeaderDO::getId));
     }
 
@@ -90,5 +93,10 @@ public interface AllocatedHeaderMapper extends BaseMapperX<AllocatedHeaderDO> {
 
 
     public List<AllocatedTxBean> getTxBeans(Long allocatedId);
+
+
+    List<AllocatedHeaderDO> getAllocatedHeaderListByBatchCodeList(@Param("batchCodeList") List<String> batchCodeList);
+
+
 
 }

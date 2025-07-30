@@ -5,7 +5,9 @@ import java.util.*;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
+import com.dofast.module.purchase.dal.dataobject.goods.GoodsDO;
 import com.dofast.module.purchase.dal.dataobject.retreatGoods.RetreatGoodsDO;
+import liquibase.pro.packaged.R;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.purchase.controller.admin.retreatGoods.vo.*;
 
@@ -41,6 +43,14 @@ public interface RetreatGoodsMapper extends BaseMapperX<RetreatGoodsDO> {
                 .eqIfPresent(RetreatGoodsDO::getAreaId, reqVO.getAreaId())
                 .eqIfPresent(RetreatGoodsDO::getAreaCode, reqVO.getAreaCode())
                 .likeIfPresent(RetreatGoodsDO::getAreaName, reqVO.getAreaName())
+
+                .eqIfPresent(RetreatGoodsDO::getPoNo, reqVO.getPoNo())
+                .eqIfPresent(RetreatGoodsDO::getPurchaseBatch, reqVO.getPurchaseBatch())
+                .eqIfPresent(RetreatGoodsDO::getPurchaseConsequence, reqVO.getPurchaseConsequence())
+                .eqIfPresent(RetreatGoodsDO::getPurchaseBatchConsequence, reqVO.getPurchaseBatchConsequence())
+                .eqIfPresent(RetreatGoodsDO::getErpReceiveCode, reqVO.getErpReceiveCode())
+                .eqIfPresent(RetreatGoodsDO::getReceiveSeq, reqVO.getReceiveSeq())
+                .eqIfPresent(RetreatGoodsDO::getReasonCode, reqVO.getReasonCode())
                 .orderByDesc(RetreatGoodsDO::getId));
     }
 
@@ -68,6 +78,13 @@ public interface RetreatGoodsMapper extends BaseMapperX<RetreatGoodsDO> {
                 .eqIfPresent(RetreatGoodsDO::getAreaId, reqVO.getAreaId())
                 .eqIfPresent(RetreatGoodsDO::getAreaCode, reqVO.getAreaCode())
                 .likeIfPresent(RetreatGoodsDO::getAreaName, reqVO.getAreaName())
+                .eqIfPresent(RetreatGoodsDO::getPurchaseBatch, reqVO.getPurchaseBatch())
+                .eqIfPresent(RetreatGoodsDO::getPurchaseConsequence, reqVO.getPurchaseConsequence())
+                .eqIfPresent(RetreatGoodsDO::getPurchaseBatchConsequence, reqVO.getPurchaseBatchConsequence())
+
+                .eqIfPresent(RetreatGoodsDO::getErpReceiveCode, reqVO.getErpReceiveCode())
+                .eqIfPresent(RetreatGoodsDO::getReceiveSeq, reqVO.getReceiveSeq())
+                .eqIfPresent(RetreatGoodsDO::getReasonCode, reqVO.getReasonCode())
                 .orderByDesc(RetreatGoodsDO::getId));
     }
 

@@ -185,5 +185,12 @@ public class IssueLineDO extends BaseDO {
     /**
      * ERP调用标识
      */
+    @TableField("erp_enable")
     private String erpEnable;
+
+    /**
+     * 母批次
+     */
+    private String parentBatchCode;
+
 }

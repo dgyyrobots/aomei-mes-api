@@ -1,6 +1,8 @@
 package com.dofast.module.pro.controller.admin.routeprocess.vo;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.dofast.framework.common.pojo.PageParam;
@@ -78,8 +80,25 @@ public class RouteProcessPageReqVO extends PageParam {
     @Schema(description = "项次")
     private Long sequence;
 
-
     @Schema(description = "工作序")
     private Long workorderSequence;
+
+    @Schema(description = "转入单位")
+    private String receivingUnits;
+
+    @Schema(description = "转入单位分子")
+    private BigDecimal receivingUnitsConversionNumerator;
+
+    @Schema(description = "转入单位分母")
+    private BigDecimal receivingUnitsConversionDenominator;
+
+    @Schema(description = "转出单位")
+    private String outUnits;
+
+    @Schema(description = "转出单位分子")
+    private BigDecimal outUnitsConversionNumerator;
+
+    @Schema(description = "转出单位分母")
+    private BigDecimal outUnitsConversionDenominator;
 
 }

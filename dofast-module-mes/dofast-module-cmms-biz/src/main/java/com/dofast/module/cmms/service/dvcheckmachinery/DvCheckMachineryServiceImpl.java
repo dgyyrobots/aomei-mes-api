@@ -82,6 +82,12 @@ public class DvCheckMachineryServiceImpl implements DvCheckMachineryService {
     }
 
     @Override
+    public DvCheckMachineryDO getDvCheckMachineryByMachineryCode(String machineryCode){
+        return dvCheckMachineryMapper.selectOne(DvCheckMachineryDO::getMachineryCode , machineryCode);
+    }
+
+
+    @Override
     public List<DvCheckMachineryDO> getDvCheckMachineryList(Collection<Long> ids) {
         return dvCheckMachineryMapper.selectBatchIds(ids);
     }

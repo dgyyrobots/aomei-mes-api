@@ -98,7 +98,7 @@ public class MaterialStockExcelVO {
     @ExcelProperty("库存有效期")
     private LocalDateTime expireDate;
 
-    @ExcelProperty("预留字段1")
+    /*@ExcelProperty("预留字段1")
     private String attr1;
 
     @ExcelProperty("预留字段2")
@@ -108,7 +108,7 @@ public class MaterialStockExcelVO {
     private Integer attr3;
 
     @ExcelProperty("预留字段4")
-    private Integer attr4;
+    private Integer attr4;*/
 
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
@@ -118,4 +118,14 @@ public class MaterialStockExcelVO {
 
     @ExcelProperty("ERP批次")
     private String erpBatchCode;
+
+    /*@ExcelProperty("来源Id")
+    private Long originId;*/
+
+    @ExcelProperty("母批次号")
+    private String parentBatchCode;
+
+    /*@ExcelProperty("仓库确认状态")
+    private String confirmStatus;*/
+
 }

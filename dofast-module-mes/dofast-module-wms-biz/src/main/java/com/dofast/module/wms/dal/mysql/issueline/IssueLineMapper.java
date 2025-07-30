@@ -9,6 +9,7 @@ import com.dofast.module.wms.dal.dataobject.feedline.FeedLineDO;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.wms.controller.admin.issueline.vo.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 生产领料单行 Mapper
@@ -46,7 +47,7 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getStatus, reqVO.getStatus())
                 .eqIfPresent(IssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(IssueLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
-                .eqIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .likeIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
                 .eqIfPresent(IssueLineDO::getMachineryCode, reqVO.getMachineryCode())
                 .eqIfPresent(IssueLineDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
@@ -56,6 +57,7 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .eqIfPresent(IssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
                 .eqIfPresent(IssueLineDO::getErpEnable, reqVO.getErpEnable())
+                .eqIfPresent(IssueLineDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .orderByDesc(IssueLineDO::getId));
     }
 
@@ -92,7 +94,7 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getStatus, reqVO.getStatus())
                 .eqIfPresent(IssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(IssueLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
-                .eqIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .likeIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
                 .eqIfPresent(IssueLineDO::getMachineryCode, reqVO.getMachineryCode())
                 .eqIfPresent(IssueLineDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
@@ -102,6 +104,8 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .eqIfPresent(IssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
                 .eqIfPresent(IssueLineDO::getErpEnable, reqVO.getErpEnable())
+                .eqIfPresent(IssueLineDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(IssueLineDO::getCreator, reqVO.getCreator())
                 .orderByDesc(IssueLineDO::getId));
     }
 
@@ -134,7 +138,7 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getStatus, reqVO.getStatus())
                 .eqIfPresent(IssueLineDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(IssueLineDO::getFeedbackStatus, reqVO.getFeedbackStatus())
-                .eqIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
+                .likeIfPresent(IssueLineDO::getFeedbackCode, reqVO.getFeedbackCode())
                 .eqIfPresent(IssueLineDO::getMachineryCode, reqVO.getMachineryCode())
                 .eqIfPresent(IssueLineDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(IssueLineDO::getMachineryId, reqVO.getMachineryId())
@@ -144,7 +148,13 @@ public interface IssueLineMapper extends BaseMapperX<IssueLineDO> {
                 .eqIfPresent(IssueLineDO::getSequenceOrder, reqVO.getSequenceOrder())
                 .eqIfPresent(IssueLineDO::getErpBatchCode, reqVO.getErpBatchCode())
                 .eqIfPresent(IssueLineDO::getErpEnable, reqVO.getErpEnable())
+                .eqIfPresent(IssueLineDO::getParentBatchCode, reqVO.getParentBatchCode())
+                .eqIfPresent(IssueLineDO::getCreator, reqVO.getCreator())
                 .orderByDesc(IssueLineDO::getId));
     }
+
+    List<IssueLineDO> getIssueLineListByFeedbackCodes(@Param("feedbackCodes") List<String> feedbackCodes);
+
+
 
 }

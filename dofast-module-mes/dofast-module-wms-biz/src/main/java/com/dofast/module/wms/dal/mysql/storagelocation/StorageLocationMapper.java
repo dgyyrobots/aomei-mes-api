@@ -19,6 +19,11 @@ public interface StorageLocationMapper extends BaseMapperX<StorageLocationDO> {
     default StorageLocationDO selectWmStorageLocationByLocationCode(String locationCode) {
         return selectOne(new LambdaQueryWrapperX<StorageLocationDO>().eq(StorageLocationDO::getLocationCode,locationCode));
     }
+
+    default StorageLocationDO selectWmStorageLocationByLocationCodeAndProcessCode(String locationCode, String processCode) {
+        return selectOne(StorageLocationDO::getLocationCode,locationCode, StorageLocationDO::getProcessCode , processCode);
+    }
+
     /**
      * 根据仓库删除对应的库区
      * @param warehouseId

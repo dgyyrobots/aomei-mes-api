@@ -57,7 +57,10 @@ public interface TransactionMapper extends BaseMapperX<TransactionDO> {
                 .eqIfPresent(TransactionDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(TransactionDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(TransactionDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(TransactionDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .betweenIfPresent(TransactionDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TransactionDO::getOriginId, reqVO.getOriginId())
+                .eqIfPresent(TransactionDO::getConfirmStatus, reqVO.getConfirmStatus())
                 .orderByDesc(TransactionDO::getId));
     }
 
@@ -101,7 +104,10 @@ public interface TransactionMapper extends BaseMapperX<TransactionDO> {
                 .eqIfPresent(TransactionDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(TransactionDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(TransactionDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(TransactionDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .betweenIfPresent(TransactionDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(TransactionDO::getOriginId, reqVO.getOriginId())
+                .eqIfPresent(TransactionDO::getConfirmStatus, reqVO.getConfirmStatus())
                 .orderByDesc(TransactionDO::getId));
     }
 

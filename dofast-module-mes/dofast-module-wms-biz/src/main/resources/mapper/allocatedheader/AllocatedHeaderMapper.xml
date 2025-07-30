@@ -76,6 +76,7 @@
             irl.`specification`,
             irl.`unit_of_measure`,
             irl.`batch_code`,
+            irl.`parent_batch_code`,
             irl.`warehouse_id`,
             irl.`warehouse_code`,
             irl.`warehouse_name`,
@@ -112,6 +113,19 @@
         WHERE
             ir.`id` = #{allocatedId} and irl.allocated_flag = 'N'
 
+    </select>
+
+    <select id="getAllocatedHeaderListByBatchCodeList" resultType="com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedHeaderDO" parameterType="java.util.List">
+        select distinct a.id , a.allocated_code , a.workorder_id,
+        a.workorder_code, a.`creator`, a.`create_time`, a.`updater`, a.`update_time`, a.warehouse_id, a.warehouse_code ,
+        a.warehouse_name , a.location_id , a.location_code , a.location_name , a.area_id ,
+        a.area_code, a.area_name
+        from wms_allocated_header a
+            left join wms_allocated_record b on a.id = b.allocated_id
+            where b.batch_code in
+        <foreach item="batchCode" collection="batchCodeList" open="(" separator="," close=")">
+            #{batchCode}
+        </foreach>
     </select>
 
 </mapper>

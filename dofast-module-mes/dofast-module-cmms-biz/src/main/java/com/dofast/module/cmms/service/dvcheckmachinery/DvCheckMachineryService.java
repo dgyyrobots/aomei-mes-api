@@ -50,6 +50,8 @@ public interface DvCheckMachineryService {
      */
     DvCheckMachineryDO getDvCheckMachinery(Long id);
 
+    DvCheckMachineryDO getDvCheckMachineryByMachineryCode(String machineryCode);
+
     /**
      * 获得点检设备列表
      *

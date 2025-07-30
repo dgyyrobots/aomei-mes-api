@@ -76,7 +76,6 @@ public class TaskBaseVO {
     private String unitOfMeasure;
 
     @Schema(description = "排产数量", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotNull(message = "排产数量不能为空")
     private BigDecimal quantity;
 
     @Schema(description = "已生产数量")
@@ -167,4 +166,14 @@ public class TaskBaseVO {
 
     @Schema(description = "设备Id")
     private String machineryId;
+
+    @Schema(description = "派工状态")
+    private String taskStatus;
+
+    @Schema(description = "派工设备列表")
+    private String machineryCodes;
+
+    @Schema(description = "报工流水号")
+    private String feedbackSerial;
+
 }

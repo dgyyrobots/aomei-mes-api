@@ -77,7 +77,6 @@ public class mdItemJob implements JobHandler {
         if(!itemsToUp.isEmpty()){
             mdItemMapper.updateBatch(itemsToUp);
         }
-        System.out.println("物料定时器执行成功!");
         return null;
     }
 

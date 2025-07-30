@@ -78,7 +78,6 @@ public class mdWorkShopJob implements JobHandler {
         if (!workshopToUp.isEmpty()) {
             mdWorkshopmapper.updateBatch(workshopToUp);
         }
-        System.out.println("车间定时器执行结束");
 
         // 开始追加工作站信息
         List<Map<String, Object>> workstationList = mdWorkstationOracleService.initWorkstation();
@@ -125,7 +124,6 @@ public class mdWorkShopJob implements JobHandler {
         if (!workstationToUp.isEmpty()) {
             mdWorkstationMapper.updateBatch(workstationToUp);
         }
-        System.out.println("工作站定时器执行完成");
         return "success";
     }
 }

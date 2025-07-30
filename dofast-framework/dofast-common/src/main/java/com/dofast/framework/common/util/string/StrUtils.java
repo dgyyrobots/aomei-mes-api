@@ -3,7 +3,9 @@ package com.dofast.framework.common.util.string;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -177,6 +179,40 @@ public class StrUtils {
         }
         return sb.toString();
     }
+
+    /**
+     * 字符串转list
+     *
+     * @param str         字符串
+     * @param sep         分隔符
+     * @param filterBlank 过滤纯空白
+     * @param trim        去掉首尾空白
+     * @return list集合
+     */
+    public static final List<String> str2List(String str, String sep, boolean filterBlank, boolean trim) {
+        List<String> list = new ArrayList<String>();
+        if (StringUtils.isEmpty(str)) {
+            return list;
+        }
+
+        // 过滤空白字符串
+        if (filterBlank && StringUtils.isBlank(str)) {
+            return list;
+        }
+        String[] split = str.split(sep);
+        for (String string : split) {
+            if (filterBlank && StringUtils.isBlank(string)) {
+                continue;
+            }
+            if (trim) {
+                string = string.trim();
+            }
+            list.add(string);
+        }
+
+        return list;
+    }
+
     public static void main(String[] args) {
         System.out.println(maxLength("aaaaa", 4));
     }

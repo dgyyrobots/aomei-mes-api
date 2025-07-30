@@ -25,6 +25,9 @@ public interface AllocatedRecordConvert {
 
     AllocatedRecordRespVO convert(AllocatedRecordDO bean);
 
+    AllocatedRecordUpdateReqVO convert01(AllocatedRecordDO bean);
+
+
     List<AllocatedRecordRespVO> convertList(List<AllocatedRecordDO> list);
 
     PageResult<AllocatedRecordRespVO> convertPage(PageResult<AllocatedRecordDO> page);

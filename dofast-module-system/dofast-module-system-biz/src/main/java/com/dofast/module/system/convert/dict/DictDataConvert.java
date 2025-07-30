@@ -26,6 +26,8 @@ public interface DictDataConvert {
 
     DictDataDO convert(DictDataCreateReqVO bean);
 
+    DictDataCreateReqVO convert01(DictDataDO bean);
+
     List<DictDataExcelVO> convertList02(List<DictDataDO> bean);
 
     DictDataRespDTO convert02(DictDataDO bean);
@@ -33,5 +35,7 @@ public interface DictDataConvert {
     List<AppDictDataRespVO> convertList03(List<DictDataDO> list);
 
     List<DictDataRespDTO> convertList04(List<DictDataDO> list);
+
+    DictDataUpdateReqVO convert05(DictDataDO bean);
 
 }

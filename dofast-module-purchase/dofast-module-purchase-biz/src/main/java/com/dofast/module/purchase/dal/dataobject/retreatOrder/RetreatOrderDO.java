@@ -67,5 +67,4 @@ public class RetreatOrderDO extends BaseDO {
      */
     private String status;
 
-
 }

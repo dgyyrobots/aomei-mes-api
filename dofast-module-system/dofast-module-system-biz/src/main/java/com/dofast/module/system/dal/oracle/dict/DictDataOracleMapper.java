@@ -14,4 +14,6 @@ public interface DictDataOracleMapper {
 
     List<Map<String, Object>> initDocType(String erpCode);
 
+    Map<String, Object> initCloseDate(String erpCode);
+
 }

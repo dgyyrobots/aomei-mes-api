@@ -8,6 +8,7 @@ import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.feedback.vo.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 生产报工记录 Mapper
@@ -65,6 +66,17 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .eqIfPresent(FeedbackDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(FeedbackDO::getMachineryCode, reqVO.getMachineryCode())
                 .eqIfPresent(FeedbackDO::getErpBatchCode, reqVO.getErpBatchCode())
+                .eqIfPresent(FeedbackDO::getTaskStatus, reqVO.getTaskStatus())
+                .eqIfPresent(FeedbackDO::getErpFeedbackStatus, reqVO.getErpFeedbackStatus())
+                .eqIfPresent(FeedbackDO::getErpWarehousingStatus, reqVO.getErpWarehousingStatus())
+                .eqIfPresent(FeedbackDO::getMergeStatus, reqVO.getMergeStatus())
+                .inIfPresent(FeedbackDO::getFeedbackCode, reqVO.getFeedbackCodeList())
+                .eqIfPresent(FeedbackDO::getConversionQuantity, reqVO.getConversionQuantity())
+                .eqIfPresent(FeedbackDO::getConversionUnit, reqVO.getConversionUnit())
+                .eqIfPresent(FeedbackDO::getConversionQuantityUnquanlified, reqVO.getConversionQuantityUnquanlified())
+                .eqIfPresent(FeedbackDO::getVolumesNumber, reqVO.getVolumesNumber())
+                .eqIfPresent(FeedbackDO::getIotFlag, reqVO.getIotFlag())
+
                 .orderByDesc(FeedbackDO::getId));
     }
 
@@ -115,9 +127,17 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
                 .eqIfPresent(FeedbackDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(FeedbackDO::getMachineryCode, reqVO.getMachineryCode())
                 .eqIfPresent(FeedbackDO::getErpBatchCode, reqVO.getErpBatchCode())
+                .eqIfPresent(FeedbackDO::getTaskStatus, reqVO.getTaskStatus())
+                .eqIfPresent(FeedbackDO::getErpFeedbackStatus, reqVO.getErpFeedbackStatus())
+                .eqIfPresent(FeedbackDO::getErpWarehousingStatus, reqVO.getErpWarehousingStatus())
+                .eqIfPresent(FeedbackDO::getMergeStatus, reqVO.getMergeStatus())
+                .eqIfPresent(FeedbackDO::getConversionQuantity, reqVO.getConversionQuantity())
+                .eqIfPresent(FeedbackDO::getConversionUnit, reqVO.getConversionUnit())
+                .eqIfPresent(FeedbackDO::getConversionQuantityUnquanlified, reqVO.getConversionQuantityUnquanlified())
+                .eqIfPresent(FeedbackDO::getVolumesNumber, reqVO.getVolumesNumber())
+                .eqIfPresent(FeedbackDO::getIotFlag, reqVO.getIotFlag())
                 .orderByDesc(FeedbackDO::getId));
     }
-
 
     default List<FeedbackDO> getListByTaskId(Long taskId){
         return selectList(new LambdaQueryWrapperX<FeedbackDO>()
@@ -127,6 +147,16 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
 
     public List<Map<String, Object>> getCapacity();
 
+// 获取容量
+    public Map<String, Object> getFeedbackCount(@Param("workorderCode") String workorderCode, @Param("taskCode") String taskCode);
 
+    public Map<String, Object> getIotFeedbackLog(@Param("machineryCode") String machineryCode);
+
+
+    default List<FeedbackDO> selectListByFeedbackCodes(Collection<String> feedbackCodes) {
+        return selectList(new LambdaQueryWrapperX<FeedbackDO>()
+                .inIfPresent(FeedbackDO::getFeedbackCode, feedbackCodes)
+                .orderByDesc(FeedbackDO::getId));
+    }
 
 }

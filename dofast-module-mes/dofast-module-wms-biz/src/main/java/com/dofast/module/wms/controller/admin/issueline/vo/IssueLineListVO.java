@@ -84,4 +84,6 @@ public class IssueLineListVO {
     private String erpBatchCode;
 
     private String erpEnable;
+
+    private String parentBatchCode;
 }

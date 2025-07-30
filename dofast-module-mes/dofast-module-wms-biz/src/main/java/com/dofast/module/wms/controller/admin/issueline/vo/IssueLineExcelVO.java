@@ -130,4 +130,8 @@ public class IssueLineExcelVO {
 
     @ExcelProperty("ERP调用标识")
     private String erpEnable;
+
+    @ExcelProperty("母批次")
+    private String parentBatchCode;
 }
+

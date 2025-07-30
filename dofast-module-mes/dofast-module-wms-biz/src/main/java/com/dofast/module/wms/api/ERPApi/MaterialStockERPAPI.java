@@ -10,6 +10,8 @@ import com.dofast.module.mes.service.interfacelog.InterfaceLogService;
 import com.dofast.module.system.api.dict.DictDataApi;
 import com.dofast.module.system.api.user.AdminUserApi;
 import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
+import com.dofast.module.system.dal.dataobject.dict.DictDataDO;
+import com.dofast.module.system.service.dict.DictDataService;
 import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
 import com.dofast.module.wms.service.storagearea.StorageAreaService;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -40,12 +43,22 @@ public class MaterialStockERPAPI {
     @Resource
     private AdminUserApi adminUserApi;
 
+    @Resource
+    private DictDataService dictDataService;
+
     /**
      * 采购收货/入库/仓退单生成接
      */
     public String purchaseDeliveryCreate(Map<String, Object> params) {
         // ，根据环境选择
-        Map<String, Object> request = createBaseRequest("PurchaseDeliveryCreate");
+        Map<String, Object> request = null;
+        String pmds000 = (String) params.get("pmds000");// 单据类型 1：一般采购收货；2：无采购收货；3：采购收货入库单；6：一般采购入库；7：一般采购仓退；8：委外采购收货；12：委外采购入库；14：委外采购仓退；20：委外采购收货入库
+
+        if("7".equals(pmds000)){
+            request = createBaseRequest("Apmt580Upd");
+        }else{
+            request = createBaseRequest("PurchaseDeliveryCreate");
+        }
         String poNo = params.get("poNo").toString(); // 采购单号
         // String ejectNo = Optional.ofNullable((String) params.get("ejectNo")).orElse(null); // 退料单号
         String sourceNo = (String) params.get("sourceNo"); // MES单头
@@ -54,8 +67,11 @@ public class MaterialStockERPAPI {
         Integer locationId = (Integer) params.get("locationId"); // 库区Id
         Integer areaId = (Integer) params.get("areaId"); //库位Id
         List<Map<String, Object>> goodsList = (List<Map<String, Object>>) params.get("goodsList"); // 入库商品详情
-        String pmds000 = (String) params.get("pmds000");// 单据类型 1：一般采购收货；2：无采购收货；3：采购收货入库单；6：一般采购入库；7：一般采购仓退；8：委外采购收货；12：委外采购入库；14：委外采购仓退；20：委外采购收货入库
         String warehousingCode = "";
+        String retreatCode = "";
+        if("7".equals(pmds000)){
+            retreatCode = (String) params.get("retreatCode");
+        }
         StorageLocationDO storageLocationDO = null;
         StorageAreaDO storageAreaDO = null;
         if("6".equals(pmds000)){
@@ -64,16 +80,13 @@ public class MaterialStockERPAPI {
             storageLocationDO = storageLocationService.getStorageLocation(locationId.longValue());
             storageAreaDO = storageAreaService.getStorageArea(areaId.longValue());
         }
-
         //String pmds000 = null;
         /*if(poNo!=null){
             pmds000 = "6"; // 一般采购入库
         }else{
             pmds000 = "7";
         }*/
-
         //List<Map<String, Object>> details = (List<Map<String, Object>>) params.get("details");
-        // 后续数据根据需求补充参数信息
         List<Map<String, Object>> details = new ArrayList<>();
         int i = 1;
         for (Map<String, Object> good : goodsList) {
@@ -87,6 +100,7 @@ public class MaterialStockERPAPI {
                 detail.put("pmdt028", ""); // 收获项次
                 detail.put("pmdt016", ""); // 仓库
                 detail.put("pmdt017", ""); // 库位
+                detail.put("pmdt051", ""); // 理由码
             }else if("6".equals(pmds000)){
                 detail.put("pmdt001", ""); // 采购单号
                 detail.put("pmdt002", ""); // 采购项次
@@ -96,6 +110,17 @@ public class MaterialStockERPAPI {
                 detail.put("pmdt028", good.get("consequence")); // 收获项次
                 detail.put("pmdt016", storageLocationDO.getLocationCode()); // 仓库
                 detail.put("pmdt017", storageAreaDO.getAreaCode()); // 库位
+                detail.put("pmdt051", ""); // 理由码
+            }else if("7".equals(pmds000)){
+                detail.put("pmdt001", good.get("poNo")); // 采购单号
+                detail.put("pmdt002", good.get("consequence")); // 项次
+                detail.put("pmdt003", good.get("purchaseConsequence")); // 采购项序
+                detail.put("pmdt004", good.get("purchaseBatchConsequence")); // 采购分批序
+                detail.put("pmdt027", good.get("warehousingCode")); // 收货单号
+                detail.put("pmdt028", good.get("warehousingSeq")); // 收获项次
+                detail.put("pmdt016", good.get("locationCode")); // 库区
+                detail.put("pmdt017", good.get("areaCode")); // 库位
+                detail.put("pmdt051", good.get("reasonCode")); // 理由码
             }
             detail.put("pmdt006", good.get("goodsNumber")); // 料件
             detail.put("pmdt007", " "); // 特性
@@ -105,7 +130,6 @@ public class MaterialStockERPAPI {
             detail.put("pmdt026", "1"); // 检验标识
             detail.put("pmdt018", good.get("batchCode")); // 批号
             detail.put("pmdt036", 0); // 单价
-            detail.put("pmdt051", ""); // 理由码
             detail.put("source_seq", i);
             details.add(detail);
             i++;
@@ -119,7 +143,7 @@ public class MaterialStockERPAPI {
         } else if (Arrays.asList("3", "6", "12", "20").contains(pmds000)) { // 入库单
             parameter.put("master", createPmdsInfo(poNo, warehousingCode, pmds000, details, supplierCode));
         } else if (Arrays.asList("7", "14").contains(pmds000)) { // 仓退单
-            parameter.put("master", createMaster(poNo, sourceNo, pmds000, details, supplierCode));
+            parameter.put("master", createMaster(retreatCode, sourceNo, pmds000, details, supplierCode));
         }
 
         stdData.put("parameter", parameter);
@@ -128,6 +152,7 @@ public class MaterialStockERPAPI {
         System.out.println(JSONObject.toJSONString(request));
 
         String result = HttpUtils.doPost("http://192.168.127.7/wstopprd/ws/r/awsp920", JSONObject.toJSONString(request)); // 正式区
+
         //String result = HttpUtils.doPost("http://192.168.127.7/wtoptst/ws/r/awsp920", JSONObject.toJSONString(request)); // 测试区
         // 记录操作日志
         InterfaceLogCreateReqVO log = new InterfaceLogCreateReqVO();
@@ -198,18 +223,59 @@ public class MaterialStockERPAPI {
         Map<String, Object> master = new HashMap<>();
         master.put("source_no", params.get("allocatedId")); // MES单头Id
         master.put("indcdocno", ""); // 单别
-        master.put("indcdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date())); // 单据日期 默认获取当日日期
+
+        DictDataDO dataDO = dictDataService.getDictData("erp_close_date", "close_date");
+        String closeDateStr = null;
+        Date closeDateObj = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        if (dataDO != null) {
+            closeDateStr = dataDO.getLabel();
+            if (closeDateStr != null && !closeDateStr.isEmpty()) {
+                try {
+                    closeDateObj = sdf.parse(closeDateStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        boolean isCloseDateLastMonth = false;
+        if (closeDateObj != null) {
+            Calendar closeDateCal = Calendar.getInstance();
+            closeDateCal.setTime(closeDateObj);
+
+            Calendar lastMonthCal = Calendar.getInstance();
+            lastMonthCal.add(Calendar.MONTH, -1);
+
+            isCloseDateLastMonth = (closeDateCal.get(Calendar.YEAR) == lastMonthCal.get(Calendar.YEAR))
+                    && (closeDateCal.get(Calendar.MONTH) == lastMonthCal.get(Calendar.MONTH));
+        }
+
+        // 设置过账日期（sfda001）
+        if (isCloseDateLastMonth) {
+            // 关账日期为上个月，直接使用当前日期
+            master.put("indcdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        } else {
+            // 2025-6-26 若当前存在关账日期, 则直接传递下个月
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MONTH, 1);
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            master.put("indcdocdt", sdf.format(calendar.getTime())); // 单据日期
+        }
+
+
+        // master.put("indcdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date())); // 单据日期 默认获取当日日期
         master.put("indc000", "1"); // 单据性质
         master.put("indc002", "1"); // 来源类别
         //获取当前用户信息
         // 获取当前用户信息
         AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
-        //master.put("indc004", adminUserRespDTO.getUsername()); // 调拨人员-传递ERP编码
-        master.put("indc004", "tiptop"); // 调拨人员-测试账户
+        master.put("indc004", adminUserRespDTO.getUsername()); // 调拨人员-传递ERP编码
+        //master.put("indc004", "tiptop"); // 调拨人员-测试账户
 
         master.put("indc005", ""); // 拨出据点
         master.put("indc006", "AM01"); // 拨入据点
-        master.put("indc008", "测试调拨"); // 备注
+        master.put("indc008", ""); // 备注
         master.put("indc102", "1"); // 检验否
 
         // 构建details
@@ -285,7 +351,10 @@ public class MaterialStockERPAPI {
         hostInfo.put("prod", "MES");
         hostInfo.put("ip", ipAddress); // 替换为实际的IP地址
         hostInfo.put("lang", "zh_CN");
-        hostInfo.put("acct", "tiptop"); // 后续替换为实际的用户
+        // hostInfo.put("acct", "tiptop"); // 后续替换为实际的用户
+        AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        hostInfo.put("acct", adminUserRespDTO.getUsername());
+
         hostInfo.put("timestamp", String.valueOf(System.currentTimeMillis()));
         request.put("host", hostInfo);
 
@@ -394,17 +463,71 @@ public class MaterialStockERPAPI {
      * @return
      */
     private List<Map<String, Object>> createMaster(String mesDocNo, String sourceNo, String pmds000, List<Map<String, Object>> details, String supplierCode) {
+        DictDataDO dataDO = dictDataService.getDictData("erp_close_date", "close_date");
+        String closeDateStr = null;
+        Date closeDateObj = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        if (dataDO != null) {
+            closeDateStr = dataDO.getLabel();
+            if (closeDateStr != null && !closeDateStr.isEmpty()) {
+                try {
+                    closeDateObj = sdf.parse(closeDateStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         // master 单头
         // detail 单身
         Map<String, Object> master = new HashMap<>();
-        master.put("source_no", sourceNo); // MES单头
+        if("7".equals(pmds000)) {
+            master.put("source_no", mesDocNo); // MES单头
+            master.put("pmds000", Integer.valueOf(pmds000));
+        }else{
+            master.put("source_no", sourceNo); // MES单头
+            master.put("pmds000", pmds000);
+        }
+
+        /*
+        2025-07-26 收货接口不卡关账日期, 传递当日日期
+        boolean isCloseDateLastMonth = false;
+        if (closeDateObj != null) {
+            Calendar closeDateCal = Calendar.getInstance();
+            closeDateCal.setTime(closeDateObj);
+
+            Calendar lastMonthCal = Calendar.getInstance();
+            lastMonthCal.add(Calendar.MONTH, -1);
+
+            isCloseDateLastMonth = (closeDateCal.get(Calendar.YEAR) == lastMonthCal.get(Calendar.YEAR))
+                    && (closeDateCal.get(Calendar.MONTH) == lastMonthCal.get(Calendar.MONTH));
+        }
+
+        // 设置过账日期
+        if (isCloseDateLastMonth) {
+            // 关账日期为上个月，直接使用当前日期
+            master.put("pmdsdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        } else {
+            // 2025-6-26 若当前存在关账日期, 则直接传递下个月
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MONTH, 1);
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            master.put("pmdsdocdt", sdf.format(calendar.getTime())); // 单据日期
+        }*/
+
         master.put("pmdsdocno", ""); // 单别
         master.put("pmdsdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
-        master.put("pmds000", pmds000);
+
         master.put("pmds006", mesDocNo);
-        master.put("pmds002", "00000");
+        // master.put("pmds002", "00000");
+        AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        master.put("pmds002", adminUserRespDTO.getUsername());
+
         master.put("pmds007", supplierCode);
         master.put("detail", details);
+        if("7".equals(pmds000)){
+           master.put("typeud001",mesDocNo ); // T100仓退单
+        }
         List<Map<String, Object>> masterList = new ArrayList<>();
         masterList.add(master);
         return masterList;
@@ -420,13 +543,58 @@ public class MaterialStockERPAPI {
      * @return
      */
     private List<Map<String, Object>> createPmdsInfo(String mesDocNo, String sourceNo, String pmds000, List<Map<String, Object>> details, String supplierCode) {
+        DictDataDO dataDO = dictDataService.getDictData("erp_close_date", "close_date");
+        String closeDateStr = null;
+        Date closeDateObj = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        if (dataDO != null) {
+            closeDateStr = dataDO.getLabel();
+            if (closeDateStr != null && !closeDateStr.isEmpty()) {
+                try {
+                    closeDateObj = sdf.parse(closeDateStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         Map<String, Object> pmdsInfo = new HashMap<>();
         pmdsInfo.put("source_no", sourceNo); // MES单头Id
         pmdsInfo.put("pmdsdocno", "");
-        pmdsInfo.put("pmdsdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+
+
+        boolean isCloseDateLastMonth = false;
+        if (closeDateObj != null) {
+            Calendar closeDateCal = Calendar.getInstance();
+            closeDateCal.setTime(closeDateObj);
+
+            Calendar lastMonthCal = Calendar.getInstance();
+            lastMonthCal.add(Calendar.MONTH, -1);
+
+            isCloseDateLastMonth = (closeDateCal.get(Calendar.YEAR) == lastMonthCal.get(Calendar.YEAR))
+                    && (closeDateCal.get(Calendar.MONTH) == lastMonthCal.get(Calendar.MONTH));
+        }
+
+        // 设置过账日期
+        if (isCloseDateLastMonth) {
+            // 关账日期为上个月，直接使用当前日期
+            pmdsInfo.put("pmdsdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        } else {
+            // 2025-6-26 若当前存在关账日期, 则直接传递下个月
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MONTH, 1);
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            pmdsInfo.put("pmdsdocdt", sdf.format(calendar.getTime())); // 单据日期
+        }
+
+        //pmdsInfo.put("pmdsdocdt", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
         pmdsInfo.put("pmds000", pmds000);
         pmdsInfo.put("pmds006", sourceNo);
-        pmdsInfo.put("pmds002", "00000");
+
+        //pmdsInfo.put("pmds002", "00000");
+        AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        pmdsInfo.put("pmds002", adminUserRespDTO.getUsername());
+
         pmdsInfo.put("pmds007", supplierCode);// 后续询问供应商如何获取
         pmdsInfo.put("detail", details);
         List<Map<String, Object>> pmdsInfoList = new ArrayList<>();
