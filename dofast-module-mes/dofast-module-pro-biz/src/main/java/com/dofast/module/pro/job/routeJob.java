@@ -3,6 +3,7 @@ package com.dofast.module.pro.job;
 import com.dofast.framework.quartz.core.handler.JobHandler;
 import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
 import com.dofast.module.mes.dal.mysql.mditem.MdItemMapper;
+import com.dofast.module.pro.controller.admin.routeprocess.vo.RouteProcessExportReqVO;
 import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderListVO;
 import com.dofast.module.pro.dal.dataobject.process.ProcessDO;
 import com.dofast.module.pro.dal.dataobject.route.RouteDO;
@@ -15,6 +16,7 @@ import com.dofast.module.pro.dal.mysql.routeprocess.RouteProcessMapper;
 import com.dofast.module.pro.dal.mysql.routeproduct.RouteProductMapper;
 import com.dofast.module.pro.service.process.ProcessOracleService;
 import com.dofast.module.pro.service.route.RouteOracleService;
+import com.dofast.module.pro.service.routeprocess.RouteProcessService;
 import com.dofast.module.pro.service.workorder.WorkorderService;
 import org.springframework.stereotype.Component;
 
@@ -53,8 +55,8 @@ public class routeJob implements JobHandler {
     @Resource
     private WorkorderService workorderService;
 
-
-
+    @Resource
+    private RouteProcessService routeProcessService;
 
     @Override
     public String execute(String param) throws Exception {
@@ -66,6 +68,8 @@ public class routeJob implements JobHandler {
         }
         List<ProcessDO> addList = new ArrayList<>();
         List<ProcessDO> editList = new ArrayList<>();
+
+
         for (Map<String, Object> process : processList) {
             // 校验当前工序编号是否存在
             ProcessDO queryProcess = processMapper.selectOne(ProcessDO::getProcessCode, process.get("PROCESS_CODE"));
@@ -122,12 +126,14 @@ public class routeJob implements JobHandler {
                 editRouteList.add(queryRoute);
             }
         }
+
         if (!addRouteList.isEmpty()) {
             routeMapper.insertBatch(addRouteList);
         }
         if (!editRouteList.isEmpty()) {
             routeMapper.updateBatch(editRouteList);
         }
+
         // 开始添加工序与工艺关系
         List<Map<String, Object>> bindList = routeOracleService.initRouteBindProcess();
         if (bindList.isEmpty()) {
@@ -135,11 +141,13 @@ public class routeJob implements JobHandler {
         }
         List<RouteProcessDO> addBindList = new ArrayList<>();
         List<RouteProcessDO> editBindList = new ArrayList<>();
+        List<Long> deleteBindList = new ArrayList<>();
 
         List<RouteProductDO> addProdcutList = new ArrayList<>();
         List<RouteProductDO> editProdcutList = new ArrayList<>();
 
         List<RouteProcessDO> editSequenceList = new ArrayList<>();
+
 
 
         // 创建映射，用于存储基于物料料号和版本号的工序列表
@@ -150,9 +158,12 @@ public class routeJob implements JobHandler {
             String processCode = (String) bind.get("PROCESS_CODE");
             String itemCode = (String) bind.get("ITEM_CODE");
             String routeCode = (String) bind.get("ROUTE_CODE");
+            String processSequence = (String) bind.get("PROCESS_SEQUENCE");
             String route = itemCode + "-" + routeCode;
             String topProcess = (String) bind.get("TOP_PROCESS_CODE");
             String nextProcess = (String) bind.get("NEXT_PROCESS_CODE");
+
+
             List<Map<String, Object>> finProcessList = finProcessMap.computeIfAbsent(route, k -> new ArrayList<>());
             finProcessList.add(bind);
         }
@@ -160,36 +171,67 @@ public class routeJob implements JobHandler {
         // 构建工艺路线
         List<Map<String, Object>> finRouteList = new ArrayList<>();
         finProcessMap.forEach((key, value) -> {
-                List<String> route = buildRoute(value);
-                if (route != null && !route.isEmpty()) {
-                    Map<String, Object> routeInfo = new HashMap<>();
-                    routeInfo.put("routeCode", key);
-                    routeInfo.put("routeLine", route);
-                    List<Long> sequenceList = new ArrayList<>();
+            // ======================================================================================
+            List<String> route = buildRoute(value);
 
-                    Map<String, Map<String, Object>> processRecordMap = new HashMap<>();
-                    for (Map<String, Object> record : value) {
-                        String procCode = (String) record.get("PROCESS_CODE");
-                        processRecordMap.put(procCode, record);
-                        BigDecimal sequence = new BigDecimal(record.get("SEQUENCE").toString());
-                        sequenceList.add(sequence.longValue());
-                    }
-                    routeInfo.put("sequenceLine", sequenceList);
-                    routeInfo.put("processRecordMap", processRecordMap);
-                    finRouteList.add(routeInfo);
+            if (route != null && !route.isEmpty()) {
+                Map<String, Object> routeInfo = new HashMap<>();
+                routeInfo.put("routeCode", key);
+                routeInfo.put("routeLine", route);
+                List<Long> sequenceList = new ArrayList<>();
+
+                Map<String, Map<String, Object>> processRecordMap = new HashMap<>();
+                for (Map<String, Object> record : value) {
+                    String procCode = (String) record.get("PROCESS_CODE");
+                    processRecordMap.put(procCode, record);
+                    BigDecimal sequence = new BigDecimal(record.get("SEQUENCE").toString());
+                    sequenceList.add(sequence.longValue());
                 }
+                routeInfo.put("sequenceLine", sequenceList);
+                routeInfo.put("processRecordMap", processRecordMap);
+                finRouteList.add(routeInfo);
+            }
+            // ======================================================================================
         });
 
         // 构建工艺路线信息
         for (Map<String, Object> routeInfo : finRouteList) {
             List<String> route = (List<String>) routeInfo.get("routeLine");
-            List<Long> sequenceList =  (List<Long>) routeInfo.get("sequenceLine");
+            List<Long> sequenceList = (List<Long>) routeInfo.get("sequenceLine");
             Map<String, Map<String, Object>> processRecordMap = (Map<String, Map<String, Object>>) routeInfo.get("processRecordMap");
+
+            // 2025-10-20 追加: 变更工单存在删除工序的情况, 此刻需要对比获取的工艺路线中的工序在原有基础上是否存在. 不存在则需要追加删除
+
+            // 获取当前的工艺路线的所有数据
+            String routeCode = (String) routeInfo.get("routeCode"); // 当前工艺编码
+            Long routeId = Optional.ofNullable(routeMapper.selectOne(RouteDO::getRouteCode, routeCode).getId()).orElse(0L);
+            if (routeId == 0L) {
+                continue;
+            }
+
+            List<String> updateRoute = new ArrayList<>();
+            for(String splitRoute: route){
+                splitRoute = splitRoute.split("-")[0];
+                updateRoute.add(splitRoute);
+            }
+
+            List<RouteProcessDO> routeRoute = routeProcessService.getRouteProcessList(new RouteProcessExportReqVO().setRouteId(routeId));
+            // 比对routeRoute中的processCode字段与route中的内容进行比对
+            for (RouteProcessDO routeProcessDO : routeRoute) {
+                String processCode = routeProcessDO.getProcessCode();
+                if(!updateRoute.contains(processCode)){
+                    deleteBindList.add(routeProcessDO.getId());
+                }
+            }
+
 
             // 开始校验当前唯一标识码下的工艺路线是否存在
             for (int i = 0; i < route.size(); i++) {
-                String processCode = route.get(i); // 当前工序编码
-                String routeCode = (String) routeInfo.get("routeCode"); // 当前工艺编码
+                String processCodeStr = route.get(i); // 当前工序编码
+
+                String processCode = processCodeStr.split("-")[0]; // 当前工序编码
+                String processSequence = processCodeStr.split("-")[1]; // 当前工序项次
+                // String routeCode = (String) routeInfo.get("routeCode"); // 当前工艺编码
                 Long sequence = sequenceList.get(i); // 当前工序顺序
 
                 // 追加单位换算逻辑
@@ -208,20 +250,23 @@ public class routeJob implements JobHandler {
 
                 String nextProcessCodeInRecord = null;
                 // 根据工艺编码获取工艺Id
-                Long routeId = Optional.ofNullable(routeMapper.selectOne(RouteDO::getRouteCode, routeCode).getId()).orElse(0L);
+                /*Long routeId = Optional.ofNullable(routeMapper.selectOne(RouteDO::getRouteCode, routeCode).getId()).orElse(0L);
                 if (routeId == 0L) {
                     continue;
-                }
+                }*/
                 // 根据工序编码获取当前工序信息
                 ProcessDO process = processMapper.selectOne(ProcessDO::getProcessCode, processCode);
                 if (process == null) {
                     // 工序不存在
                     return "未获取到当前工序信息";
                 }
+
                 ProcessDO nextProcess = null;
                 if (i + 1 != route.size()) {
                     // 不是最后一个工序，获取下一个工序编码
-                    String nextProcessCode = route.get(i + 1);
+                    String nextProcessCodeStr = route.get(i + 1);
+
+                    String nextProcessCode = nextProcessCodeStr.split("-")[0];
                     // 根据下一个工序编码获取下一个工序信息
                     nextProcess = processMapper.selectOne(ProcessDO::getProcessCode, nextProcessCode);
                     if (nextProcess == null) {
@@ -229,8 +274,10 @@ public class routeJob implements JobHandler {
                         return "未获取到下一个工序信息";
                     }
                 }
+
                 // 校验当前工艺工序绑定关系是否存在
-                RouteProcessDO queryRouteProcess = routeProcessMapper.selectOne(RouteProcessDO::getRouteId, routeId, RouteProcessDO::getProcessCode, process.getProcessCode());
+                RouteProcessDO queryRouteProcess = routeProcessMapper.selectOne(RouteProcessDO::getRouteId, routeId, RouteProcessDO::getProcessCode, process.getProcessCode(), RouteProcessDO::getProcessSequence, processSequence);
+
                 if (queryRouteProcess != null) {
                     // 存在开始更新
                     queryRouteProcess.setProcessName(process.getProcessName());
@@ -239,13 +286,14 @@ public class routeJob implements JobHandler {
                     queryRouteProcess.setLinkType("FS");
                     queryRouteProcess.setColorCode("#00AEF3");
                     queryRouteProcess.setSequence(Long.valueOf(sequence));
+                    queryRouteProcess.setProcessSequence(Long.valueOf(processSequence));
 
-                    if(receiveingUnits!=null){
+                    if (receiveingUnits != null) {
                         queryRouteProcess.setReceivingUnits(receiveingUnits);
                         queryRouteProcess.setReceivingUnitsConversionNumerator(receiveingUnitsConversionNumberator);
                         queryRouteProcess.setReceivingUnitsConversionDenominator(receiveingUnitsConversionDenominator);
                     }
-                    if(outUnits!=null){
+                    if (outUnits != null) {
                         queryRouteProcess.setOutUnits(outUnits);
                         queryRouteProcess.setOutUnitsConversionNumerator(outUnitsConversionNumberator);
                         queryRouteProcess.setOutUnitsConversionDenominator(outUnitsConversionDenominator);
@@ -257,6 +305,7 @@ public class routeJob implements JobHandler {
                         queryRouteProcess.setNextProcessName(nextProcess.getProcessName());
                     } else {
                         queryRouteProcess.setNextProcessId(0L);
+                        queryRouteProcess.setNextProcessCode(null);
                         queryRouteProcess.setNextProcessName("无");
                     }
                     editBindList.add(queryRouteProcess);
@@ -271,12 +320,14 @@ public class routeJob implements JobHandler {
                     addRouteProcess.setLinkType("FS");
                     addRouteProcess.setColorCode("#00AEF3");
                     addRouteProcess.setSequence(sequence);
-                    if(receiveingUnits!=null){
+                    addRouteProcess.setProcessSequence(Long.valueOf(processSequence));
+
+                    if (receiveingUnits != null) {
                         addRouteProcess.setReceivingUnits(receiveingUnits);
                         addRouteProcess.setReceivingUnitsConversionNumerator(receiveingUnitsConversionNumberator);
                         addRouteProcess.setReceivingUnitsConversionDenominator(receiveingUnitsConversionDenominator);
                     }
-                    if(outUnits!=null){
+                    if (outUnits != null) {
                         addRouteProcess.setOutUnits(outUnits);
                         addRouteProcess.setOutUnitsConversionNumerator(outUnitsConversionNumberator);
                         addRouteProcess.setOutUnitsConversionDenominator(outUnitsConversionDenominator);
@@ -288,6 +339,7 @@ public class routeJob implements JobHandler {
                         addRouteProcess.setNextProcessName(nextProcess.getProcessName());
                     } else {
                         addRouteProcess.setNextProcessId(0L);
+                        addRouteProcess.setNextProcessCode(null);
                         addRouteProcess.setNextProcessName("无");
                     }
                     addBindList.add(addRouteProcess);
@@ -338,7 +390,11 @@ public class routeJob implements JobHandler {
             routeProductMapper.updateBatch(editProdcutList);
         }
 
-        // 开始追加工单工作序
+        if(!deleteBindList.isEmpty()){
+            routeProcessMapper.deleteBatchIds(deleteBindList);
+        }
+
+        /*// 开始追加工单工作序
         List<WorkorderDO> workorderList = workorderService.getWorkorderList(new WorkorderListVO());
         for(WorkorderDO workorderDO : workorderList){
            String fullRouteCode =  workorderDO.getProductCode() + "-" + workorderDO.getRouteCode();
@@ -350,7 +406,7 @@ public class routeJob implements JobHandler {
                if(!routeProcessDOList.isEmpty()){
                    for(RouteProcessDO routeProcess: routeProcessDOList){
                        // 获取工作序
-                       Map<String, Object> workOderSequence = routeOracleService.initWorkSequence(workorderDO.getWorkorderCode() , routeProcess.getProcessCode());
+                       Map<String, Object> workOderSequence = routeOracleService.initWorkSequence(workorderDO.getWorkorderCode() , routeProcess.getProcessCode() , String.valueOf(routeProcess.getSequence()));
                        if(workOderSequence == null){
                            continue;
                        }
@@ -364,56 +420,23 @@ public class routeJob implements JobHandler {
         // 追加工作序
         if(!editSequenceList.isEmpty()){
             routeProcessMapper.updateBatch(editSequenceList);
-        }
+        }*/
+
         return "success";
     }
 
-    /**
-     * 构筑工艺路线
-     */
     // 构建工艺路线的方法
     private static List<String> buildRoute(List<Map<String, Object>> records) {
-       // 返回列表
+
+        // 基于records进行for循环, 基于Map中的"SEQUENCE"字段从小到大进行排序
+        records.sort(Comparator.comparing(m -> ((BigDecimal) m.get("SEQUENCE")).intValue()));
+
         List<String> route = new ArrayList<>();
-        // 若当前工序只有一条, 则仅返回当前的工序信息
-        if (records.size() == 1) {
-            route.add(records.get(0).get("PROCESS_CODE").toString());
-            return route;
-        }
-        // 找到起始工序
-        String currentProcessCode = null;
+        // 循环records, 将Map中的"PROCESS_CODE"与"PROCESS_SEQUENCE"追加到route中
         for (Map<String, Object> record : records) {
-            if ("INIT".equals(record.get("TOP_PROCESS_CODE"))) {
-                currentProcessCode = (String) record.get("PROCESS_CODE"); // 获取起始工序
-                break;
-            }
+            route.add(record.get("PROCESS_CODE").toString() + "-" + record.get("PROCESS_SEQUENCE").toString());
         }
-        // 如果没有找到起始工序，返回null
-        if (currentProcessCode == null) {
-            return null;
-        }
-
-        route.add(currentProcessCode); // 添加起始工序到路线
-        String nextProcessCode = currentProcessCode;
-        // 循环直到找到END工序
-        do {
-            nextProcessCode = null;
-            for (Map<String, Object> record : records) {
-                if ("END".equals(record.get("NEXT_PROCESS_CODE"))) {
-                    // 找到END工序，结束循环
-                    route.add(record.get("PROCESS_CODE").toString());
-                    break;
-                }
-                if (record.get("TOP_PROCESS_CODE").equals(currentProcessCode) && !route.contains(record.get("PROCESS_CODE"))) {
-                    nextProcessCode = (String) record.get("PROCESS_CODE");
-                    route.add(nextProcessCode);
-                    break;
-                }
-            }
-        } while (nextProcessCode != null); // 继续循环直到没有找到下一个工序
-
         return route;
     }
-
 
 }

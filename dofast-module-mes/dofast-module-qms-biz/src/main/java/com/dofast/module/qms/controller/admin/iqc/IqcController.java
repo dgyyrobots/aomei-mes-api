@@ -84,7 +84,7 @@ public class IqcController {
         MdItemDTO mdItemDTO = mdItemApi.getMdItemByCode(createReqVO.getItemCode());
         TemplateProductListVO param = new TemplateProductListVO();
         param.setItemId(mdItemDTO.getId());
-        List<TemplateProductDO> templates = templateProductService.getTemplateProductList(param);
+        List<TemplateProductDO> templates = templateProductService.getTemplateProductListNotContainProcessCode(param);
         if(CollUtil.isNotEmpty(templates)){
             createReqVO.setTemplateId(templates.get(0).getTemplateId());
         }else{

@@ -94,4 +94,10 @@ public class TeamMemberServiceImpl implements TeamMemberService {
         return teamMemberMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public void updateBatchTeamMember(List<TeamMemberDO> updateList){
+        teamMemberMapper.updateBatch(updateList);
+    }
+
+
 }

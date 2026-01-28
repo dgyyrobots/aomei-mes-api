@@ -82,6 +82,9 @@ public class DvRepairExcelVO {
     @ExcelProperty("预留字段4")
     private Integer attr4;
 
+    @ExcelProperty("维修类型")
+    private String repairType;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

@@ -27,6 +27,9 @@ public interface FeedbackAuditItemConvert {
 
     FeedbackAuditItemCreateReqVO convert01(FeedbackAuditItemDO bean);
 
+    FeedbackAuditItemUpdateReqVO convert02(FeedbackAuditItemDO bean);
+
+
     List<FeedbackAuditItemRespVO> convertList(List<FeedbackAuditItemDO> list);
 
     PageResult<FeedbackAuditItemRespVO> convertPage(PageResult<FeedbackAuditItemDO> page);

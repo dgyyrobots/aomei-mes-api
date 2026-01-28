@@ -59,4 +59,18 @@ public class FeedbackAuditExcelVO {
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 
+    @ExcelProperty("原始审批人ID")
+    private Long originalAuditUserId;
+
+    @ExcelProperty("转审历史记录")
+    private String transferHistory;
+
+    @ExcelProperty("来源审批单ID")
+    private Long sourceAuditId;
+
+    @ExcelProperty("请求参数")
+    private String methodArgs;
+
+
+
 }

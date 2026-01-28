@@ -90,4 +90,9 @@ public class FeedbackMemberServiceImpl implements FeedbackMemberService {
         return feedbackMemberMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public List<FeedbackMemberDO> getFeedbackMembersByFeedbackIds(List<Long> feedbackIds){
+        return feedbackMemberMapper.selectByFeedbackIds(feedbackIds);
+    }
+
 }

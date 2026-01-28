@@ -67,4 +67,7 @@ public interface FeedbackMemberService {
      */
     List<FeedbackMemberDO> getFeedbackMemberList(FeedbackMemberExportReqVO exportReqVO);
 
+
+    List<FeedbackMemberDO> getFeedbackMembersByFeedbackIds(List<Long> feedbackIds);
+
 }

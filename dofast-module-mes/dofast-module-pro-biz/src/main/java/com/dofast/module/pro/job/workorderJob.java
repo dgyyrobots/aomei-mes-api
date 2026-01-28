@@ -14,6 +14,7 @@ import com.dofast.module.pro.dal.mysql.workorderbom.WorkorderBomMapper;
 import com.dofast.module.pro.service.workorder.WorkorderOracleService;
 import com.dofast.module.pro.service.workorderbom.WorkorderBomOracleService;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -74,7 +75,7 @@ public class workorderJob implements JobHandler {
             }
 
             if(file!=null){
-                System.out.println("工艺路线附件: " + file);
+                 System.out.println("工艺路线附件: " + file);
             }
             if (query == null) {
                 // 新增工单信息
@@ -114,6 +115,8 @@ public class workorderJob implements JobHandler {
                 if (file != null) {
                     if (query.getAdjuncts() != null && !query.getAdjuncts().contains(file)) {
                         query.setAdjuncts(query.getAdjuncts() + "," + file);
+                    }else if(StringUtils.isBlank(query.getAdjuncts())){
+                        query.setAdjuncts(file);
                     }
                 }
                 query.setWorkorderCode(workorderCode);

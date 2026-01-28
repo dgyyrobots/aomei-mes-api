@@ -55,7 +55,7 @@ public class MaterialStockController {
 
     @PostMapping("/create")
     @Operation(summary = "创建库存记录")
-    @PreAuthorize("@ss.hasPermission('wms:material-stock:create')")
+   //  @PreAuthorize("@ss.hasPermission('wms:material-stock:create')")
     public CommonResult<Long> createMaterialStock(@Valid @RequestBody MaterialStockCreateReqVO createReqVO) {
         if(StrUtils.isNotNull(createReqVO.getWarehouseId())){
             WarehouseDO warehouseDO = warehouseService.getWarehouse(createReqVO.getWarehouseId());
@@ -72,6 +72,7 @@ public class MaterialStockController {
             createReqVO.setAreaCode(storageAreaDO.getAreaCode());
             createReqVO.setAreaName(storageAreaDO.getAreaName());
         }
+
         return success(materialStockService.createMaterialStock(createReqVO));
     }
 

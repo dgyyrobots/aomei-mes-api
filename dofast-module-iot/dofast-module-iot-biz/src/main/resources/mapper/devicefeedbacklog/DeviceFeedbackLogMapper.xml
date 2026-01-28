@@ -14,8 +14,8 @@
 
     <delete id="deleteByCreateTimeRange" parameterType="java.lang.String">
         <![CDATA[
-    DELETE FROM iot_device_feedback_log
-    WHERE create_time < #{cutoffTime}  AND deleted = 0
-    ]]>
+            DELETE FROM iot_device_feedback_log
+            WHERE  create_time >= #{startTime} AND create_time < #{endTime}  AND deleted = 0
+        ]]>
     </delete>
 </mapper>

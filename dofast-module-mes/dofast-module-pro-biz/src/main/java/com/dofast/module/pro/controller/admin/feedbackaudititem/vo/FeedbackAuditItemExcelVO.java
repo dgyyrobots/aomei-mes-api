@@ -73,6 +73,9 @@ public class FeedbackAuditItemExcelVO {
     @ExcelProperty("不良品数量")
     private BigDecimal sumQuantityUnquanlified;
 
+    @ExcelProperty("工艺损耗数量")
+    private BigDecimal sumQuantityExcess;
+
     @ExcelProperty("报工用户名")
     private String userName;
 
@@ -87,5 +90,16 @@ public class FeedbackAuditItemExcelVO {
 
     @ExcelProperty("参与班组成员名称")
     private String allPrincipal;
+
+    @ExcelProperty("设备Id")
+    private Long machineryId;
+
+    @ExcelProperty("设备名称")
+    private String machineryName;
+
+    @ExcelProperty("设备编码")
+    private String machineryCode;
+
+
 
 }

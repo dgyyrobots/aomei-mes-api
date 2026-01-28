@@ -100,5 +100,10 @@ public class AllocatedRecordServiceImpl implements AllocatedRecordService {
         allocatedRecordMapper.updateBatch(updateList);
     }
 
+    @Override
+    public void deleteAllocatedRecordBatch(List<Long> ids){
+        allocatedRecordMapper.deleteBatchIds(ids);
+    }
+
 
 }

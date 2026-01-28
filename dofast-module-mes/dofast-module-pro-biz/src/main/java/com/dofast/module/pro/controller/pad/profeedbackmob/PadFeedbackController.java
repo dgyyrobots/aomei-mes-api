@@ -308,9 +308,9 @@ public class PadFeedbackController extends PadBaseController {
                 executeItemProduce(itemRecptDO);
             }else {
                 //生成产品产出记录单
-                ProductProduceDO productRecord = productProduceService.generateProductProduce(feedbackDTO);
+                // ProductProduceDO productRecord = productProduceService.generateProductProduce(feedbackDTO);
                 //执行产品产出入线边库
-                executeProductProduce(productRecord);
+                // executeProductProduce(productRecord);
             }
 
         }

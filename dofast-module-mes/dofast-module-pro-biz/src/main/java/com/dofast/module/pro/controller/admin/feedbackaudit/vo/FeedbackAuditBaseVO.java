@@ -2,6 +2,8 @@ package com.dofast.module.pro.controller.admin.feedbackaudit.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -58,5 +60,21 @@ public class FeedbackAuditBaseVO {
 
     @Schema(description = "备注", example = "随便")
     private String remark;
+
+    @Schema(description = "原始审批人ID")
+    private Long originalAuditUserId;
+
+    @Schema(description = "转审历史记录")
+    private String transferHistory;
+
+    @Schema(description = "来源审批单ID")
+    private Long sourceAuditId;
+
+    @Schema(description = "请求参数")
+    private String methodArgs;
+
+
+
+
 
 }

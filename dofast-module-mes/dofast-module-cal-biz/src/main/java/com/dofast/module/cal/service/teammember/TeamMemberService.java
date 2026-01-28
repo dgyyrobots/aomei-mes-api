@@ -76,4 +76,7 @@ public interface TeamMemberService {
      */
     List<TeamMemberDO> getTeamMemberList(TeamMemberExportReqVO exportReqVO);
 
+    void updateBatchTeamMember(List<TeamMemberDO> updateList);
+
+
 }

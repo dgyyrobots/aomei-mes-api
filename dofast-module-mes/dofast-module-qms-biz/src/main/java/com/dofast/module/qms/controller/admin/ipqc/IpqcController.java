@@ -110,6 +110,7 @@ public class IpqcController {
         TemplateBaseVO param = new TemplateBaseVO();
         param.setQcTypes(createReqVO.getIpqcType());
         param.setItemId(workorder.getProductId());
+        param.setProcessCode(createReqVO.getProcessCode());
         TemplateDO template = templateService.selectQcTemplateByProductAndQcType(param);
         if(StrUtils.isNotNull(template)){
             createReqVO.setTemplateId(template.getId());
@@ -244,5 +245,21 @@ public class IpqcController {
         List<IpqcExcelVO> datas = IpqcConvert.INSTANCE.convertList02(list);
         ExcelUtils.write(response, "过程检验单.xls", "数据", IpqcExcelVO.class, datas);
     }
+
+
+    /**
+     * 看板: 各车间产量
+     *
+     * @return
+     */
+    @GetMapping("/getWorkshopCapacity")
+    public Map<String, Object> getWorkshopCapacity() {
+        List<Map<String, Object>> source = ipqcService.getProcessQuality();
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("dimensions", Arrays.asList("name", "value"));
+        result.put("source", source);
+        return result;
+    }
+
 
 }

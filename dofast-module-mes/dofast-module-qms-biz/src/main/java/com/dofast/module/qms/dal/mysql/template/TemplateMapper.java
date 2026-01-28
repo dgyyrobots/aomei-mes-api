@@ -34,6 +34,8 @@ public interface TemplateMapper extends BaseMapperX<TemplateDO> {
                 .eqIfPresent(TemplateDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(TemplateDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(TemplateDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(TemplateDO::getProcessCode, reqVO.getProcessCode())
+                .eqIfPresent(TemplateDO::getProcessName, reqVO.getProcessName())
                 .betweenIfPresent(TemplateDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(TemplateDO::getId));
     }
@@ -49,6 +51,8 @@ public interface TemplateMapper extends BaseMapperX<TemplateDO> {
                 .eqIfPresent(TemplateDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(TemplateDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(TemplateDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(TemplateDO::getProcessCode, reqVO.getProcessCode())
+                .eqIfPresent(TemplateDO::getProcessName, reqVO.getProcessName())
                 .betweenIfPresent(TemplateDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(TemplateDO::getId));
     }

@@ -52,4 +52,7 @@ public class DefectExcelVO {
     @ExcelProperty("工序编码")
     private String processCode;
 
+    @ExcelProperty("工序名称")
+    private String processName;
+
 }

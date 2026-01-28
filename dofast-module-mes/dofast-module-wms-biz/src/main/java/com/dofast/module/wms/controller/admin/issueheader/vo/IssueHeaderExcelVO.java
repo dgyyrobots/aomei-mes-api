@@ -125,4 +125,6 @@ public class IssueHeaderExcelVO {
     @ExcelProperty("工序名称")
     private String processName;
 
+    @ExcelProperty("工序工作序")
+    private Long processSequence;
 }

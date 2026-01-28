@@ -8,6 +8,8 @@ import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.pro.dal.dataobject.feedbackmember.FeedbackMemberDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.feedbackmember.vo.*;
+import org.springframework.security.core.parameters.P;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 报工班组人员 Mapper
@@ -42,5 +44,8 @@ public interface FeedbackMemberMapper extends BaseMapperX<FeedbackMemberDO> {
                 .betweenIfPresent(FeedbackMemberDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(FeedbackMemberDO::getId));
     }
+
+    List<FeedbackMemberDO> selectByFeedbackIds(@Param("feedbackIds") List<Long> feedbackIds);
+
 
 }

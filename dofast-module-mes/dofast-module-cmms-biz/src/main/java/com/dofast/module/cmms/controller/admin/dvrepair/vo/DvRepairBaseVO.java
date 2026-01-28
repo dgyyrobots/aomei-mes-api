@@ -88,6 +88,10 @@ public class DvRepairBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "维修类型")
+    private String repairType;
+
+
     public Long getId(){
         return null;
     }

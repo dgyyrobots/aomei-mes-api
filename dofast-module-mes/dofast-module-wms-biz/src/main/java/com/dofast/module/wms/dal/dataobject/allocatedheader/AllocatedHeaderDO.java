@@ -1,5 +1,6 @@
 package com.dofast.module.wms.dal.dataobject.allocatedheader;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -132,4 +133,7 @@ public class AllocatedHeaderDO extends BaseDO {
     private  String taskName;
 
     private String bindWorkorder;
+
+    private String completer;
+
 }

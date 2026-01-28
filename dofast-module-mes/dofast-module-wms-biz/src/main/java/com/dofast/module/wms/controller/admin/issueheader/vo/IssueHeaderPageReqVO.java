@@ -122,11 +122,15 @@ public class IssueHeaderPageReqVO extends PageParam {
     @Schema(description = "工序名称")
     private String processName;
 
+    @Schema(description = "工序工作序")
+    private Long processSequence;
     // 虚拟字段
     @Schema(description = "批次号")
     private String batchCode;
 
     @Schema(description = "领料单行列表")
     private List<String> issueCodeList;
+
+
 
 }

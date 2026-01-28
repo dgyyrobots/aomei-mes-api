@@ -71,4 +71,7 @@ public interface AllocatedRecordService {
 
     void updateAllocatedRecordBatch(List<AllocatedRecordDO> updateList);
 
+    void deleteAllocatedRecordBatch(List<Long> ids);
+
+
 }

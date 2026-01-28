@@ -241,4 +241,15 @@ public class TaskDO extends BaseDO {
      */
     private String feedbackSerial;
 
+    /**
+     * 工序工作序
+     */
+    private Long processSequence;
+
+    /**
+     * 工单工作序
+     */
+    private Long workorderSequence;
+
+
 }

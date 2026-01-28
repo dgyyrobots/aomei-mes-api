@@ -292,40 +292,55 @@ public class StorageCoreServiceImpl implements StorageCoreService {
         for (int i = 0; i < lines.size(); i++) {
             RtIssueTxBean line = lines.get(i);
 
-            //构造一条目的库存减少的事务
-            TransactionUpdateReqVO transaction_out = new TransactionUpdateReqVO();
-            transaction_out.setTransactionType(transactionType_out);
-            BeanUtils.copyBeanProp(transaction_out, line);
+            MaterialStockExportReqVO materialStockDO = new MaterialStockExportReqVO();
+            materialStockDO.setItemCode(line.getItemCode());
+            materialStockDO.setBatchCode(line.getBatchCode());
+            /*materialStockDO.setWarehouseCode(rtIssueDO.getWarehouseCode());
+            materialStockDO.setLocationCode(rtIssueDO.getLocationCode());
+            materialStockDO.setAreaCode(rtIssueDO.getAreaCode());*/
+            materialStockDO.setWarehouseCode(line.getWarehouseCode());
+            materialStockDO.setLocationCode(line.getLocationCode());
+            materialStockDO.setAreaCode(line.getAreaCode());
+            MaterialStockDO materialStock = null;
 
-            //这里的出库事务从当前物料的实际位置出库到用户选取的仓库
-            WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(line.getWarehouseCode());
-            transaction_out.setWarehouseId(warehouse.getId());
-            transaction_out.setWarehouseCode(warehouse.getWarehouseCode());
-            transaction_out.setWarehouseName(warehouse.getWarehouseName());
-
-            StorageLocationExportReqVO locationExportReqVO = new StorageLocationExportReqVO();
-            locationExportReqVO.setLocationCode(line.getLocationCode());
-            locationExportReqVO.setWarehouseId(warehouse.getId());
-            StorageLocationDO location = storageLocationService.getStorageLocationList(locationExportReqVO).get(0) == null ? null : storageLocationService.getStorageLocationList(locationExportReqVO).get(0);
-            if (location != null) {
-                transaction_out.setLocationId(location.getId());
-                transaction_out.setLocationCode(location.getLocationCode());
-                transaction_out.setLocationName(location.getLocationName());
+            // 2025-06-08 追加母批次
+            materialStockDO.setParentBatchCode(line.getParentBatchCode());
+            List<MaterialStockDO> materialStockList = materialStockService.getMaterialStockListContainZero(materialStockDO);
+            if (!materialStockList.isEmpty()) {
+                materialStock = materialStockList.get(0);
             }
 
+            if(materialStock != null && materialStock.getWarehouseCode().equals(Constant.VIRTUAL_WH)){
+                //构造一条目的库存减少的事务
+                TransactionUpdateReqVO transaction_out = new TransactionUpdateReqVO();
+                transaction_out.setTransactionType(transactionType_out);
+                BeanUtils.copyBeanProp(transaction_out, line);
+                //这里的出库事务从当前物料的实际位置出库到用户选取的仓库
+                WarehouseDO warehouse = warehouseService.selectWmWarehouseByWarehouseCode(line.getWarehouseCode());
+                transaction_out.setWarehouseId(warehouse.getId());
+                transaction_out.setWarehouseCode(warehouse.getWarehouseCode());
+                transaction_out.setWarehouseName(warehouse.getWarehouseName());
+                StorageLocationExportReqVO locationExportReqVO = new StorageLocationExportReqVO();
+                locationExportReqVO.setLocationCode(line.getLocationCode());
+                locationExportReqVO.setWarehouseId(warehouse.getId());
+                StorageLocationDO location = storageLocationService.getStorageLocationList(locationExportReqVO).get(0) == null ? null : storageLocationService.getStorageLocationList(locationExportReqVO).get(0);
+                if (location != null) {
+                    transaction_out.setLocationId(location.getId());
+                    transaction_out.setLocationCode(location.getLocationCode());
+                    transaction_out.setLocationName(location.getLocationName());
+                }
+                StorageAreaExportReqVO exportReqVO = new StorageAreaExportReqVO();
+                exportReqVO.setAreaCode(line.getAreaCode());
+                exportReqVO.setLocationId(location.getId());
+                List<StorageAreaDO> areaList = storageAreaService.getStorageAreaList(exportReqVO);
+                StorageAreaDO area = areaList.get(0);
+                transaction_out.setAreaId(area.getId());
+                transaction_out.setAreaCode(area.getAreaCode());
+                transaction_out.setAreaName(area.getAreaName());
+                transaction_out.setTransactionFlag(-1);//库存减少
+                transactionService.processTransaction(transaction_out);
+            }
 
-            StorageAreaExportReqVO exportReqVO = new StorageAreaExportReqVO();
-            exportReqVO.setAreaCode(line.getAreaCode());
-            exportReqVO.setLocationId(location.getId());
-            List<StorageAreaDO> areaList = storageAreaService.getStorageAreaList(exportReqVO);
-            StorageAreaDO area = areaList.get(0);
-            //StorageAreaDO area = storageAreaService.selectWmStorageAreaByAreaCode(line.getAreaCode());
-            transaction_out.setAreaId(area.getId());
-            transaction_out.setAreaCode(area.getAreaCode());
-            transaction_out.setAreaName(area.getAreaName());
-
-            transaction_out.setTransactionFlag(-1);//库存减少
-            transactionService.processTransaction(transaction_out);
 
             //构造一条目的库存增加的事务
             TransactionUpdateReqVO transaction_in = new TransactionUpdateReqVO();
@@ -354,22 +369,21 @@ public class StorageCoreServiceImpl implements StorageCoreService {
             transaction_in.setAreaName(rtIssueDO.getAreaName());
             transaction_in.setTransactionFlag(1);//库存增加
             transaction_in.setTransactionDate(LocalDateTime.now());
+
             //由于是新增的库存记录所以需要将查询出来的库存记录ID置为空
             //transaction_in.setMaterialStockId(null);
-            MaterialStockExportReqVO materialStockDO = new MaterialStockExportReqVO();
-            materialStockDO.setItemCode(line.getItemCode());
-            materialStockDO.setBatchCode(line.getBatchCode());
 
-            // 2025-06-08 追加母批次
-            materialStockDO.setParentBatchCode(line.getParentBatchCode());
-            List<MaterialStockDO> materialStockList = materialStockService.getMaterialStockList(materialStockDO);
             if (!materialStockList.isEmpty()) {
-                MaterialStockDO materialStock = materialStockList.get(0);
-                transaction_in.setMaterialStockId(materialStock.getId());
+                if(!materialStock.getWarehouseCode().equals(Constant.VIRTUAL_WH)){
+                    transaction_in.setMaterialStockId(materialStock.getId());
+                }else{
+                    transaction_in.setMaterialStockId(null);
+                }
+            }else{
+                transaction_in.setMaterialStockId(null);
             }
             //设置入库相关联的出库事务ID
-            transaction_in.setRelatedTransactionId(transaction_out.getId());
-
+            // transaction_in.setRelatedTransactionId(transaction_out.getId());
             transactionService.processTransaction(transaction_in);
         }
     }

@@ -95,4 +95,14 @@ public class TemplateProductDO extends BaseDO {
      */
     private Integer attr4;
 
+    /**
+     * 工序编码
+     */
+    private String processCode;
+
+    /**
+     * 工序名称
+     */
+    private String processName;
+
 }

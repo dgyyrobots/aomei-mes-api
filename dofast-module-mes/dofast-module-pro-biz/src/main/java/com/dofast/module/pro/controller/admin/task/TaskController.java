@@ -20,6 +20,7 @@ import com.dofast.module.mes.dal.dataobject.mditem.MdItemDO;
 import com.dofast.module.mes.dal.dataobject.mdworkstationworker.MdWorkstationWorkerDO;
 import com.dofast.module.mes.service.mditem.MdItemService;
 import com.dofast.module.mes.service.mdworkstationworker.MdWorkstationWorkerService;
+import com.dofast.module.pro.controller.admin.routeprocess.vo.RouteProcessExportReqVO;
 import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderBaseVO;
 import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderExportReqVO;
 import com.dofast.module.pro.controller.admin.workorder.vo.WorkorderListVO;
@@ -28,7 +29,12 @@ import com.dofast.module.pro.controller.pad.protask.vo.PadTaskUpdateStatusReqVO;
 import com.dofast.module.pro.convert.workorder.WorkorderConvert;
 import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import com.dofast.module.pro.dal.dataobject.process.ProcessDO;
+import com.dofast.module.pro.dal.dataobject.route.RouteDO;
+import com.dofast.module.pro.dal.dataobject.routeprocess.RouteProcessDO;
 import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
+import com.dofast.module.pro.dal.mysql.route.RouteMapper;
+import com.dofast.module.pro.dal.mysql.routeprocess.RouteProcessMapper;
+import com.dofast.module.pro.dal.mysql.routeproduct.RouteProductMapper;
 import com.dofast.module.pro.dal.mysql.task.TaskMapper;
 import com.dofast.module.pro.enums.ErrorCodeConstants;
 import com.dofast.module.pro.gantt.GanttData;
@@ -36,7 +42,10 @@ import com.dofast.module.pro.gantt.GanttLink;
 import com.dofast.module.pro.gantt.GanttTask;
 import com.dofast.module.pro.service.feedback.FeedbackService;
 import com.dofast.module.pro.service.process.ProcessService;
+import com.dofast.module.pro.service.route.RouteOracleService;
+import com.dofast.module.pro.service.route.RouteService;
 import com.dofast.module.pro.service.routeprocess.RouteProcessService;
+import com.dofast.module.pro.service.task.TaskOracleService;
 import com.dofast.module.pro.service.workorder.WorkorderService;
 import com.dofast.module.report.api.PrintLog.PrintLogApi;
 import com.dofast.module.report.api.PrintLog.dto.PrintLogDTO;
@@ -50,6 +59,8 @@ import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.service.issueheader.IssueHeaderService;
 import com.dofast.module.wms.service.issueline.IssueLineService;
+import dm.jdbc.util.StringUtil;
+import org.apache.tika.utils.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -148,6 +159,23 @@ public class TaskController {
     @Resource
     private MdItemService mdItemService;
 
+    @Resource
+    private TaskOracleService taskOracleService;
+
+    @Resource
+    private RouteService routeService;
+
+    @Resource
+    private RouteMapper routeMapper;
+
+    @Resource
+    private RouteProcessMapper routeProcessMapper;
+
+    @Resource
+    private RouteProductMapper routeProductMapper;
+
+    @Resource
+    private RouteOracleService routeOracleService;
 
     @PostMapping("/create")
     @Operation(summary = "创建生产任务")
@@ -166,6 +194,25 @@ public class TaskController {
         createReqVO.setWorkstationId(workStationDTO.getId());
         //生产工单
         WorkorderDO order = workorderService.getWorkorder(createReqVO.getWorkorderId());
+        // 2025-10-16 工单工作需改为任务单创建时赋予
+        String fullRouteCode =  order.getProductCode() + "-" + order.getRouteCode();
+        // 获取工艺路线
+        RouteDO routeDO = routeMapper.selectOne(RouteDO::getRouteCode, fullRouteCode);
+        if(routeDO != null) {
+            // 获取工艺路线工序
+            List<RouteProcessDO> routeProcessDOList = routeProcessMapper.selectList(RouteProcessDO::getRouteId, routeDO.getId());
+            if (!routeProcessDOList.isEmpty()) {
+                for (RouteProcessDO routeProcess : routeProcessDOList) {
+                    // 获取工作序
+                    Map<String, Object> workOderSequence = routeOracleService.initWorkSequence(order.getWorkorderCode(), routeProcess.getProcessCode(), String.valueOf(routeProcess.getSequence()));
+                    if (workOderSequence == null) {
+                        continue;
+                    }
+                    String workorderSequence = (String) workOderSequence.get("WORKORDER_SEQUENCE");
+                    createReqVO.setWorkorderSequence(Long.valueOf(workorderSequence));
+                }
+            }
+        }
 
         //判断该工序是否已经报工
         TaskExportReqVO taskExportReqVO = new TaskExportReqVO();
@@ -197,7 +244,7 @@ public class TaskController {
         createReqVO.setItemCode(order.getProductCode());
         createReqVO.setItemName(order.getProductName());
         createReqVO.setSpecification(order.getProductSpc());
-        createReqVO.setUnitOfMeasure(order.getUnitOfMeasure());
+        // createReqVO.setUnitOfMeasure(order.getUnitOfMeasure());
         createReqVO.setClientId(order.getClientId());
         createReqVO.setClientCode(order.getClientCode());
         createReqVO.setClientName(order.getClientName());
@@ -340,6 +387,54 @@ public class TaskController {
         taskService.deleteTask(id);
         return success(true);
     }
+
+    @GetMapping("/initChangeInfo")
+    @Operation(summary = "获得生产任务转换数量")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('pro:task:query')")
+    public CommonResult<Map<String, Object>> initTaskChangeQuantity(@RequestParam("workorderCode") String workorderCode ,@RequestParam("processCode") String processCode) {
+
+        WorkorderDO workorder = workorderService.getWorkorder(workorderCode);
+        // 判定工单开头是否为MO
+        String routeCode = workorder.getProductCode() + "-" + workorder.getRouteCode();
+        // 获取工艺路线详情
+        RouteDO route = routeService.getRoute(routeCode);
+        if(route == null){
+            return error(ErrorCodeConstants.ROUTE_NOT_EXISTS);
+        }
+        RouteProcessExportReqVO routeProcessExportReqVO = new RouteProcessExportReqVO();
+        routeProcessExportReqVO.setRouteId(route.getId());
+        routeProcessExportReqVO.setProcessCode(processCode);
+        List<RouteProcessDO> routeProcess = routeProcessService.getRouteProcessList(routeProcessExportReqVO);
+        if(routeProcess.isEmpty()){
+            return error(ErrorCodeConstants.ROUTE_PROCESS_NOT_EXISTS);
+        }
+        RouteProcessDO process = routeProcess.get(0);
+        String nextProcessCode = Optional.ofNullable(routeProcess.get(0).getNextProcessCode()).orElse(null);
+
+        if(nextProcessCode == null && !"张".equals(routeProcess.get(0).getOutUnits())){// 若当前末工序产出为张, 则无需变更
+            // 末工序取上道制程转换数量
+            routeProcessExportReqVO.setProcessCode(null);
+            List<RouteProcessDO> queryFirstRouteProcess = routeProcessService.getRouteProcessList(routeProcessExportReqVO);
+            if(queryFirstRouteProcess.isEmpty()){
+                return error(ErrorCodeConstants.ROUTE_PROCESS_NOT_EXISTS);
+            }
+            queryFirstRouteProcess.sort(Comparator.comparingInt(RouteProcessDO::getOrderNum));
+            process = queryFirstRouteProcess.get(0);
+            processCode = process.getProcessCode();
+        }
+
+        Map<String, Object> requestMap = taskOracleService.getChangeQuantity(workorderCode,processCode);
+        // 卡控requestMap不为空
+        if (!workorderCode.startsWith("MO")) {
+            if (requestMap == null) {
+                return error(ErrorCodeConstants.TASK_CHANGE_QUANTITY_ERROR);
+            }
+        }
+
+        return success(requestMap);
+    }
+
 
     @GetMapping("/get")
     @Operation(summary = "获得生产任务")
@@ -538,19 +633,24 @@ public class TaskController {
 
         TaskDO taskDO = taskService.getTask(taskId.longValue());
         taskDO.setAttr1(teamCode); // 存储班组编码
+
+        String machineryCodesStr = machineryCodes != null ? machineryCodes.toString() : null;
+        taskDO.setMachineryCodes(machineryCodesStr);
+
         taskDO.setMachineryId(taskDO.getMachineryId());
         taskDO.setMachineryName(taskDO.getMachineryName());
         taskDO.setMachineryCode(taskDO.getMachineryCode());
+
         // 根据选取的班组信息同步更新任务单的机台设备
         TeamDO team = teamService.getTeam(taskDO.getAttr1());
         taskDO.setMachineryCode(team.getMachineryCode());
         taskDO.setMachineryName(team.getMachineryName());
         taskDO.setTaskStatus("Y");
-        taskDO.setMachineryCodes(machineryCodes.toString());
         taskDO.setMachineryId(String.valueOf(team.getMachineryId())); //更新任务单的机台设备ID
         taskService.updateTask(TaskConvert.INSTANCE.convert01(taskDO));
         return success(true);
     }
+
 
     @GetMapping("/count-month-task-lastYear")
     @Operation(summary = "获取任务单去年产出总额")

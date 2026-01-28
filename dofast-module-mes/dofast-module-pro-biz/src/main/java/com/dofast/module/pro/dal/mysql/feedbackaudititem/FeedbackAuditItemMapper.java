@@ -5,6 +5,7 @@ import java.util.*;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
+import com.dofast.module.pro.dal.dataobject.feedbackaudit.FeedbackAuditDO;
 import com.dofast.module.pro.dal.dataobject.feedbackaudititem.FeedbackAuditItemDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.feedbackaudititem.vo.*;
@@ -36,11 +37,17 @@ public interface FeedbackAuditItemMapper extends BaseMapperX<FeedbackAuditItemDO
                 .eqIfPresent(FeedbackAuditItemDO::getSumQuantityFeedback, reqVO.getSumQuantityFeedback())
                 .eqIfPresent(FeedbackAuditItemDO::getSumQuantityQualified, reqVO.getSumQuantityQualified())
                 .eqIfPresent(FeedbackAuditItemDO::getSumQuantityUnquanlified, reqVO.getSumQuantityUnquanlified())
+                .eqIfPresent(FeedbackAuditItemDO::getSumQuantityExcess, reqVO.getSumQuantityExcess())
+
                 .likeIfPresent(FeedbackAuditItemDO::getUserName, reqVO.getUserName())
                 .likeIfPresent(FeedbackAuditItemDO::getNickName, reqVO.getNickName())
                 .eqIfPresent(FeedbackAuditItemDO::getRemark, reqVO.getRemark())
                 .betweenIfPresent(FeedbackAuditItemDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(FeedbackAuditItemDO::getAllPrincipal, reqVO.getAllPrincipal())
+                .eqIfPresent(FeedbackAuditItemDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(FeedbackAuditItemDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(FeedbackAuditItemDO::getMachineryName, reqVO.getMachineryName())
+
                 .orderByDesc(FeedbackAuditItemDO::getId));
     }
 
@@ -63,11 +70,16 @@ public interface FeedbackAuditItemMapper extends BaseMapperX<FeedbackAuditItemDO
                 .eqIfPresent(FeedbackAuditItemDO::getSumQuantityFeedback, reqVO.getSumQuantityFeedback())
                 .eqIfPresent(FeedbackAuditItemDO::getSumQuantityQualified, reqVO.getSumQuantityQualified())
                 .eqIfPresent(FeedbackAuditItemDO::getSumQuantityUnquanlified, reqVO.getSumQuantityUnquanlified())
+                .eqIfPresent(FeedbackAuditItemDO::getSumQuantityExcess, reqVO.getSumQuantityExcess())
+
                 .likeIfPresent(FeedbackAuditItemDO::getUserName, reqVO.getUserName())
                 .likeIfPresent(FeedbackAuditItemDO::getNickName, reqVO.getNickName())
                 .eqIfPresent(FeedbackAuditItemDO::getRemark, reqVO.getRemark())
                 .betweenIfPresent(FeedbackAuditItemDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(FeedbackAuditItemDO::getAllPrincipal, reqVO.getAllPrincipal())
+                .eqIfPresent(FeedbackAuditItemDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(FeedbackAuditItemDO::getMachineryCode, reqVO.getMachineryCode())
+                .eqIfPresent(FeedbackAuditItemDO::getMachineryName, reqVO.getMachineryName())
                 .orderByDesc(FeedbackAuditItemDO::getId));
     }
 

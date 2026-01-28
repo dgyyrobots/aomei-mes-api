@@ -69,6 +69,7 @@ public interface   ErrorCodeConstants {
 
     ErrorCode EXCEPTION_LEVEL_CONFIG_NOT_EXISTS = new ErrorCode(430006, "异常等级配置不存在");
 
+
     ErrorCode EXCEPTION_NOT_EXISTS = new ErrorCode(430007, "异常登记不存在");
 
     ErrorCode REGISTRATION_NOT_EXISTS = new ErrorCode(430008, "计时登记不存在");
@@ -84,6 +85,7 @@ public interface   ErrorCodeConstants {
 
     ErrorCode REGISTRATION_LINE_NOT_EXISTS = new ErrorCode(430009, "计时登记记录不存在");
 
+    ErrorCode MD_ITEM_CATEGORY_NOT_EXISTS = new ErrorCode(430010, "物料类别不存在");
 
 
 

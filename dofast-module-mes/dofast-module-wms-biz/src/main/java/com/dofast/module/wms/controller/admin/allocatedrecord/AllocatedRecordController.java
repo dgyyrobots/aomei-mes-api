@@ -151,7 +151,7 @@ public class AllocatedRecordController {
         List<AllocatedRecordDO> list = allocatedRecordService.getAllocatedRecordList(exportReqVO);
         // 导出 Excel
         List<AllocatedRecordExcelVO> datas = AllocatedRecordConvert.INSTANCE.convertList02(list);
-        ExcelUtils.write(response, "调拨单身记录.xls", "数据", AllocatedRecordExcelVO.class, datas);
+        ExcelUtils.write(response, "调拨明细.xls", "数据", AllocatedRecordExcelVO.class, datas);
     }
 
     @PostMapping("/checkExist")

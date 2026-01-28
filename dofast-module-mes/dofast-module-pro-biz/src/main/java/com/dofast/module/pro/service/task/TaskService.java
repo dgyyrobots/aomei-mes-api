@@ -45,6 +45,7 @@ public interface TaskService {
 
     TaskDO getTask(String taskCode);
 
+    TaskDO getTaskWithLock(Long id);
 
     /**
      * 获得我的生产任务
@@ -98,8 +99,6 @@ public interface TaskService {
 
     List<TaskDO> getTaskByOrder(Long workOrderId);
 
-
-
     /**
      * 获得生产任务
      *
@@ -122,6 +121,5 @@ public interface TaskService {
     Map<String, Integer>  getCountMonthTaskLastYear();
 
     Map<String, Integer>  getCountMonthTaskThisYear();
-
 
 }

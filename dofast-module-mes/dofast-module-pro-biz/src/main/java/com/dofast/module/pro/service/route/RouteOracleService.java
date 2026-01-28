@@ -24,6 +24,6 @@ public interface RouteOracleService {
      */
     List<Map<String, Object>> initChangeWorkOrderRouteBindProcess(String workOrderNo);
 
-    Map<String, Object> initWorkSequence(String workOrderNo, String processCode);
+    Map<String, Object> initWorkSequence(String workOrderNo, String processCode , String sequence);
 
 }

@@ -34,6 +34,8 @@ public interface TeamMapper extends BaseMapperX<TeamDO> {
                 .eqIfPresent(TeamDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(TeamDO::getMachineryCode, reqVO.getMachineryCode())
                 .eqIfPresent(TeamDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(TeamDO::getNightPrincipalId, reqVO.getNightPrincipalId())
+                .likeIfPresent(TeamDO::getNightPrincipalName, reqVO.getNightPrincipalName())
                 .orderByDesc(TeamDO::getId));
     }
 
@@ -54,6 +56,8 @@ public interface TeamMapper extends BaseMapperX<TeamDO> {
                 .eqIfPresent(TeamDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(TeamDO::getMachineryCode, reqVO.getMachineryCode())
                 .eqIfPresent(TeamDO::getMachineryId, reqVO.getMachineryId())
+                .eqIfPresent(TeamDO::getNightPrincipalId, reqVO.getNightPrincipalId())
+                .likeIfPresent(TeamDO::getNightPrincipalName, reqVO.getNightPrincipalName())
                 .orderByDesc(TeamDO::getId));
     }
 

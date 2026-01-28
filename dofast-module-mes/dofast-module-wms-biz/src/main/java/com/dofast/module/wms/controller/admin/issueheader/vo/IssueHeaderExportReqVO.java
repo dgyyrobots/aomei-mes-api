@@ -120,4 +120,7 @@ public class IssueHeaderExportReqVO {
     @Schema(description = "工序名称")
     private String processName;
 
+    @Schema(description = "工序工作序")
+    private Long processSequence;
+
 }

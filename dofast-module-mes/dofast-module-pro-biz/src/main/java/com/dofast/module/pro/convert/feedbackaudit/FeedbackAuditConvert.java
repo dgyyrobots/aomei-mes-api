@@ -2,6 +2,7 @@ package com.dofast.module.pro.convert.feedbackaudit;
 
 import java.util.*;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.dofast.framework.common.pojo.PageResult;
 
 import org.mapstruct.Mapper;
@@ -24,6 +25,8 @@ public interface FeedbackAuditConvert {
     FeedbackAuditDO convert(FeedbackAuditUpdateReqVO bean);
 
     FeedbackAuditRespVO convert(FeedbackAuditDO bean);
+
+    FeedbackAuditCreateReqVO convert01(FeedbackAuditDO bean);
 
     FeedbackAuditUpdateReqVO convert02(FeedbackAuditDO bean);
 

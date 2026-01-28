@@ -35,6 +35,8 @@ public interface MaterialStockService {
      */
     void deleteMaterialStock(Long id);
 
+    void deleteMaterialStockList(List<Long> ids);
+
     /**
      * 获得库存记录
      *
@@ -72,5 +74,15 @@ public interface MaterialStockService {
 
 
     Long getOriginIdByBatchCode(String batchCode);
+
+    /**
+     * 获得库存记录
+     *
+     * @param batchCode 批次号
+     * @return 库存记录
+     */
+    MaterialStockDO getNewMaterialStockByBatchCode(String batchCode);
+
+
 
 }

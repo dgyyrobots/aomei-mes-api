@@ -18,4 +18,9 @@ public interface WorkorderOracleService {
      */
     List<Map<String , Object>> initChangeWorkorderInfo();
 
+    /*
+    * 获取所有的结案工单信息
+    * */
+    List<Map<String , Object>> initCloseWorkorderInfo();
+
 }

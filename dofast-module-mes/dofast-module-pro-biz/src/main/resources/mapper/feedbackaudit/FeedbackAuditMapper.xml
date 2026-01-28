@@ -9,4 +9,48 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <resultMap id="ProFeedbackAuditResultMap" type="com.dofast.module.pro.controller.admin.feedbackaudit.vo.FeedbackAuditRespVO">
+        <id property="id" column="id" />
+        <result property="auditCode" column="audit_code" />
+        <result property="submitUserId" column="submit_user_id" />
+        <result property="submitNickName" column="submit_nick_name" />
+        <result property="submitUserName" column="submit_user_name" />
+        <result property="submitTime" column="submit_time" />
+        <result property="auditUserId" column="audit_user_id" />
+        <result property="auditNickName" column="audit_nick_name" />
+        <result property="auditUserName" column="audit_user_name" />
+        <result property="auditTime" column="audit_time" />
+        <result property="status" column="status" />
+        <result property="remark" column="remark" />
+        <result property="createTime" column="create_time" />
+    </resultMap>
+
+    <select id="selectAuditList" resultMap="ProFeedbackAuditResultMap">
+        SELECT DISTINCT pfa.*
+        FROM pro_feedback_audit pfa
+        LEFT JOIN pro_feedback_audit_item pfai
+        ON pfa.id = pfai.audit_id
+        AND pfa.tenant_id = pfai.tenant_id
+        WHERE pfa.deleted = 0
+        <!-- 工序编码过滤 -->
+        <if test="req.processCode != null and req.processCode != ''">
+            AND pfai.process_code = #{req.processCode}
+        </if>
+        <!-- 主表查询条件 -->
+        <if test="req.auditCode != null and req.auditCode != ''">
+            AND pfa.audit_code LIKE CONCAT('%', #{req.auditCode}, '%')
+        </if>
+        <if test="req.status != null and req.status != ''">
+            AND pfa.status = #{req.status}
+        </if>
+        <if test="req.submitUserName != null and req.submitUserName != ''">
+            AND pfa.submit_user_name LIKE CONCAT('%', #{req.submitUserName}, '%')
+        </if>
+        <if test="req.submitTime != null">
+            AND pfa.submit_time &gt;= #{req.submitTime[0]}
+            AND pfa.submit_time &lt;= #{req.submitTime[1]}
+        </if>
+        ORDER BY pfa.submit_time DESC
+    </select>
+
 </mapper>

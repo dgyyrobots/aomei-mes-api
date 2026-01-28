@@ -43,6 +43,8 @@ public interface AllocatedRecordMapper extends BaseMapperX<AllocatedRecordDO> {
                 .eqIfPresent(AllocatedRecordDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(AllocatedRecordDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(AllocatedRecordDO::getErpStatus, reqVO.getErpStatus())
+                .eqIfPresent(AllocatedRecordDO::getConverQuantity, reqVO.getConverQuantity())
+                .eqIfPresent(AllocatedRecordDO::getConverUnitOfMeasure, reqVO.getConverUnitOfMeasure())
                 .orderByDesc(AllocatedRecordDO::getId));
     }
 
@@ -72,6 +74,8 @@ public interface AllocatedRecordMapper extends BaseMapperX<AllocatedRecordDO> {
                 .eqIfPresent(AllocatedRecordDO::getVendorCode, reqVO.getVendorCode())
                 .eqIfPresent(AllocatedRecordDO::getParentBatchCode, reqVO.getParentBatchCode())
                 .eqIfPresent(AllocatedRecordDO::getErpStatus, reqVO.getErpStatus())
+                .eqIfPresent(AllocatedRecordDO::getConverQuantity, reqVO.getConverQuantity())
+                .eqIfPresent(AllocatedRecordDO::getConverUnitOfMeasure, reqVO.getConverUnitOfMeasure())
                 .orderByDesc(AllocatedRecordDO::getId));
     }
 

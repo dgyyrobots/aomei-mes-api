@@ -23,8 +23,11 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static com.dofast.framework.common.pojo.CommonResult.success;
 import static com.dofast.framework.operatelog.core.enums.OperateTypeEnum.EXPORT;
@@ -43,9 +46,6 @@ public class DvMachineryController {
 
     @Resource
     private MdWorkshopApi workshopApi;
-
-//    @Autowired
-//    private WmBarCodeUtil wmBarCodeUtil;
 
     @PostMapping("/create")
     @Operation(summary = "创建设备台账")
@@ -123,5 +123,31 @@ public class DvMachineryController {
         List<DvMachineryDO> list = dvMachineryService.getDvMachineryList(new DvMachineryExportReqVO().setWorkshopId(workshopDTO.getId()));
         return success(list);
     }
+
+    @GetMapping("/getDeviceStatus")
+    @Operation(summary = "获得设备状态")
+    @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
+    public CommonResult<Map<String, Object>> getDeviceStatus() {
+        Map<String, Object> result = dvMachineryService.selectDeviceProductAlertCount();
+        return success(result);
+    }
+
+    @GetMapping("/getDeviceAlertLog")
+    @Operation(summary = "获得设备服务下发日志列表")
+    @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
+    public CommonResult<List<Map<String, Object>>> getDeviceAlertLog() {
+        List<Map<String, Object>> result = dvMachineryService.selectFunctionLogList();
+        return success(result);
+    }
+
+    @GetMapping("/getDeviceOnlineLog")
+    @Operation(summary = "获得设备服务下发上下线列表")
+    @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
+    public CommonResult<List<Map<String, Object>>> getDeviceOnlineLog() {
+        LocalDate today = LocalDate.now();
+        List<Map<String, Object>> result = dvMachineryService.selectOnlineLogList( today.with(DayOfWeek.MONDAY) , today);
+        return success(result);
+    }
+
 
 }

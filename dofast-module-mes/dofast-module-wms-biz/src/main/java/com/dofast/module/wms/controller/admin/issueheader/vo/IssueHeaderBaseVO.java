@@ -121,6 +121,10 @@ public class IssueHeaderBaseVO {
 
     @Schema(description = "工序名称")
     private String processName;
+
+    @Schema(description = "工序工作序")
+    private Long processSequence;
+
     public Long getId(){
         return null;
     }

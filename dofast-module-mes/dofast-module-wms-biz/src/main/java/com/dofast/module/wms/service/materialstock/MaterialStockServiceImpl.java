@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import com.dofast.module.wms.controller.admin.materialstock.vo.*;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
@@ -31,6 +32,7 @@ public class MaterialStockServiceImpl implements MaterialStockService {
     public Long createMaterialStock(MaterialStockCreateReqVO createReqVO) {
         // 插入
         MaterialStockDO materialStock = MaterialStockConvert.INSTANCE.convert(createReqVO);
+        materialStock.setRecptDate( LocalDateTime.now());
         materialStockMapper.insert(materialStock);
         // 返回
         return materialStock.getId();
@@ -52,6 +54,13 @@ public class MaterialStockServiceImpl implements MaterialStockService {
         // 删除
         materialStockMapper.deleteById(id);
     }
+
+    @Override
+    public void deleteMaterialStockList(List<Long> ids){
+        // 删除
+        materialStockMapper.deleteBatchIds(ids);
+    }
+
 
     private void validateMaterialStockExists(Long id) {
         if (materialStockMapper.selectById(id) == null) {
@@ -88,6 +97,12 @@ public class MaterialStockServiceImpl implements MaterialStockService {
     @Override
     public Long getOriginIdByBatchCode(String batchCode){
         return materialStockMapper.getOriginIdByBatchCode(batchCode);
+    }
+
+
+    @Override
+    public MaterialStockDO getNewMaterialStockByBatchCode(String batchCode){
+        return materialStockMapper.getNewMaterialStockByBatchCode(batchCode);
     }
 
 

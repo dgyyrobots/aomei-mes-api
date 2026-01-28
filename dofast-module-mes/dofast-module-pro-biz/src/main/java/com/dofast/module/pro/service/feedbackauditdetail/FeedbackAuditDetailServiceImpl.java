@@ -90,4 +90,10 @@ public class FeedbackAuditDetailServiceImpl implements FeedbackAuditDetailServic
         return feedbackAuditDetailMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public  List<FeedbackAuditDetailDO> selectBatchIds(List<Long> ids){
+        return feedbackAuditDetailMapper.selectBatchIds(ids);
+    }
+
+
 }

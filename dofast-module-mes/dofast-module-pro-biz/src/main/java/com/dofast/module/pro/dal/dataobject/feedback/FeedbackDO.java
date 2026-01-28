@@ -22,6 +22,8 @@ import com.dofast.framework.mybatis.core.dataobject.BaseDO;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class FeedbackDO extends BaseDO {
 
     /**
@@ -279,5 +281,20 @@ public class FeedbackDO extends BaseDO {
      * 数采标识
      */
     private String iotFlag;
+
+    /**
+     * 合并标识
+     */
+    private String mergeFlag;
+
+    /**
+     * 余料数量
+     */
+    private BigDecimal quantityExcess;
+
+    /**
+     * 工序工作序
+     */
+    private Long processSequence;
 
 }

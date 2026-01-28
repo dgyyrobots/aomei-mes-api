@@ -6,6 +6,7 @@ import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.pro.dal.dataobject.feedbackauditdetail.FeedbackAuditDetailDO;
+import com.dofast.module.pro.dal.dataobject.feedbackaudititem.FeedbackAuditItemDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.feedbackauditdetail.vo.*;
 
@@ -44,6 +45,8 @@ public interface FeedbackAuditDetailMapper extends BaseMapperX<FeedbackAuditDeta
                 .eqIfPresent(FeedbackAuditDetailDO::getQuantityFeedback, reqVO.getQuantityFeedback())
                 .eqIfPresent(FeedbackAuditDetailDO::getQuantityQualified, reqVO.getQuantityQualified())
                 .eqIfPresent(FeedbackAuditDetailDO::getQuantityUnquanlified, reqVO.getQuantityUnquanlified())
+                .eqIfPresent(FeedbackAuditDetailDO::getQuantityExcess, reqVO.getQuantityExcess())
+
                 .likeIfPresent(FeedbackAuditDetailDO::getUserName, reqVO.getUserName())
                 .likeIfPresent(FeedbackAuditDetailDO::getNickName, reqVO.getNickName())
                 .eqIfPresent(FeedbackAuditDetailDO::getFeedbackChannel, reqVO.getFeedbackChannel())
@@ -97,6 +100,8 @@ public interface FeedbackAuditDetailMapper extends BaseMapperX<FeedbackAuditDeta
                 .eqIfPresent(FeedbackAuditDetailDO::getQuantityFeedback, reqVO.getQuantityFeedback())
                 .eqIfPresent(FeedbackAuditDetailDO::getQuantityQualified, reqVO.getQuantityQualified())
                 .eqIfPresent(FeedbackAuditDetailDO::getQuantityUnquanlified, reqVO.getQuantityUnquanlified())
+                .eqIfPresent(FeedbackAuditDetailDO::getQuantityExcess, reqVO.getQuantityExcess())
+
                 .likeIfPresent(FeedbackAuditDetailDO::getUserName, reqVO.getUserName())
                 .likeIfPresent(FeedbackAuditDetailDO::getNickName, reqVO.getNickName())
                 .eqIfPresent(FeedbackAuditDetailDO::getFeedbackChannel, reqVO.getFeedbackChannel())

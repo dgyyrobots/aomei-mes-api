@@ -20,6 +20,7 @@ import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import com.dofast.module.qms.controller.admin.oqc.vo.*;
 import com.dofast.module.qms.dal.dataobject.oqc.OqcDO;
@@ -73,6 +74,7 @@ public class OqcServiceImpl implements OqcService {
     public Long createOqc(OqcCreateReqVO createReqVO) {
         // 插入
         OqcDO oqc = OqcConvert.INSTANCE.convert(createReqVO);
+        oqc.setInspectDate( LocalDateTime.now());
         oqcMapper.insert(oqc);
         // 返回
         return oqc.getId();

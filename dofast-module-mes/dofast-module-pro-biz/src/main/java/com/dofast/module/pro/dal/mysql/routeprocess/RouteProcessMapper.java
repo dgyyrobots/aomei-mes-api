@@ -33,6 +33,7 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
         return selectOne(new LambdaQueryWrapperX<RouteProcessDO>().eq(RouteProcessDO::getRouteId,baseVO.getRouteId())
                 .eq(RouteProcessDO::getKeyFlag,baseVO.getKeyFlag()));
     }
+
     default PageResult<RouteProcessDO> selectPage(RouteProcessPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<RouteProcessDO>()
                 .eqIfPresent(RouteProcessDO::getRouteId, reqVO.getRouteId())
@@ -62,6 +63,7 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getOutUnits, reqVO.getOutUnits())
                 .eqIfPresent(RouteProcessDO::getOutUnitsConversionNumerator, reqVO.getOutUnitsConversionNumerator())
                 .eqIfPresent(RouteProcessDO::getOutUnitsConversionDenominator, reqVO.getOutUnitsConversionDenominator())
+                .eqIfPresent(RouteProcessDO::getProcessSequence, reqVO.getProcessSequence())
                 .orderByDesc(RouteProcessDO::getId));
     }
     default List<RouteProcessDO> selectList(RouteProcessListVO reqVO) {
@@ -92,6 +94,7 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getOutUnits, reqVO.getOutUnits())
                 .eqIfPresent(RouteProcessDO::getOutUnitsConversionNumerator, reqVO.getOutUnitsConversionNumerator())
                 .eqIfPresent(RouteProcessDO::getOutUnitsConversionDenominator, reqVO.getOutUnitsConversionDenominator())
+                .eqIfPresent(RouteProcessDO::getProcessSequence, reqVO.getProcessSequence())
 
                 .eqIfPresent(RouteProcessDO::getCreateTime, reqVO.getCreateTime())
                 .orderByAsc(RouteProcessDO::getOrderNum));
@@ -126,6 +129,7 @@ public interface RouteProcessMapper extends BaseMapperX<RouteProcessDO> {
                 .eqIfPresent(RouteProcessDO::getOutUnits, reqVO.getOutUnits())
                 .eqIfPresent(RouteProcessDO::getOutUnitsConversionNumerator, reqVO.getOutUnitsConversionNumerator())
                 .eqIfPresent(RouteProcessDO::getOutUnitsConversionDenominator, reqVO.getOutUnitsConversionDenominator())
+                .eqIfPresent(RouteProcessDO::getProcessSequence, reqVO.getProcessSequence())
                 .orderByDesc(RouteProcessDO::getId));
     }
 

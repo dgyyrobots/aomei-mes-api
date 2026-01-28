@@ -1,5 +1,6 @@
 package com.dofast.module.pro.dal.dataobject.feedbackdefect;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -55,5 +56,30 @@ public class FeedbackDefectDO extends BaseDO {
      * 缺陷米数
      */
     private String defectMeter;
+
+    /**
+     * 工序编码
+     */
+    private String processCode;
+
+    /**
+     * 工序名称
+     */
+    private String processName;
+
+    /**
+     * 来源班组
+     */
+    private String originTeamCode;
+
+    /**
+     * 来源物料批次
+     */
+    private String originBatchCode;
+
+    /**
+     * 来源物料报工单
+     */
+    private String originFeedbackCode;
 
 }

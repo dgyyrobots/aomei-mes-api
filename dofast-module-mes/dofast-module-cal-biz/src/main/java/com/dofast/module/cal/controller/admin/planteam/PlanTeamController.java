@@ -30,7 +30,7 @@ import com.dofast.module.cal.service.planteam.PlanTeamService;
 
 @Tag(name = "管理后台 - 计划班组")
 @RestController
-@RequestMapping("/cal/plan-team")
+@RequestMapping("/mes/cal/planteam")
 @Validated
 public class PlanTeamController {
 
@@ -39,14 +39,14 @@ public class PlanTeamController {
 
     @PostMapping("/create")
     @Operation(summary = "创建计划班组")
-    @PreAuthorize("@ss.hasPermission('cal:plan-team:create')")
+    @PreAuthorize("@ss.hasPermission('cal:plan:create')")
     public CommonResult<Long> createPlanTeam(@Valid @RequestBody PlanTeamCreateReqVO createReqVO) {
         return success(planTeamService.createPlanTeam(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新计划班组")
-    @PreAuthorize("@ss.hasPermission('cal:plan-team:update')")
+    @PreAuthorize("@ss.hasPermission('cal:plan:update')")
     public CommonResult<Boolean> updatePlanTeam(@Valid @RequestBody PlanTeamUpdateReqVO updateReqVO) {
         planTeamService.updatePlanTeam(updateReqVO);
         return success(true);
@@ -55,7 +55,7 @@ public class PlanTeamController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除计划班组")
     @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('cal:plan-team:delete')")
+    @PreAuthorize("@ss.hasPermission('cal:plan:delete')")
     public CommonResult<Boolean> deletePlanTeam(@RequestParam("id") Long id) {
         planTeamService.deletePlanTeam(id);
         return success(true);
@@ -64,7 +64,7 @@ public class PlanTeamController {
     @GetMapping("/get")
     @Operation(summary = "获得计划班组")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('cal:plan-team:query')")
+    @PreAuthorize("@ss.hasPermission('cal:plan:query')")
     public CommonResult<PlanTeamRespVO> getPlanTeam(@RequestParam("id") Long id) {
         PlanTeamDO planTeam = planTeamService.getPlanTeam(id);
         return success(PlanTeamConvert.INSTANCE.convert(planTeam));
@@ -73,7 +73,7 @@ public class PlanTeamController {
     @GetMapping("/list")
     @Operation(summary = "获得计划班组列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
-    @PreAuthorize("@ss.hasPermission('cal:plan-team:query')")
+    @PreAuthorize("@ss.hasPermission('cal:plan:query')")
     public CommonResult<List<PlanTeamRespVO>> getPlanTeamList(@RequestParam("ids") Collection<Long> ids) {
         List<PlanTeamDO> list = planTeamService.getPlanTeamList(ids);
         return success(PlanTeamConvert.INSTANCE.convertList(list));
@@ -81,7 +81,7 @@ public class PlanTeamController {
 
     @GetMapping("/page")
     @Operation(summary = "获得计划班组分页")
-    @PreAuthorize("@ss.hasPermission('cal:plan-team:query')")
+    @PreAuthorize("@ss.hasPermission('cal:plan:query')")
     public CommonResult<PageResult<PlanTeamRespVO>> getPlanTeamPage(@Valid PlanTeamPageReqVO pageVO) {
         PageResult<PlanTeamDO> pageResult = planTeamService.getPlanTeamPage(pageVO);
         return success(PlanTeamConvert.INSTANCE.convertPage(pageResult));
@@ -89,7 +89,7 @@ public class PlanTeamController {
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出计划班组 Excel")
-    @PreAuthorize("@ss.hasPermission('cal:plan-team:export')")
+    @PreAuthorize("@ss.hasPermission('cal:plan:export')")
     @OperateLog(type = EXPORT)
     public void exportPlanTeamExcel(@Valid PlanTeamExportReqVO exportReqVO,
               HttpServletResponse response) throws IOException {

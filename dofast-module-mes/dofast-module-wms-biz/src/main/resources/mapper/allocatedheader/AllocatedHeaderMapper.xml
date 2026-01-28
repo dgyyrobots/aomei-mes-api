@@ -112,7 +112,7 @@
             LEFT JOIN wms_allocated_record irl ON ir.id = irl.`allocated_id`
         WHERE
             ir.`id` = #{allocatedId} and irl.allocated_flag = 'N'
-
+            and irl.deleted = 0
     </select>
 
     <select id="getAllocatedHeaderListByBatchCodeList" resultType="com.dofast.module.wms.dal.dataobject.allocatedheader.AllocatedHeaderDO" parameterType="java.util.List">

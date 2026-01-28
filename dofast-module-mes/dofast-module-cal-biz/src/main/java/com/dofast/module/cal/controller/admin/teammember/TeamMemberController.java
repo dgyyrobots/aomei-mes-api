@@ -4,8 +4,10 @@ import com.dofast.framework.common.util.bean.BeanUtils;
 import com.dofast.framework.web.core.util.WebFrameworkUtils;
 import com.dofast.module.cal.dal.dataobject.team.TeamDO;
 import com.dofast.module.cal.service.team.TeamService;
+import com.dofast.module.pro.enums.ErrorCodeConstants;
 import com.dofast.module.system.api.user.AdminUserApi;
 import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
+import org.apache.poi.ss.formula.constant.ErrorConstant;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -23,7 +25,7 @@ import java.io.IOException;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.common.pojo.CommonResult;
 import static com.dofast.framework.common.pojo.CommonResult.success;
-
+import static com.dofast.framework.common.pojo.CommonResult.error;
 import com.dofast.framework.excel.core.util.ExcelUtils;
 
 import com.dofast.framework.operatelog.core.annotations.OperateLog;
@@ -52,8 +54,27 @@ public class TeamMemberController {
     @Operation(summary = "创建班组成员")
     @PreAuthorize("@ss.hasPermission('cal:team-member:create')")
     public CommonResult<Long> createTeamMember(@Valid @RequestBody TeamMemberCreateReqVO createReqVO) {
+        // 2025-8-6 卡控新增班组成员必须配置岗位与角色
+        AdminUserRespDTO admin = adminUserApi.getUser(createReqVO.getUserId());
+        if(admin == null){
+            return error(ErrorCodeConstants.USER_NOT_EXIST);
+        }
+        if (admin.getPostIds() == null || admin.getPostIds().isEmpty()) {
+            return error(ErrorCodeConstants.USER_NOT_CONFIG_POSTIDS);
+        }
+        // 防止重复添加
+        List<TeamMemberDO> reqestList = teamMemberService.getTeamMemberList(new TeamMemberExportReqVO().setTeamId(createReqVO.getTeamId()));
+        if(!reqestList.isEmpty()){
+            // 判定是否存在相同的用户
+            for (TeamMemberDO teamMemberDO : reqestList) {
+                if(teamMemberDO.getUserId().equals(createReqVO.getUserId())){
+                    return error(ErrorCodeConstants.USER_EXIST);
+                }
+            }
+        }
         return success(teamMemberService.createTeamMember(createReqVO));
     }
+
 
     @PutMapping("/update")
     @Operation(summary = "更新班组成员")
@@ -120,8 +141,8 @@ public class TeamMemberController {
         List<Map<String, Object>> result = new ArrayList<>();
         for (TeamMemberDO member : teamMember) {
             // 追加当前的岗位信息
-            AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(member.getUserId());
-            Set<Long> postIds = adminUserRespDTO.getPostIds();
+            AdminUserRespDTO adminUserRespDTO = Optional.ofNullable(adminUserApi.getUser(member.getUserId())).orElse(new AdminUserRespDTO());
+            Set<Long> postIds = Optional.ofNullable(adminUserRespDTO.getPostIds()).orElse(Collections.emptySet());
             Map<String, Object> map = new HashMap<>();
             BeanUtils.copyProperties(member, map);
             map.put("teamId", member.getTeamId());
@@ -131,6 +152,8 @@ public class TeamMemberController {
             map.put("id",member.getId());
             map.put("principalId", team.getPrincipalId());
             map.put("principalName", team.getPrincipalName());
+            map.put("nightPrincipalId", team.getNightPrincipalId());
+            map.put("nightPrincipalName", team.getNightPrincipalName());
             map.put("postIds" , postIds);
             result.add(map);
         }

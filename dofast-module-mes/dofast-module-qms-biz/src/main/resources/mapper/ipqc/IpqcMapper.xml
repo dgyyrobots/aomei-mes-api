@@ -28,4 +28,37 @@
                 a.`min_rate`= ROUND(b.min_quantity/a.`quantity_check`*100,2)
         WHERE a.id = #{ipqcId}
     </update>
+
+
+    <select id="getProcessQuality" resultType="java.util.Map">
+        SELECT
+            p.process_id,
+            p.process_code,
+            p.process_name,
+            COUNT(DISTINCT i.id) AS inspection_count, -- 检验次数
+            SUM(i.quantity_check) AS total_inspected, -- 总检测数量
+            SUM(i.quantity_qualified) AS total_qualified, -- 合格数量
+            SUM(i.quantity_unqualified) AS total_unqualified, -- 不合格数量
+            ROUND(SUM(i.quantity_qualified) / SUM(i.quantity_check) * 100, 2) AS pass_rate, -- 合格率
+            ROUND(SUM(i.cr_quantity) / SUM(i.quantity_check) * 100, 2) AS critical_defect_rate, -- 致命缺陷率
+            ROUND(SUM(i.maj_quantity) / SUM(i.quantity_check) * 100, 2) AS major_defect_rate, -- 严重缺陷率
+            ROUND(SUM(i.min_quantity) / SUM(i.quantity_check) * 100, 2) AS minor_defect_rate -- 轻微缺陷率
+        FROM qms_ipqc i
+                 JOIN (
+            SELECT DISTINCT process_id, process_code, process_name
+            FROM qms_ipqc
+            WHERE process_id IS NOT NULL
+        ) p ON i.process_id = p.process_id
+        WHERE
+            i.deleted = 0
+        GROUP BY
+            p.process_id, p.process_code, p.process_name
+        ORDER BY pass_rate DESC
+    </select>
+
+
+
 </mapper>
+
+
+

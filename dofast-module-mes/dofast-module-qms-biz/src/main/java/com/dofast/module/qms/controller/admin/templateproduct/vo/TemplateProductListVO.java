@@ -53,6 +53,10 @@ public class TemplateProductListVO{
 
     private Integer attr4;
 
+    private String processCode;
+
+    private String processName;
+
     private LocalDateTime createTime;
 
 }

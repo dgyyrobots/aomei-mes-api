@@ -98,6 +98,12 @@ public class FeedbackAuditItemDO extends BaseDO {
      * 不良品数量
      */
     private BigDecimal sumQuantityUnquanlified;
+
+    /**
+     * 工艺损耗数量
+     */
+    private BigDecimal sumQuantityExcess;
+
     /**
      * 报工用户名
      */
@@ -115,4 +121,18 @@ public class FeedbackAuditItemDO extends BaseDO {
      */
     private String allPrincipal;
 
+    /**
+     * 设备Id
+     */
+    private Long machineryId;
+
+    /**
+     * 设备名称
+     */
+    private String machineryName;
+
+    /**
+     * 设备编码
+     */
+    private String machineryCode;
 }

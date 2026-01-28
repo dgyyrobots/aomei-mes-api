@@ -3,14 +3,20 @@ package com.dofast.module.wms.controller.admin.allocatedheader;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.excel.util.StringUtils;
+import com.dofast.framework.web.core.util.WebFrameworkUtils;
 import com.dofast.module.cal.api.team.TeamApi;
 import com.dofast.module.cal.api.team.dto.TeamDTO;
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.pro.api.FeedbackApi.FeedbackApi;
+import com.dofast.module.pro.api.FeedbackApi.dto.FeedbackDTO;
 import com.dofast.module.pro.api.ProcessApi.ProcessApi;
 import com.dofast.module.pro.api.ProcessApi.dto.ProcessDTO;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
+import com.dofast.module.system.api.user.AdminUserApi;
+import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import com.dofast.module.wms.api.ERPApi.MaterialStockERPAPI;
+import com.dofast.module.wms.api.WarehosueApi.dto.WarehouseDTO;
 import com.dofast.module.wms.controller.admin.allocatedline.vo.AllocatedLineExportReqVO;
 import com.dofast.module.wms.controller.admin.allocatedrecord.vo.AllocatedRecordExportReqVO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderCreateReqVO;
@@ -25,7 +31,9 @@ import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.issueline.IssueLineDO;
 import com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO;
+import com.dofast.module.wms.dal.dataobject.storagearea.StorageAreaDO;
 import com.dofast.module.wms.dal.dataobject.storagelocation.StorageLocationDO;
+import com.dofast.module.wms.dal.dataobject.warehouse.WarehouseDO;
 import com.dofast.module.wms.dal.mysql.allocatedline.AllocatedLineMapper;
 import com.dofast.module.wms.dal.mysql.issueheader.IssueHeaderMapper;
 import com.dofast.module.wms.dal.mysql.issueline.IssueLineMapper;
@@ -35,8 +43,10 @@ import com.dofast.module.wms.service.allocatedrecord.AllocatedRecordService;
 import com.dofast.module.wms.service.issueheader.IssueHeaderService;
 import com.dofast.module.wms.service.issueline.IssueLineService;
 import com.dofast.module.wms.service.materialstock.MaterialStockService;
+import com.dofast.module.wms.service.storagearea.StorageAreaService;
 import com.dofast.module.wms.service.storagecore.StorageCoreService;
 import com.dofast.module.wms.service.storagelocation.StorageLocationService;
+import com.dofast.module.wms.service.warehouse.WarehouseService;
 import com.sun.org.apache.bcel.internal.generic.RETURN;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +62,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import javax.validation.*;
 import javax.servlet.http.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -124,6 +135,17 @@ public class AllocatedHeaderController {
     @Resource
     private StorageLocationService storageLocationService;
 
+    @Resource
+    private StorageAreaService storageAreaService;
+
+    @Resource
+    private WarehouseService warehouseService;
+
+    @Resource
+    private  AdminUserApi adminUserApi;
+
+    @Resource
+    private FeedbackApi feedbackApi;
 
     @PostMapping("/create")
     @Operation(summary = "创建调拨单头")
@@ -178,7 +200,22 @@ public class AllocatedHeaderController {
     @Operation(summary = "更新调拨单头")
     @PreAuthorize("@ss.hasPermission('wms:allocated-header:update')")
     public CommonResult<Boolean> updateAllocatedHeader(@RequestBody AllocatedHeaderUpdateReqVO updateReqVO) {
-        // 更新单头信息
+        // 修改对应调拨仓库
+        WarehouseDO warehouseDO = warehouseService.getWarehouse(updateReqVO.getWarehouseId());
+        StorageLocationDO locationDO = storageLocationService.getStorageLocation(updateReqVO.getLocationId());
+        StorageAreaDO areaDO = storageAreaService.getStorageArea(updateReqVO.getAreaId());
+        if (warehouseDO != null) {
+            updateReqVO.setWarehouseCode(warehouseDO.getWarehouseCode());
+            updateReqVO.setWarehouseName(warehouseDO.getWarehouseName());
+        }
+        if (locationDO != null) {
+            updateReqVO.setLocationCode(locationDO.getLocationCode());
+            updateReqVO.setLocationName(locationDO.getLocationName());
+        }
+        if (areaDO != null) {
+            updateReqVO.setAreaCode(areaDO.getAreaCode());
+            updateReqVO.setAreaName(areaDO.getAreaName());
+        }
         allocatedHeaderService.updateAllocatedHeader(updateReqVO);
         Long headId = updateReqVO.getId();
         List<AllocatedLineDO> addList = new ArrayList<>();
@@ -323,7 +360,24 @@ public class AllocatedHeaderController {
     @PreAuthorize("@ss.hasPermission('wms:allocated-header:query')")
     public CommonResult<PageResult<AllocatedHeaderRespVO>> getAllocatedHeaderPage(@Valid AllocatedHeaderPageReqVO pageVO) {
         PageResult<AllocatedHeaderDO> pageResult = allocatedHeaderService.getAllocatedHeaderPage(pageVO);
-        return success(AllocatedHeaderConvert.INSTANCE.convertPage(pageResult));
+        List<AllocatedHeaderDO> voList = new ArrayList<>();
+        // 循环列表, 数据创建人id, 去用户表转换为用户昵称
+        for (AllocatedHeaderDO vo : pageResult.getList()) {
+            AdminUserRespDTO creator = adminUserApi.getUser(Long.valueOf(vo.getCreator()));
+            if(StringUtils.isNotBlank(vo.getCompleter())){
+                AdminUserRespDTO completer = adminUserApi.getUser(Long.valueOf(vo.getCompleter()));
+                if(completer!=null){
+                    vo.setCompleter(completer.getNickname());
+                }
+            }
+            if(creator != null){
+                vo.setCreator(creator.getNickname());
+            }
+            voList.add(vo);
+        }
+        pageResult.setList(voList);
+        PageResult<AllocatedHeaderRespVO>  result = AllocatedHeaderConvert.INSTANCE.convertPage(pageResult);
+        return success(result);
     }
 
     @GetMapping("/export-excel")
@@ -374,76 +428,6 @@ public class AllocatedHeaderController {
             map.put("quantityOnhand", item.getQuantityOnhand());
             map.put("sufficient", "inSufficient");*/
             finList.add(map);
-
-         /*   // 获取库存信息, 优先匹配齐套
-            MaterialStockExportReqVO materialStockExportReqVO = new MaterialStockExportReqVO();
-            materialStockExportReqVO.setItemCode(itemCode);
-            materialStockExportReqVO.setUnitOfMeasure(unit);
-            materialStockExportReqVO.setWarehouseCode(Constant.WAREHOUSE_CODE);
-            List<MaterialStockDO> stockList = materialStockService.getMaterialStockList(materialStockExportReqVO);
-            // 按数量从大到小排序
-            stockList = stockList.stream()
-                    .sorted(Comparator.comparing(MaterialStockDO::getQuantityOnhand, Comparator.reverseOrder()))
-                    .collect(Collectors.toList());
-
-            if (stockList.isEmpty()) {
-                // 当前bom没有库存信息
-                Map<String, Object> map = new HashMap<>();
-                map.put("itemCode", itemCode);
-                map.put("itemName", itemName);
-                map.put("specification", specification);
-                map.put("quantityAllocated", quantity);
-                map.put("unitOfMeasure", unit);
-                map.put("sufficient", "inSufficient");
-                finList.add(map);
-                continue;
-            }
-            MaterialStockDO item = stockList.get(0);
-            BigDecimal onhand = Optional.ofNullable((item.getQuantityOnhand())).orElse(BigDecimal.ZERO);*/
-            /*if (onhand.compareTo(quantity) >= 0) {
-                // 满足需求
-                Map<String, Object> map = new HashMap<>();
-                map.put("itemCode", item.getItemCode());
-                map.put("itemName", item.getItemName());
-                map.put("specification", item.getSpecification());
-                map.put("quantityAllocated", quantity);
-                map.put("unitOfMeasure", unit);
-                map.put("batchCode", item.getBatchCode());
-                map.put("warehouseId", item.getWarehouseId());
-                map.put("warehouseCode", item.getWarehouseCode());
-                map.put("warehouseName", item.getWarehouseName());
-                map.put("locationId", item.getLocationId());
-                map.put("locationCode", item.getLocationCode());
-                map.put("locationName", item.getLocationName());
-                map.put("areaId", item.getAreaId());
-                map.put("areaCode", item.getAreaCode());
-                map.put("areaName", item.getAreaName());
-                map.put("quantityOnhand", item.getQuantityOnhand());
-                map.put("sufficient", "sufficient");
-                finList.add(map);
-                continue;
-            } else {
-                Map<String, Object> map = new HashMap<>();
-                map.put("itemCode", item.getItemCode());
-                map.put("itemName", item.getItemName());
-                map.put("specification", item.getSpecification());
-                map.put("quantityAllocated", quantity);
-                map.put("unitOfMeasure", unit);
-                map.put("batchCode", item.getBatchCode());
-                map.put("warehouseId", item.getWarehouseId());
-                map.put("warehouseCode", item.getWarehouseCode());
-                map.put("warehouseName", item.getWarehouseName());
-                map.put("locationId", item.getLocationId());
-                map.put("locationCode", item.getLocationCode());
-                map.put("locationName", item.getLocationName());
-                map.put("areaId", item.getAreaId());
-                map.put("areaCode", item.getAreaCode());
-                map.put("areaName", item.getAreaName());
-                map.put("quantityOnhand", item.getQuantityOnhand());
-                map.put("sufficient", "inSufficient");
-                finList.add(map);
-                continue;
-            }*/
         }
         return success(finList);
     }
@@ -459,7 +443,6 @@ public class AllocatedHeaderController {
     @PutMapping("/{allocatedId}")
     @Operation(summary = "执行调拨")
     public CommonResult execute(@PathVariable Long allocatedId) {
-
         // 查询调拨单头
         AllocatedHeaderDO allocated = allocatedHeaderService.getAllocatedHeader(allocatedId);
         boolean bindWorkorder = Boolean.parseBoolean(allocated.getBindWorkorder());
@@ -480,9 +463,7 @@ public class AllocatedHeaderController {
         params.put("inAreaId", allocated.getAreaId());
         params.put("inAreaCode", allocated.getAreaCode());
         params.put("inAreaName", allocated.getAreaName());
-       /* AllocatedLineExportReqVO param = new AllocatedLineExportReqVO();
-        param.setAllocatedId(allocatedId);
-        List<AllocatedLineDO> lines = allocatedLineService.getAllocatedLineList(param);*/
+
         // 获取当前的调拨单身
         AllocatedRecordExportReqVO param = new AllocatedRecordExportReqVO();
         param.setAllocatedId(allocatedId);
@@ -508,8 +489,27 @@ public class AllocatedHeaderController {
             map.put("itemCode", line.getItemCode());
             map.put("itemName", line.getItemName());
             map.put("specification", line.getSpecification());
-            map.put("quantityAllocated", line.getQuantityAllocated());
-            map.put("unitOfMeasure", line.getUnitOfMeasure());
+
+            // 默认使用调拨单行对应的数量与单位
+            BigDecimal allocatedQuantity = BigDecimal.valueOf(line.getQuantityAllocated());
+            String unit = line.getUnitOfMeasure();
+
+            // 2025-9-2 追加调拨返工单需求, 当前分切工序传递给ERP为公斤, 故调拨时判定是否为产成品 => 判定是否存在转换单位与转换数量
+            if(line.getBatchCode().startsWith("TASK")){
+                FeedbackDTO feedbackDTO = feedbackApi.getFeedBackByBatchCode(line.getBatchCode());
+                if(feedbackDTO != null){
+                    unit = Optional.ofNullable( feedbackDTO.getConversionUnit()).orElse(line.getUnitOfMeasure());
+                    allocatedQuantity =  Optional.ofNullable( feedbackDTO.getConversionQuantity()).orElse(BigDecimal.valueOf(line.getQuantityAllocated()));
+                }
+            }
+
+            map.put("quantityAllocated", allocatedQuantity.setScale(4, RoundingMode.HALF_UP));
+            map.put("unitOfMeasure", unit);
+
+            line.setConverQuantity(allocatedQuantity);
+            line.setConverUnitOfMeasure(unit);
+            allocatedRecordService.updateAllocatedRecord(AllocatedRecordConvert.INSTANCE.convert01(line));
+
             // 2025-6-8 追加母批次
             // map.put("batchCode", line.getBatchCode());
 
@@ -541,9 +541,11 @@ public class AllocatedHeaderController {
             map.put("areaId", line.getAreaId());
             map.put("areaCode", line.getAreaCode());
             map.put("areaName", line.getAreaName());
+
             erpRequestList.add(map);
         }
         params.put("allocatedList", erpRequestList);
+        params.put("remark", allocated.getRemark());
 
         Map<Long, String> erpStatusMap = new HashMap<>();
         for (AllocatedRecordDO line : lines) {
@@ -564,7 +566,6 @@ public class AllocatedHeaderController {
                 }
             }
         }
-
         List<AllocatedTxBean> beans = allocatedHeaderService.getTxBeans(allocatedId);
 
         for (Map<String, Object> recode : erpRequestList) {
@@ -645,17 +646,18 @@ public class AllocatedHeaderController {
             exportReqVO.setBatchCode(bom.getBatchCode());
             System.out.println("当前查询库存信息: " + exportReqVO.toString());
             List<MaterialStockDO> materialStock = materialStockService.getMaterialStockList(exportReqVO);
-            materialStock.get(0).setRecptStatus("Y");
-            materialStockService.updateMaterialStock(BeanUtil.toBean(materialStock.get(0), MaterialStockUpdateReqVO.class));
+            if (!materialStock.isEmpty()) {
+                materialStock.get(0).setRecptStatus("Y");
+                materialStockService.updateMaterialStock(BeanUtil.toBean(materialStock.get(0), MaterialStockUpdateReqVO.class));
+            }
         }
         // 更新单头信息
         reqVO.setStatus(Constant.ORDER_STATUS_FINISHED);
         AllocatedHeaderUpdateReqVO updateReqVO = AllocatedHeaderConvert.INSTANCE.convert01(reqVO);
+        AdminUserRespDTO adminUserRespDTO = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        updateReqVO.setCompleter(String.valueOf(adminUserRespDTO.getId()));
         allocatedHeaderService.updateAllocatedHeader(updateReqVO);
         Long headId = updateReqVO.getId();
-
-
-
 
        /* TeamDTO teamDTO = teamApi.getTeamByCode(attr1);
         String machineryCode = null;
@@ -666,7 +668,6 @@ public class AllocatedHeaderController {
             machineryName = teamDTO.getMachineryName();
             machineryId =  teamDTO.getMachineryId();
         }*/
-        // TODO 追加ERP调拨单接口
         return success(true);
     }
 

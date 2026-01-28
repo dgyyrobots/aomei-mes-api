@@ -2,6 +2,8 @@ package com.dofast.module.wms.controller.admin.allocatedrecord.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -83,5 +85,11 @@ public class AllocatedRecordBaseVO {
 
     @Schema(description = "ERP状态")
     private String erpStatus;
+
+    @Schema(description = "转换数量")
+    private BigDecimal converQuantity;
+
+    @Schema(description = "转换单位")
+    private String converUnitOfMeasure;
 
 }

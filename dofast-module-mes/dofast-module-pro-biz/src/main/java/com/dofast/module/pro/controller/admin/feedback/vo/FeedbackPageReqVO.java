@@ -198,4 +198,15 @@ public class FeedbackPageReqVO extends PageParam {
 
     @Schema(description = "数采标识")
     private String iotFlag;
+
+    @Schema(description = "合并标识")
+    private String mergeFlag;
+
+    @Schema(description = "余料数量")
+    private Double quantityExcess;
+
+    @Schema(description = "工序工作序")
+    private Long processSequence;
+
 }
+

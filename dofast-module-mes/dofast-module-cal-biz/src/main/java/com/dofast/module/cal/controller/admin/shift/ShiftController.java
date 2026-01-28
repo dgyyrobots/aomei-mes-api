@@ -41,6 +41,7 @@ public class ShiftController {
     @Operation(summary = "创建计划班次")
     @PreAuthorize("@ss.hasPermission('cal:shift:create')")
     public CommonResult<Long> createShift(@Valid @RequestBody ShiftCreateReqVO createReqVO) {
+        System.out.println(createReqVO.toString());
         return success(shiftService.createShift(createReqVO));
     }
 
@@ -48,6 +49,7 @@ public class ShiftController {
     @Operation(summary = "更新计划班次")
     @PreAuthorize("@ss.hasPermission('cal:shift:update')")
     public CommonResult<Boolean> updateShift(@Valid @RequestBody ShiftUpdateReqVO updateReqVO) {
+        System.out.println(updateReqVO.toString());
         shiftService.updateShift(updateReqVO);
         return success(true);
     }

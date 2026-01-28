@@ -92,7 +92,8 @@ public class MdItemServiceImpl implements MdItemService {
         // 插入
         MdItemDO mdItem = MdItemConvert.INSTANCE.convert(createReqVO);
         //仓库
-        WarehouseDTO warehouse = warehouseApi.getWarehouse(createReqVO.getWarehouseId());
+        //
+        /*WarehouseDTO warehouse = warehouseApi.getWarehouse(createReqVO.getWarehouseId());
         mdItem.setWarehouseCode(warehouse.getWarehouseCode());
         mdItem.setWarehouseName(warehouse.getWarehouseName());
         //库区
@@ -103,7 +104,7 @@ public class MdItemServiceImpl implements MdItemService {
         StorageAreaDTO area = storageAreaApi.getArea(createReqVO.getAreaId());
         mdItem.setAreaCode(area.getAreaCode());
         mdItem.setAreaName(area.getAreaName());
-        mdItemMapper.insert(mdItem);
+        mdItemMapper.insert(mdItem);*/
         // 返回
         return mdItem.getId();
     }

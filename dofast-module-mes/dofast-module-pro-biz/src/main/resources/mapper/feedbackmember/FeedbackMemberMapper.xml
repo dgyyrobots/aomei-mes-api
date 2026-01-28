@@ -9,4 +9,12 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="selectByFeedbackIds" resultType="com.dofast.module.pro.dal.dataobject.feedbackmember.FeedbackMemberDO">
+        SELECT * FROM pro_feedback_member
+        WHERE feedback_id IN
+        <foreach collection="feedbackIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>

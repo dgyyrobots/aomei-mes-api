@@ -64,4 +64,5 @@ public class RouteProcessListVO {
 
     private LocalDateTime createTime;
 
+    private Long processSequence;
 }

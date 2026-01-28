@@ -39,14 +39,14 @@ public class TeamshiftController {
 
     @PostMapping("/create")
     @Operation(summary = "创建班组排班")
-    @PreAuthorize("@ss.hasPermission('cal:teamshift:create')")
+    //@PreAuthorize("@ss.hasPermission('cal:teamshift:create')")
     public CommonResult<Long> createTeamshift(@Valid @RequestBody TeamshiftCreateReqVO createReqVO) {
         return success(teamshiftService.createTeamshift(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新班组排班")
-    @PreAuthorize("@ss.hasPermission('cal:teamshift:update')")
+    //@PreAuthorize("@ss.hasPermission('cal:teamshift:update')")
     public CommonResult<Boolean> updateTeamshift(@Valid @RequestBody TeamshiftUpdateReqVO updateReqVO) {
         teamshiftService.updateTeamshift(updateReqVO);
         return success(true);
@@ -55,7 +55,7 @@ public class TeamshiftController {
     @DeleteMapping("/delete")
     @Operation(summary = "删除班组排班")
     @Parameter(name = "id", description = "编号", required = true)
-    @PreAuthorize("@ss.hasPermission('cal:teamshift:delete')")
+    //@PreAuthorize("@ss.hasPermission('cal:teamshift:delete')")
     public CommonResult<Boolean> deleteTeamshift(@RequestParam("id") Long id) {
         teamshiftService.deleteTeamshift(id);
         return success(true);
@@ -64,7 +64,7 @@ public class TeamshiftController {
     @GetMapping("/get")
     @Operation(summary = "获得班组排班")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
-    @PreAuthorize("@ss.hasPermission('cal:teamshift:query')")
+    //@PreAuthorize("@ss.hasPermission('cal:teamshift:query')")
     public CommonResult<TeamshiftRespVO> getTeamshift(@RequestParam("id") Long id) {
         TeamshiftDO teamshift = teamshiftService.getTeamshift(id);
         return success(TeamshiftConvert.INSTANCE.convert(teamshift));
@@ -73,7 +73,7 @@ public class TeamshiftController {
     @GetMapping("/list")
     @Operation(summary = "获得班组排班列表")
     @Parameter(name = "ids", description = "编号列表", required = true, example = "1024,2048")
-    @PreAuthorize("@ss.hasPermission('cal:teamshift:query')")
+    //@PreAuthorize("@ss.hasPermission('cal:teamshift:query')")
     public CommonResult<List<TeamshiftRespVO>> getTeamshiftList(@RequestParam("ids") Collection<Long> ids) {
         List<TeamshiftDO> list = teamshiftService.getTeamshiftList(ids);
         return success(TeamshiftConvert.INSTANCE.convertList(list));
@@ -81,7 +81,7 @@ public class TeamshiftController {
 
     @GetMapping("/page")
     @Operation(summary = "获得班组排班分页")
-    @PreAuthorize("@ss.hasPermission('cal:teamshift:query')")
+    //@PreAuthorize("@ss.hasPermission('cal:teamshift:query')")
     public CommonResult<PageResult<TeamshiftRespVO>> getTeamshiftPage(@Valid TeamshiftPageReqVO pageVO) {
         PageResult<TeamshiftDO> pageResult = teamshiftService.getTeamshiftPage(pageVO);
         return success(TeamshiftConvert.INSTANCE.convertPage(pageResult));
@@ -89,7 +89,7 @@ public class TeamshiftController {
 
     @GetMapping("/export-excel")
     @Operation(summary = "导出班组排班 Excel")
-    @PreAuthorize("@ss.hasPermission('cal:teamshift:export')")
+    //@PreAuthorize("@ss.hasPermission('cal:teamshift:export')")
     @OperateLog(type = EXPORT)
     public void exportTeamshiftExcel(@Valid TeamshiftExportReqVO exportReqVO,
               HttpServletResponse response) throws IOException {

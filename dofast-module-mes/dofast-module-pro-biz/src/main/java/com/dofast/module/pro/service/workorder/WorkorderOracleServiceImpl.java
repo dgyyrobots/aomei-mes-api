@@ -37,5 +37,14 @@ public class WorkorderOracleServiceImpl implements WorkorderOracleService {
         return workorderOracleMapper.initChangeWorkorder(erpCode);
     }
 
+    /**
+     * 初始化结案工单信息
+     */
+    @Override
+    public List<Map<String , Object>> initCloseWorkorderInfo(){
+        String erpCode = Constant.ERP_PROD_DODE;
+        return workorderOracleMapper.initCloseWorkorder(erpCode);
+    }
+
 
 }

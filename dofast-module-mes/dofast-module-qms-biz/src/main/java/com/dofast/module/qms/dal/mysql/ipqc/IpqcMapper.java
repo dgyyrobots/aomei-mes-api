@@ -123,4 +123,6 @@ public interface IpqcMapper extends BaseMapperX<IpqcDO> {
                 .orderByDesc(IpqcDO::getId));
     }
 
+    public List<Map<String, Object>> getProcessQuality();
+
 }

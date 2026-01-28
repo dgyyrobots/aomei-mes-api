@@ -76,6 +76,9 @@ public class DvRepairExportReqVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "维修类型")
+    private String repairType;
+
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;

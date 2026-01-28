@@ -123,10 +123,16 @@ public class purchaseOrderJob implements JobHandler {
                 exr.setGoodsNumber(itemCode);
                 exr.setPoNo(orderDO.getPoNo());
                 exr.setConsequence(conStr);
-                List<GoodsDO> goodsDO = goodsMapper.selectList(exr);
-                if (!goodsDO.isEmpty()) {
+                // List<GoodsDO> goodsDO = goodsMapper.selectList(exr);
+
+                GoodsDO queryGoods = goodsMapper.selectOriginOrder(exr);
+                // if (!goodsDO.isEmpty()) {
+                if(queryGoods!=null){
+                    // goodsDO根据创建时间排序, 获取最早一条的数据
+                    //goodsDO.sort(Comparator.comparing(GoodsDO::getCreateTime));
+                    GoodsDO seqGoods = queryGoods;
                     // 更新入库单详情信息
-                    for(GoodsDO seqGoods : goodsDO){
+                    //for(GoodsDO seqGoods : goodsDO){
                         seqGoods.setGoodsName(itemName);
                         seqGoods.setGoodsSpecs(itemSpec);
                         seqGoods.setCompany(itemUnit);
@@ -144,8 +150,8 @@ public class purchaseOrderJob implements JobHandler {
                             seqGoods.setVendorName(vendor.getVendorName());
                         }
                         editGoods.add(seqGoods);
-                    }
-                    continue;
+                    //}
+                    // continue;
                 } else {
                     // 新增入库单详情信息
                     GoodsDO goods = new GoodsDO();

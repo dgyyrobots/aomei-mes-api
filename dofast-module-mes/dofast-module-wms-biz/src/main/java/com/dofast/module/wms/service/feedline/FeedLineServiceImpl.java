@@ -115,5 +115,8 @@ public class FeedLineServiceImpl implements FeedLineService {
         return feedLineMapper.selectMaterialUsageSummary(page, reqVO);
     }
 
+    public List<FeedLineSummaryVO> selectMaterialUsageSummaryList(FeedLinePageReqVO pageReqVO){
+        return feedLineMapper.selectMaterialUsageSummaryList(pageReqVO);
+    }
 
 }

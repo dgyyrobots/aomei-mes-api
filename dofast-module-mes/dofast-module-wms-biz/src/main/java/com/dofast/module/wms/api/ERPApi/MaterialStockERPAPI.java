@@ -223,6 +223,8 @@ public class MaterialStockERPAPI {
         Map<String, Object> master = new HashMap<>();
         master.put("source_no", params.get("allocatedId")); // MES单头Id
         master.put("indcdocno", ""); // 单别
+        // 2025-10-24 追加备注取值
+        String remark = String.valueOf(params.get("remark"));
 
         DictDataDO dataDO = dictDataService.getDictData("erp_close_date", "close_date");
         String closeDateStr = null;
@@ -275,7 +277,7 @@ public class MaterialStockERPAPI {
 
         master.put("indc005", ""); // 拨出据点
         master.put("indc006", "AM01"); // 拨入据点
-        master.put("indc008", ""); // 备注
+        master.put("indc008", remark); // 备注
         master.put("indc102", "1"); // 检验否
 
         // 构建details
@@ -335,7 +337,6 @@ public class MaterialStockERPAPI {
         JSONObject reqExecution = stdData != null ? reqStdData.getJSONObject("execution") : null;
         String code = reqExecution != null ? reqExecution.getString("code") : null;
         String description = reqExecution != null ? reqExecution.getString("description") : null;
-
         if ("0".equals(code)) {
             return description != null ? description : "error";
         }

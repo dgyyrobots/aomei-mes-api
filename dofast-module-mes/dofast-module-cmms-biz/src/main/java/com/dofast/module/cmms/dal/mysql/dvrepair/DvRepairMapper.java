@@ -1,5 +1,6 @@
 package com.dofast.module.cmms.dal.mysql.dvrepair;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import com.dofast.framework.common.pojo.PageResult;
@@ -8,6 +9,7 @@ import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.cmms.dal.dataobject.dvrepair.DvRepairDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.cmms.controller.admin.dvrepair.vo.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 设备维修单 Mapper
@@ -42,6 +44,8 @@ public interface DvRepairMapper extends BaseMapperX<DvRepairDO> {
                 .eqIfPresent(DvRepairDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(DvRepairDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(DvRepairDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(DvRepairDO::getRepairType, reqVO.getRepairType())
+
                 .betweenIfPresent(DvRepairDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(DvRepairDO::getId));
     }
@@ -68,8 +72,11 @@ public interface DvRepairMapper extends BaseMapperX<DvRepairDO> {
                 .eqIfPresent(DvRepairDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(DvRepairDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(DvRepairDO::getAttr4, reqVO.getAttr4())
+                .eqIfPresent(DvRepairDO::getRepairType, reqVO.getRepairType())
                 .betweenIfPresent(DvRepairDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(DvRepairDO::getId));
     }
+
+    int countInspectionRepairInCycle(@Param("planId") Long planId, @Param("machineryId") Long machineryId, @Param("repairType") String repairType, @Param("cycleStart") LocalDateTime cycleStart, @Param("cycleEnd") LocalDateTime cycleEnd);
 
 }

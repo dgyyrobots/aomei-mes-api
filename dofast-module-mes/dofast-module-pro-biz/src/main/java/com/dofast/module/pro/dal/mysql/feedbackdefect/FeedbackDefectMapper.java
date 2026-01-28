@@ -8,6 +8,7 @@ import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.pro.dal.dataobject.feedbackdefect.FeedbackDefectDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.feedbackdefect.vo.*;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 报工缺陷 Mapper
@@ -27,6 +28,11 @@ public interface FeedbackDefectMapper extends BaseMapperX<FeedbackDefectDO> {
                 .eqIfPresent(FeedbackDefectDO::getStartMeter, reqVO.getStartMeter())
                 .eqIfPresent(FeedbackDefectDO::getEndMeter, reqVO.getEndMeter())
                 .eqIfPresent(FeedbackDefectDO::getDefectMeter, reqVO.getDefectMeter())
+                .eqIfPresent(FeedbackDefectDO::getProcessCode, reqVO.getProcessCode())
+                .eqIfPresent(FeedbackDefectDO::getProcessName, reqVO.getProcessName())
+                .eqIfPresent(FeedbackDefectDO::getOriginTeamCode, reqVO.getOriginTeamCode())
+                .eqIfPresent(FeedbackDefectDO::getOriginBatchCode, reqVO.getOriginBatchCode())
+                .eqIfPresent(FeedbackDefectDO::getOriginFeedbackCode, reqVO.getOriginFeedbackCode())
                 .orderByDesc(FeedbackDefectDO::getId));
     }
 
@@ -40,7 +46,13 @@ public interface FeedbackDefectMapper extends BaseMapperX<FeedbackDefectDO> {
                 .eqIfPresent(FeedbackDefectDO::getStartMeter, reqVO.getStartMeter())
                 .eqIfPresent(FeedbackDefectDO::getEndMeter, reqVO.getEndMeter())
                 .eqIfPresent(FeedbackDefectDO::getDefectMeter, reqVO.getDefectMeter())
+                .eqIfPresent(FeedbackDefectDO::getProcessCode, reqVO.getProcessCode())
+                .eqIfPresent(FeedbackDefectDO::getProcessName, reqVO.getProcessName())
+                .eqIfPresent(FeedbackDefectDO::getOriginTeamCode, reqVO.getOriginTeamCode())
+                .eqIfPresent(FeedbackDefectDO::getOriginBatchCode, reqVO.getOriginBatchCode())
+                .eqIfPresent(FeedbackDefectDO::getOriginFeedbackCode, reqVO.getOriginFeedbackCode())
                 .orderByDesc(FeedbackDefectDO::getId));
     }
 
+    List<FeedbackDefectDO> selectListByFeedbackIds(@Param("feedbackIds") List<Long> feedbackIds);
 }

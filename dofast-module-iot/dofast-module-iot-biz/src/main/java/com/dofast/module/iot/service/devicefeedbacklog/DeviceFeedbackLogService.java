@@ -71,6 +71,6 @@ public interface DeviceFeedbackLogService {
 
     DeviceFeedbackLogDO getFinalDeviceFeedbackLog(String deviceCode);
 
-    int deleteByCreateTimeRange(String cutoffTime);
+    int deleteByCreateTimeRange(String startTime, String endTime);
 
 }

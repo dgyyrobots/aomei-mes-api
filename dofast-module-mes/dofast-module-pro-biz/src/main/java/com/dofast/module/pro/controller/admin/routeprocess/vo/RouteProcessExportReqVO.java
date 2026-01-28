@@ -99,7 +99,8 @@ public class RouteProcessExportReqVO {
     @Schema(description = "转出单位分母")
     private BigDecimal outUnitsConversionDenominator;
 
-
+    @Schema(description = "工序工作序")
+    private Long processSequence;
 
 
 }

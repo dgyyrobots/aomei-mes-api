@@ -31,4 +31,7 @@
             LIMIT 1
     </select>
 
+    <select id="getNewMaterialStockByBatchCode" resultType="com.dofast.module.wms.dal.dataobject.materialstock.MaterialStockDO">
+        SELECT * FROM wms_material_stock where batch_code = #{batchCode} AND deleted = 0 ORDER BY create_time DESC LIMIT 1
+    </select>
 </mapper>

@@ -51,9 +51,9 @@ public class RouteOracleServiceImpl implements RouteOracleService {
     }
 
     @Override
-    public Map<String, Object> initWorkSequence(String workOrderNo, String processCode){
+    public Map<String, Object> initWorkSequence(String workOrderNo, String processCode , String sequence){
         String erpCode = Constant.ERP_PROD_DODE;
-        return routeOracleMapper.initWorkSequence(workOrderNo, processCode, erpCode);
+        return routeOracleMapper.initWorkSequence(workOrderNo, processCode, sequence , erpCode);
     }
 
 

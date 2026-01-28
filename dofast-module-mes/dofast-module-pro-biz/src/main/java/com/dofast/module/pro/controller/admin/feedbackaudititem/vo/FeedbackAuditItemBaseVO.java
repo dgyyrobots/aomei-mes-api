@@ -72,6 +72,10 @@ public class FeedbackAuditItemBaseVO {
     @Schema(description = "不良品数量")
     private BigDecimal sumQuantityUnquanlified;
 
+    @Schema(description = "工艺损耗数量")
+    private BigDecimal sumQuantityExcess;
+
+
     @Schema(description = "报工用户名", example = "芋艿")
     private String userName;
 
@@ -83,5 +87,15 @@ public class FeedbackAuditItemBaseVO {
 
     @Schema(description = "参与班组成员名称")
     private String allPrincipal;
+
+    @Schema(description = "设备Id")
+    private Long machineryId;
+
+    @Schema(description = "设备名称")
+    private String machineryName;
+
+    @Schema(description = "设备编码")
+    private String machineryCode;
+
 
 }

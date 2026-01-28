@@ -1,9 +1,11 @@
 package com.dofast.module.cmms.service.dvmachinery;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDate;
 import java.util.*;
 import com.dofast.module.cmms.controller.admin.dvmachinery.vo.*;
 import com.dofast.module.cmms.dal.dataobject.dvmachinery.DvMachineryDO;
@@ -83,6 +85,36 @@ public class DvMachineryServiceImpl implements DvMachineryService {
     @Override
     public List<DvMachineryDO> getDvMachineryList(DvMachineryExportReqVO exportReqVO) {
         return dvMachineryMapper.selectList(exportReqVO);
+    }
+
+
+    /**
+     * 获取设备状态
+     * @return
+     */
+    @Override
+    @DS("iot")
+    public Map<String, Object> selectDeviceProductAlertCount(){
+        return dvMachineryMapper.selectDeviceProductAlertCount();
+    }
+
+    /**
+     * 查询设备服务下发日志列表
+     */
+    @Override
+    @DS("iot")
+    public List<Map<String, Object>> selectFunctionLogList(){
+        return dvMachineryMapper.selectFunctionLogList();
+    }
+
+    /**
+     * 获得设备服务下发上下线列表
+     * @return
+     */
+    @Override
+    @DS("iot")
+    public List<Map<String, Object>> selectOnlineLogList(LocalDate startDate, LocalDate endDate){
+        return dvMachineryMapper.selectOnlineLogList(startDate, endDate);
     }
 
 }

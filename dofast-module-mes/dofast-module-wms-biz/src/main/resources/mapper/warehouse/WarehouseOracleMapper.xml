@@ -19,6 +19,7 @@
           AND A.INAA008 = 'Y'
           AND A.INAASITE = 'AM01'
           AND B.inaylent= #{erpCode}
+          AND A.INAASTUS = 'Y'
     </select>
 
     <select id = "initAreaInfo" parameterType="java.lang.String" resultType="java.util.HashMap">

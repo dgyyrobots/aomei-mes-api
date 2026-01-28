@@ -1,5 +1,6 @@
 package com.dofast.module.pro.service.feedback;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import javax.validation.*;
 import com.dofast.module.pro.controller.admin.feedback.vo.*;
@@ -48,6 +49,7 @@ public interface FeedbackService {
      */
     FeedbackDO getFeedback(Long id);
 
+
     /**
      * 获得生产报工记录列表
      *
@@ -55,6 +57,14 @@ public interface FeedbackService {
      * @return 生产报工记录列表
      */
     List<FeedbackDO> getFeedbackList(Collection<Long> ids);
+
+    /**
+     * 获得生产报工记录列表
+     *
+     * @param taskCodes 任务编号
+     * @return 生产报工记录列表
+     */
+    List<FeedbackDO> getFeedbackListByTaskCods(Collection<String> taskCodes);
 
 
     /**
@@ -75,12 +85,23 @@ public interface FeedbackService {
     PageResult<FeedbackDO> getFeedbackPage(FeedbackPageReqVO pageReqVO);
 
     /**
+     * 获得生产报工记录分页
+     *
+     * @param pageReqVO 分页查询
+     * @return 生产报工记录分页
+     */
+    PageResult<FeedbackDO> selectPageContainMerge(FeedbackPageReqVO pageReqVO);
+
+
+    /**
      * 获得生产报工记录列表, 用于 Excel 导出
      *
      * @param exportReqVO 查询条件
      * @return 生产报工记录列表
      */
     List<FeedbackDO> getFeedbackList(FeedbackExportReqVO exportReqVO);
+
+    List<FeedbackDO> getFeedbackListNoMerge(FeedbackExportReqVO exportReqVO);
 
     List<FeedbackDO> getFeedbackListByTaskId(Long taskId);
 
@@ -91,5 +112,13 @@ public interface FeedbackService {
     Map<String, Object> getFeedbackCount(String workorderCode, String taskCode);
 
     Map<String, Object> getIotFeedbackLog(String machineryCode);
+
+   List<Map<String, Object>> initFeedbackReport(Map<String, Object> params);
+
+   void updateFeedbackBatch(List<FeedbackDO> feedbackDOList);
+
+   boolean isBatchCodeExists(String batchCode);
+
+   List<FeedbackDO> getFeedbackListByTaskCodes(List<String> taskCodes , LocalDateTime startTime, LocalDateTime endTime);
 
 }

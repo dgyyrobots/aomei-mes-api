@@ -63,4 +63,11 @@ public class TeamExcelVO {
 
     @ExcelProperty("生产设备ID")
     private Long machineryId;
+
+    @ExcelProperty("夜班负责人Id")
+    private Long nightPrincipalId;
+
+    @ExcelProperty("夜班负责人名称")
+    private String nightPrincipalName;
+
 }

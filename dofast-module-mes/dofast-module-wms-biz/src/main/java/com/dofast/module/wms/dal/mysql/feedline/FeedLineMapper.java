@@ -120,4 +120,6 @@ public interface FeedLineMapper extends BaseMapperX<FeedLineDO> {
      */
     IPage<FeedLineSummaryVO> selectMaterialUsageSummary(Page<FeedLineSummaryVO> page, @Param("req") FeedLinePageReqVO req);
 
+    List<FeedLineSummaryVO> selectMaterialUsageSummaryList(@Param("req") FeedLinePageReqVO req);
+
 }

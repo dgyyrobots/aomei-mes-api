@@ -123,6 +123,9 @@ public class WorkorderBaseVO {
     @Schema(description = "工序编码")
     private String routeCode;
 
+    @Schema(description = "结案标识")
+    private String closeFlag;
+
     public Long getId(){
         return null;
     }

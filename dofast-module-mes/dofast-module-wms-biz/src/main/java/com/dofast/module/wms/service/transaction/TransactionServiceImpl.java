@@ -57,10 +57,11 @@ public class TransactionServiceImpl implements TransactionService {
         initStock(baseVO,stock);
 
         MaterialStockBaseVO materialStockBaseVO = BeanUtil.toBean(stock, MaterialStockBaseVO.class);
-        MaterialStockDO ms =materialStockMapper.loadMaterialStock(materialStockBaseVO);
+        MaterialStockDO ms =materialStockMapper.loadMaterialStockContainZero(materialStockBaseVO);
+
         BigDecimal quantity = baseVO.getTransactionQuantity().multiply(new BigDecimal(baseVO.getTransactionFlag()));
         if(StrUtils.isNotNull(ms)){
-            //MS已存在
+            //MES已存在
             BigDecimal resultQuantity =ms.getQuantityOnhand().add(quantity);
             if(baseVO.isStorageCheckFlag() && resultQuantity.compareTo(new BigDecimal(0))<0){
                 throw exception(MATERIAL_STOCK_COUNT_NOT_ENOUGH);
@@ -74,7 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
                 throw exception(STOCK_COUNT_UPDATE);
             }
         }else {
-            //MS不存在
+            //MES不存在
             stock.setQuantityOnhand(quantity);
             MaterialStockDO updateObj = MaterialStockConvert.INSTANCE.convert(stock);
             int insert = materialStockMapper.insert(updateObj);

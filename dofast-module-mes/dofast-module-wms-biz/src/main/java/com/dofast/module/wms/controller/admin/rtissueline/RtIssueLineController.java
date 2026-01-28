@@ -1,6 +1,8 @@
 package com.dofast.module.wms.controller.admin.rtissueline;
 
 import com.dofast.framework.common.util.string.StrUtils;
+import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
+import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderDTO;
 import com.dofast.module.wms.controller.admin.issueheader.vo.IssueHeaderExportReqVO;
 import com.dofast.module.wms.dal.dataobject.issueheader.IssueHeaderDO;
 import com.dofast.module.wms.dal.dataobject.rtissue.RtIssueDO;
@@ -67,6 +69,9 @@ public class RtIssueLineController {
 
     @Resource
     private IssueHeaderService issueService;
+
+    @Resource
+    private WorkorderApi workorderApi;
 
     @PostMapping("/create")
     @Operation(summary = "创建生产退料单行")

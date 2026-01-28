@@ -1,5 +1,6 @@
 package com.dofast.module.cmms.service.dvrepair;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import javax.validation.*;
 import com.dofast.module.cmms.controller.admin.dvrepair.vo.*;
@@ -72,4 +73,16 @@ public interface DvRepairService {
      */
     List<DvRepairDO> getDvRepairList(DvRepairExportReqVO exportReqVO);
 
+    /**
+     * 查询当前周期内是否已生成点检维修单
+     *
+     * @param planId       点检计划ID
+     * @param machineryId  设备ID
+     * @param cycleStart   周期开始时间
+     * @param cycleEnd     周期结束时间
+     * @return 已存在数量
+     */
+    int countInspectionRepairInCycle(Long planId, Long machineryId, LocalDateTime cycleStart, LocalDateTime cycleEnd);
+
+    void updateBatch(List<DvRepairDO> repairList);
 }

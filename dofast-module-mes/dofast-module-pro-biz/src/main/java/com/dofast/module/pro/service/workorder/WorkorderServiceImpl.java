@@ -109,7 +109,7 @@ public class WorkorderServiceImpl implements WorkorderService {
     @Override
     public PageResult<WorkorderDO> getWorkorderPage(WorkorderPageReqVO pageReqVO) {
         PageResult<WorkorderDO> result = workorderMapper.selectPage(pageReqVO);
-        Long totle = workorderMapper.selectCount(pageReqVO);
+        /*Long totle = workorderMapper.selectCount(pageReqVO);
         List<WorkorderDO> workorders = result.getList();
         List<WorkorderDO> sortedWorkorders = workorders.stream()
                 .sorted(Comparator.comparing((WorkorderDO wo) -> {
@@ -122,9 +122,9 @@ public class WorkorderServiceImpl implements WorkorderService {
                     }
                 })).collect(Collectors.toList());
         result.setList(sortedWorkorders);
-        result.setTotal(totle);
-
+        result.setTotal(totle);*/
         return result;
+
     }
 
     @Override
@@ -158,7 +158,9 @@ public class WorkorderServiceImpl implements WorkorderService {
         return workorderMapper.getCountMonthWorkorderThisYear();
     }
 
-
-
+    @Override
+    public void updateBatch(List<WorkorderDO> workorderList){
+    workorderMapper.updateBatch(workorderList);
+    }
 
 }

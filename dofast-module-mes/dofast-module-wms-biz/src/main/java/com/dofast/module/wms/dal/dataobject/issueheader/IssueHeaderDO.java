@@ -172,8 +172,9 @@ public class IssueHeaderDO extends BaseDO {
     private String processName;
 
     /**
-     * 虚拟字段-bom列表
+     * 工序工作序
      */
-    //private List<Map<String, Object>> bomList;
+    private Long processSequence;
+
 
 }

@@ -13,6 +13,8 @@ public interface ErrorCodeConstants {
     ErrorCode TEMPLATE_INDEX_NOT_EXISTS = new ErrorCode(814001, "检测模板-检测项不存在");
     ErrorCode TEMPLATE_NOT_EXISTS = new ErrorCode(815001, "检测模板不存在");
     ErrorCode TEMPLATE_CODE_EXISTS = new ErrorCode(815002, "检测模板编号已存在");
+    ErrorCode TEMPLATE_TYPE_EXISTS = new ErrorCode(815002, "请至少选择一项检测种类!");
+
     ErrorCode IPQC_LINE_NOT_EXISTS = new ErrorCode(816001, "过程检验单行不存在");
     ErrorCode IPQC_NOT_EXISTS = new ErrorCode(816002, "过程检验单不存在");
     ErrorCode IPQC_CODE_EXISTS = new ErrorCode(816002, "检测单编码已存在");

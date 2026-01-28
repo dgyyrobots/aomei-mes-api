@@ -59,6 +59,10 @@ public class TemplateController {
         if(Constant.NOT_UNIQUE.equals(templateService.checkTemplateCodeUnique(createReqVO))){
             return error(ErrorCodeConstants.TEMPLATE_CODE_EXISTS);
         }
+        if(ArrayUtil.isEmpty(createReqVO.getQcTypesParam())){
+            return error(ErrorCodeConstants.TEMPLATE_TYPE_EXISTS);
+        }
+
         if(ArrayUtil.isNotEmpty(createReqVO.getQcTypesParam())){
             createReqVO.setQcTypes(null); //先置空
             String[] types = createReqVO.getQcTypesParam();

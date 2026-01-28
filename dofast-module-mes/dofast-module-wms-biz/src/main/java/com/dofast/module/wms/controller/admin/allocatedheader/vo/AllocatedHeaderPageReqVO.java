@@ -109,5 +109,8 @@ public class AllocatedHeaderPageReqVO extends PageParam {
     @Schema(description = "调拨单列表")
     private List<String> allocatedCodeList;
 
-    
+    @Schema(description = "完成者", example = "Y")
+    private String completer;
+
+
 }

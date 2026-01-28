@@ -1,6 +1,8 @@
 package com.dofast.module.pro.controller.admin.feedbackaudit.vo;
 
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.dofast.framework.common.pojo.PageParam;
@@ -53,5 +55,30 @@ public class FeedbackAuditPageReqVO extends PageParam {
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
+
+    @Schema(description = "原始审批人ID")
+    private Long originalAuditUserId;
+
+    @Schema(description = "转审历史记录")
+    private String transferHistory;
+
+    @Schema(description = "来源审批单ID")
+    private Long sourceAuditId;
+
+    @Schema(description = "请求参数")
+    private String methodArgs;
+
+    // 虚拟字段
+    private String processCode;
+
+    private BigDecimal quantity;
+
+    private Long machineryId;
+
+    private String machineryName;
+
+    private String machineryCode;
+
+
 
 }

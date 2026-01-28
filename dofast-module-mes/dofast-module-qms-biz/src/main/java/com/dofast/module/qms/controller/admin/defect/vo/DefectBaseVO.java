@@ -47,5 +47,7 @@ public class DefectBaseVO {
     @Schema(description = "工序编码")
     private String processCode;
 
+    @Schema(description = "工序名称")
+    private String processName;
 
 }

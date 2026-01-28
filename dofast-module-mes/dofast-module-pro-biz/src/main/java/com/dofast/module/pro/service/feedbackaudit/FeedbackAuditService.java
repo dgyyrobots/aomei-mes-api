@@ -2,6 +2,8 @@ package com.dofast.module.pro.service.feedbackaudit;
 
 import java.util.*;
 import javax.validation.*;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.dofast.module.pro.controller.admin.feedbackaudit.vo.*;
 import com.dofast.module.pro.dal.dataobject.feedbackaudit.FeedbackAuditDO;
 import com.dofast.framework.common.pojo.PageResult;
@@ -66,5 +68,8 @@ public interface FeedbackAuditService {
      * @return 报工审批主表列表
      */
     List<FeedbackAuditDO> getFeedbackAuditList(FeedbackAuditExportReqVO exportReqVO);
+
+    IPage<FeedbackAuditRespVO> selectAuditList(FeedbackAuditPageReqVO pageVO);
+
 
 }

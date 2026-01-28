@@ -21,18 +21,34 @@ public interface MaterialStockMapper extends BaseMapperX<MaterialStockDO> {
         return selectOne(new LambdaQueryWrapperX<MaterialStockDO>()
                         .eqIfPresent(MaterialStockDO::getItemId, baseVO.getItemId())
                         .eqIfPresent(MaterialStockDO::getUnitOfMeasure, baseVO.getUnitOfMeasure())
-                        .likeIfPresent(MaterialStockDO::getBatchCode, baseVO.getBatchCode())
+                        .eqIfPresent(MaterialStockDO::getBatchCode, baseVO.getBatchCode())
                         .eqIfPresent(MaterialStockDO::getWarehouseId, baseVO.getWarehouseId())
                         .eqIfPresent(MaterialStockDO::getLocationId, baseVO.getLocationId())
                         .eqIfPresent(MaterialStockDO::getAreaId, baseVO.getAreaId())
                         .eqIfPresent(MaterialStockDO::getVendorId, baseVO.getVendorId())
                         .eqIfPresent(MaterialStockDO::getErpBatchCode, baseVO.getErpBatchCode())
                         .eqIfPresent(MaterialStockDO::getParentBatchCode, baseVO.getParentBatchCode())
+                        .gtIfPresent(MaterialStockDO::getQuantityOnhand, 0)
                 //.eqIfPresent(MaterialStockDO::getWorkorderId,baseVO.getWorkorderId())
                 //.eqIfPresent(MaterialStockDO::getWorkorderCode,baseVO.getWorkorderCode())
 
         );
     }
+
+    default MaterialStockDO loadMaterialStockContainZero(MaterialStockBaseVO baseVO) {
+        return selectOne(new LambdaQueryWrapperX<MaterialStockDO>()
+                        .eqIfPresent(MaterialStockDO::getItemId, baseVO.getItemId())
+                        .eqIfPresent(MaterialStockDO::getUnitOfMeasure, baseVO.getUnitOfMeasure())
+                        .eqIfPresent(MaterialStockDO::getBatchCode, baseVO.getBatchCode())
+                        .eqIfPresent(MaterialStockDO::getWarehouseId, baseVO.getWarehouseId())
+                        .eqIfPresent(MaterialStockDO::getLocationId, baseVO.getLocationId())
+                        .eqIfPresent(MaterialStockDO::getAreaId, baseVO.getAreaId())
+                        .eqIfPresent(MaterialStockDO::getVendorId, baseVO.getVendorId())
+                        .eqIfPresent(MaterialStockDO::getErpBatchCode, baseVO.getErpBatchCode())
+                        .eqIfPresent(MaterialStockDO::getParentBatchCode, baseVO.getParentBatchCode())
+        );
+    }
+
 
     default PageResult<MaterialStockDO> selectPage(MaterialStockPageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<MaterialStockDO>()
@@ -158,5 +174,8 @@ public interface MaterialStockMapper extends BaseMapperX<MaterialStockDO> {
 
     public Long getOriginIdByBatchCode(String batchCode);
 
+
+
+    public MaterialStockDO getNewMaterialStockByBatchCode(String batchCode);
 
 }

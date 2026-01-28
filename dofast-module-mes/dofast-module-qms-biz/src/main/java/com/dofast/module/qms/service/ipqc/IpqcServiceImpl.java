@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import com.dofast.module.qms.controller.admin.ipqc.vo.*;
 import com.dofast.module.qms.dal.dataobject.ipqc.IpqcDO;
@@ -48,6 +49,7 @@ public class IpqcServiceImpl implements IpqcService {
     public Long createIpqc(IpqcCreateReqVO createReqVO) {
         // 插入
         IpqcDO ipqc = IpqcConvert.INSTANCE.convert(createReqVO);
+        ipqc.setInspectDate( LocalDateTime.now());
         ipqcMapper.insert(ipqc);
         // 返回
         return ipqc.getId();
@@ -95,5 +97,11 @@ public class IpqcServiceImpl implements IpqcService {
     public List<IpqcDO> getIpqcList(IpqcExportReqVO exportReqVO) {
         return ipqcMapper.selectList(exportReqVO);
     }
+
+    @Override
+    public List<Map<String, Object>> getProcessQuality(){
+        return ipqcMapper.getProcessQuality();
+    }
+
 
 }

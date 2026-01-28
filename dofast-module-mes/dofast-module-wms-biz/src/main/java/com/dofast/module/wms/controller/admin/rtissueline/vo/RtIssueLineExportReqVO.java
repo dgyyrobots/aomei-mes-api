@@ -15,6 +15,10 @@ import static com.dofast.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_
 @Data
 public class RtIssueLineExportReqVO {
 
+
+    @Schema(description = "退料单行ID", example = "11401")
+    private Long id;
+
     @Schema(description = "退料单ID", example = "11401")
     private Long rtId;
 

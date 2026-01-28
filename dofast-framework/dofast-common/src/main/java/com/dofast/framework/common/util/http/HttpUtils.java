@@ -206,8 +206,7 @@ public class HttpUtils {
             //设置连接超时时间
             connection.setConnectTimeout(15000);
             //设置读取超时时间
-            connection.setReadTimeout(15000);
-            //DoOutput设置是否向httpUrlConnection输出，DoInput设置是否从httpUrlConnection读入，此外发送post请求必须设置这两个
+            connection.setReadTimeout(60000);
             //设置是否可读取
             connection.setDoOutput(true);
             connection.setDoInput(true);

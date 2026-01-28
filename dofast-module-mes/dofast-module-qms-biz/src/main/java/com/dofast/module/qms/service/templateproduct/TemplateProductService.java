@@ -5,6 +5,7 @@ import javax.validation.*;
 import com.dofast.module.qms.controller.admin.templateproduct.vo.*;
 import com.dofast.module.qms.dal.dataobject.templateproduct.TemplateProductDO;
 import com.dofast.framework.common.pojo.PageResult;
+import org.checkerframework.checker.units.qual.C;
 
 /**
  * 检测模板-产品 Service 接口
@@ -72,6 +73,10 @@ public interface TemplateProductService {
      * @return 检测模板-产品列表
      */
     List<TemplateProductDO> getTemplateProductList(TemplateProductExportReqVO exportReqVO);
+
     List<TemplateProductDO> getTemplateProductList(TemplateProductListVO listVO);
+
+    List<TemplateProductDO> getTemplateProductListNotContainProcessCode(TemplateProductListVO listVO);
+
 
 }

@@ -3,6 +3,7 @@ package com.dofast.module.iot.dal.mysql.devicefeedbacklog;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
@@ -46,7 +47,7 @@ public interface DeviceFeedbackLogMapper extends BaseMapperX<DeviceFeedbackLogDO
 
     public DeviceFeedbackLogDO getFinalDeviceFeedbackLog(String deviceCode);
 
-
-    public int deleteByCreateTimeRange(@Param("cutoffTime") String cutoffTime);
+    @InterceptorIgnore(tenantLine = "true")
+    public int deleteByCreateTimeRange(@Param("startTime") String startTime , @Param("endTime") String endTime);
 
 }

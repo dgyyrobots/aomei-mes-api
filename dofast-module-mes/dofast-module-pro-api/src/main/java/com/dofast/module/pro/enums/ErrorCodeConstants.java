@@ -8,7 +8,7 @@ public interface ErrorCodeConstants {
     ErrorCode WORKORDER_CODE_EXISTS = new ErrorCode(710003, "生产工单编号已存在");
     ErrorCode WORKORDER_NOT_DELETED = new ErrorCode(710004, "只能删除草稿状态单据");
     ErrorCode WORKORDER_NUMBER_MORE = new ErrorCode(710005, "工单生产数量超出生产计划");
-
+    ErrorCode TASK_CHANGE_QUANTITY_ERROR = new ErrorCode(710005, "未查询到转换后的工单生产数量!");
 
     ErrorCode CESS_CONTENT_NOT_EXISTS = new ErrorCode(711001, "生产工序内容不存在");
     ErrorCode CESS_NOT_EXISTS = new ErrorCode(711002, "工序不存在");
@@ -31,6 +31,8 @@ public interface ErrorCodeConstants {
     ErrorCode FEEDBACK_DELETE_NOT_LICENCE = new ErrorCode(712007, "当前报工记录不允许删除!");
     ErrorCode FEEDBACK_NEXT_PROCEESS_EXISTS = new ErrorCode(712007, "当前报工单存在下道制程, 无需打印合格证!");
     ErrorCode MERGE_FEEDBACK_NOT_AVALIBE = new ErrorCode(712007, "只允许合并ERP报工已同步的单据");
+    ErrorCode IOT_FEEDBACK_NOT_EXISTS = new ErrorCode(712008, "数采报工产量记录不存在!");
+
 
     ErrorCode TASK_ISSUE_NOT_EXISTS = new ErrorCode(713001, "生产任务投料不存在");
     ErrorCode TASK_NOT_EXISTS = new ErrorCode(713002, "生产任务不存在");
@@ -119,6 +121,12 @@ public interface ErrorCodeConstants {
 
     ErrorCode USER_NOT_CONFIG_POSTIDS = new ErrorCode(717025, "当前用户未配置岗位");
 
+    ErrorCode USER_NOT_EXIST = new ErrorCode(717025, "用户不存在或未启用!");
+
+    ErrorCode USER_EXIST = new ErrorCode(717025, "当前班组已存在该用户!");
+
+    ErrorCode USER_NOT_CONFIG_ROLES = new ErrorCode(717025, "当前用户未配置角色");
+
     ErrorCode ROUTE_PROCESS_HAS_DOWN = new ErrorCode(717026, "当前报工单存在下道工序, 无需调用ERP完工入库!");
 
     ErrorCode INIT_ERP_PARAM_ERROR = new ErrorCode(717027, "初始化ERP参数异常!");
@@ -130,5 +138,25 @@ public interface ErrorCodeConstants {
     ErrorCode FEEDBACK_AUDIT_ITEM_NOT_EXISTS = new ErrorCode(717030, "报工审批汇总不存在");
 
     ErrorCode FEEDBACK_AUDIT_DETAIL_NOT_EXISTS = new ErrorCode(717031, "报工审批明细不存在");
+
+    ErrorCode MACHINERY_NOT_EXISTS = new ErrorCode(717031, "报工设备不存在!");
+
+    ErrorCode BATCH_CODE_NOT_NULL = new ErrorCode(717031, "批次号不存在!");
+
+    ErrorCode FEEDBACK_AUDIT_DETAIL_NOT_BELONG = new ErrorCode(717032, "明细不属于当前审批单");
+
+    ErrorCode NO_NEED_ERP = new ErrorCode(717033, "无需调用ERP接口");
+
+    ErrorCode ERP_WAREHOUSING_EXISTS = new ErrorCode(717034, "存在ERP入库单据, 无法撤销");
+
+    ErrorCode INVENTORY_NOT_EXISTS = new ErrorCode(717035, "库存不存在");
+
+    ErrorCode INVENTORY_WAREHOUSING_EXISTS = new ErrorCode(717036, "当前单据已入库, 请先调用撤销入库方法");
+
+    ErrorCode TIME_NOT_COMPLETE = new ErrorCode(717037, "请填写完整的时间");
+
+    ErrorCode LOCK_FAIL = new ErrorCode(717038, "当前任务单有他人正进行报工, 请稍后尝试");
+
+    ErrorCode BATCH_CODE_DUPLICATE = new ErrorCode(717039, "批次号重复");
 
 }

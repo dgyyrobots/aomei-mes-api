@@ -137,6 +137,12 @@ public class FeedbackAuditDetailDO extends BaseDO {
      * 不良品数量
      */
     private BigDecimal quantityUnquanlified;
+
+    /**
+     * 工艺损耗数量
+     */
+    private BigDecimal quantityExcess;
+
     /**
      * 报工用户名
      */

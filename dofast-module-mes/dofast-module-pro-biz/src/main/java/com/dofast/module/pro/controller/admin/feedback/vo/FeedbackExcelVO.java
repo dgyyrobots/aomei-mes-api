@@ -196,4 +196,14 @@ public class FeedbackExcelVO {
 
     @ExcelProperty("数采标识")
     private String iotFlag;
+
+    @ExcelProperty("合并标识")
+    private String mergeFlag;
+
+    @ExcelProperty("余料数量")
+    private Double quantityExcess;
+
+    @ExcelProperty("工序工作序")
+    private Long processSequence;
+
 }

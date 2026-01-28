@@ -67,4 +67,6 @@ public interface FeedbackDefectService {
      */
     List<FeedbackDefectDO> getFeedbackDefectList(FeedbackDefectExportReqVO exportReqVO);
 
+    List<FeedbackDefectDO> getFeedbackDefectsByFeedbackIds(List<Long> feedbackIds);
+
 }

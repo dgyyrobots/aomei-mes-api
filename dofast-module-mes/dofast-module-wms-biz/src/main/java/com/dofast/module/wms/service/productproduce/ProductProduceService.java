@@ -74,7 +74,7 @@ public interface ProductProduceService {
      *
      * @return
      */
-    public ProductProduceDO generateProductProduce(FeedbackDTO feedback);
+    public ProductProduceDO generateProductProduce(FeedbackDTO feedback, String batchCode);
 
     public List<ProductProductTxBean> getTxBeans(Long recordId);
 }

@@ -43,4 +43,19 @@ public class FeedbackDefectExcelVO {
     @ExcelProperty("缺陷米数")
     private String defectMeter;
 
+    @ExcelProperty( "工序编码")
+    private String processCode;
+
+    @ExcelProperty("工序名称")
+    private String processName;
+
+    @ExcelProperty("来源班组")
+    private String originTeamCode;
+
+    @ExcelProperty("来源物料批次")
+    private String originBatchCode;
+
+    @ExcelProperty("来源物料报工单")
+    private String originFeedbackCode;
+
 }

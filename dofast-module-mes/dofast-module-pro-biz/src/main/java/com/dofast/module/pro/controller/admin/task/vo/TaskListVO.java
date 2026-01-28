@@ -165,4 +165,11 @@ public class TaskListVO {
 
     @Schema(description = "报工流水号")
     private String feedbackSerial;
+
+    @Schema(description = "工序工作序")
+    private Long processSequence;
+
+    @Schema(description = "工单工作序")
+    private Long workorderSequence;
+
 }

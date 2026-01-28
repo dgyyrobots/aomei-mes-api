@@ -3,6 +3,7 @@ package com.dofast.module.pro.api.FeedbackApi.dto;
 import lombok.Data;
 import lombok.ToString;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -209,5 +210,65 @@ public class FeedbackDTO {
      * 设备编码
      */
     private String machineryCode;
+
+    /**
+     * 设备编码
+     */
+    private String erpFeedback;
+
+    /**
+     * 任务单状态
+     */
+    private String taskStatus;
+
+    /**
+     * "ERP报工状态"
+     */
+    private String erpFeedbackStatus;
+
+    /**
+     * "ERP入库状态"
+     */
+    private String erpWarehousingStatus;
+
+    /**
+     * 合并需求
+     */
+    private String mergeStatus;
+
+    /**
+     * 转换数量
+     */
+    private BigDecimal conversionQuantity;
+
+    /**
+     * 转换单位
+     */
+    private String conversionUnit;
+
+    /**
+     * 转换不合格数量
+     */
+    private BigDecimal conversionQuantityUnquanlified;
+
+    /**
+     * 卷数编号
+     */
+    private String volumesNumber;
+
+    /**
+     * 数采标识
+     */
+    private String iotFlag;
+
+    /**
+     * 合并标识
+     */
+    private String mergeFlag;
+
+    /**
+     * 余料数量
+     */
+    private BigDecimal quantityExcess;
 
 }

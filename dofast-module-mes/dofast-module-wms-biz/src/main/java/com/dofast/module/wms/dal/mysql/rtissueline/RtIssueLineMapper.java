@@ -56,6 +56,7 @@ public interface RtIssueLineMapper extends BaseMapperX<RtIssueLineDO> {
 
     default List<RtIssueLineDO> selectList(RtIssueLineExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<RtIssueLineDO>()
+                .eqIfPresent(RtIssueLineDO::getId, reqVO.getId())
                 .eqIfPresent(RtIssueLineDO::getRtId, reqVO.getRtId())
                 .eqIfPresent(RtIssueLineDO::getMaterialStockId, reqVO.getMaterialStockId())
                 .eqIfPresent(RtIssueLineDO::getItemId, reqVO.getItemId())

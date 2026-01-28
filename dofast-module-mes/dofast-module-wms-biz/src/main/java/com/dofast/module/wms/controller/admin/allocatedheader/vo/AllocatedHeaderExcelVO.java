@@ -104,5 +104,8 @@ public class AllocatedHeaderExcelVO {
     @ExcelProperty("绑定工单标识")
     private String bindWorkorder;
 
+    @ExcelProperty("完成者")
+    private String completer;
+
 
 }

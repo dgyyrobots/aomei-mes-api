@@ -1,6 +1,10 @@
 package com.dofast.module.pro.controller.admin.feedbackauditdetail;
 
 import com.dofast.module.pro.controller.admin.feedbackaudititem.vo.FeedbackAuditItemRespVO;
+import com.dofast.module.pro.controller.admin.feedbackdefect.vo.FeedbackDefectExportReqVO;
+import com.dofast.module.pro.dal.dataobject.feedbackdefect.FeedbackDefectDO;
+import com.dofast.module.pro.service.feedback.FeedbackService;
+import com.dofast.module.pro.service.feedbackdefect.FeedbackDefectService;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -37,6 +41,13 @@ public class FeedbackAuditDetailController {
 
     @Resource
     private FeedbackAuditDetailService feedbackAuditDetailService;
+
+    @Resource
+    private FeedbackService feedbackService;
+
+    @Resource
+    private FeedbackDefectService feedbackDefectService;
+
 
     @PostMapping("/create")
     @Operation(summary = "创建报工审批明细")
@@ -107,7 +118,14 @@ public class FeedbackAuditDetailController {
     @OperateLog(type = EXPORT)
     public CommonResult<PageResult<FeedbackAuditDetailRespVO>> getAuditDetails(@Valid FeedbackAuditDetailPageReqVO feedbackAuditDetailDO) {
         PageResult<FeedbackAuditDetailDO> pageResult = feedbackAuditDetailService.getFeedbackAuditDetailPage(feedbackAuditDetailDO );
-        return success(FeedbackAuditDetailConvert.INSTANCE.convertPage(pageResult));
+        PageResult<FeedbackAuditDetailRespVO> convertPage = FeedbackAuditDetailConvert.INSTANCE.convertPage(pageResult);
+        // 基于不同的报工带出对应的缺陷项
+        List<FeedbackAuditDetailRespVO> feedbackAuditDetailRespVOS = convertPage.getList();
+        for (FeedbackAuditDetailRespVO feedbackAuditDetail : feedbackAuditDetailRespVOS) {
+            List<FeedbackDefectDO>  feedbackDefectDOList = feedbackDefectService.getFeedbackDefectList(new FeedbackDefectExportReqVO().setFeedbackId(String.valueOf(feedbackAuditDetail.getFeedbackId())));
+            feedbackAuditDetail.setFeedbackDefectList(feedbackDefectDOList);
+        }
+        return success(convertPage);
     }
 
 }

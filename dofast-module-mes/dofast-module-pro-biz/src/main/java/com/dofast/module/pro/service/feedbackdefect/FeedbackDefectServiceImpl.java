@@ -90,4 +90,9 @@ public class FeedbackDefectServiceImpl implements FeedbackDefectService {
         return feedbackDefectMapper.selectList(exportReqVO);
     }
 
+    @Override
+    public List<FeedbackDefectDO> getFeedbackDefectsByFeedbackIds(List<Long> feedbackIds){
+        return feedbackDefectMapper.selectListByFeedbackIds(feedbackIds);
+    }
+
 }

@@ -10,11 +10,13 @@ import com.dofast.framework.common.util.string.StrUtils;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.cal.dal.dataobject.team.TeamDO;
+import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import com.dofast.module.pro.dal.dataobject.task.TaskDO;
 import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.task.vo.*;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * 生产任务 Mapper
@@ -73,6 +75,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getTaskStatus, reqVO.getTaskStatus())
                 .eqIfPresent(TaskDO::getMachineryCodes, reqVO.getMachineryCodes())
                 .eqIfPresent(TaskDO::getFeedbackSerial, reqVO.getFeedbackSerial())
+                .eqIfPresent(TaskDO::getProcessSequence, reqVO.getProcessSequence())
+                .eqIfPresent(TaskDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -126,6 +130,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getTaskStatus, reqVO.getTaskStatus())
                 .eqIfPresent(TaskDO::getMachineryCodes, reqVO.getMachineryCodes())
                 .eqIfPresent(TaskDO::getFeedbackSerial, reqVO.getFeedbackSerial())
+                .eqIfPresent(TaskDO::getProcessSequence, reqVO.getProcessSequence())
+                .eqIfPresent(TaskDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -180,6 +186,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getTaskStatus, reqVO.getTaskStatus())
                 .eqIfPresent(TaskDO::getMachineryCodes, reqVO.getMachineryCodes())
                 .eqIfPresent(TaskDO::getFeedbackSerial, reqVO.getFeedbackSerial())
+                .eqIfPresent(TaskDO::getProcessSequence, reqVO.getProcessSequence())
+                .eqIfPresent(TaskDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 /*.and(reqVO.getStatus()!=null,v->{
                     if ("1".equals(reqVO.getStatus())){
                         v.in(TaskDO::getStatus,"FINISHED");
@@ -252,6 +260,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getTaskStatus, reqVO.getTaskStatus())
                 .eqIfPresent(TaskDO::getMachineryCodes, reqVO.getMachineryCodes())
                 .eqIfPresent(TaskDO::getFeedbackSerial, reqVO.getFeedbackSerial())
+                .eqIfPresent(TaskDO::getProcessSequence, reqVO.getProcessSequence())
+                .eqIfPresent(TaskDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -306,6 +316,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getTaskStatus, reqVO.getTaskStatus())
                 .eqIfPresent(TaskDO::getMachineryCodes, reqVO.getMachineryCodes())
                 .eqIfPresent(TaskDO::getFeedbackSerial, reqVO.getFeedbackSerial())
+                .eqIfPresent(TaskDO::getProcessSequence, reqVO.getProcessSequence())
+                .eqIfPresent(TaskDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -358,6 +370,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getTaskStatus, reqVO.getTaskStatus())
                 .eqIfPresent(TaskDO::getMachineryCodes, reqVO.getMachineryCodes())
                 .eqIfPresent(TaskDO::getFeedbackSerial, reqVO.getFeedbackSerial())
+                .eqIfPresent(TaskDO::getProcessSequence, reqVO.getProcessSequence())
+                .eqIfPresent(TaskDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -427,6 +441,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getTaskStatus, reqVO.getTaskStatus())
                 .eqIfPresent(TaskDO::getMachineryCodes, reqVO.getMachineryCodes())
                 .eqIfPresent(TaskDO::getFeedbackSerial, reqVO.getFeedbackSerial())
+                .eqIfPresent(TaskDO::getProcessSequence, reqVO.getProcessSequence())
+                .eqIfPresent(TaskDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -479,6 +495,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
                 .eqIfPresent(TaskDO::getTaskStatus, reqVO.getTaskStatus())
                 .eqIfPresent(TaskDO::getMachineryCodes, reqVO.getMachineryCodes())
                 .eqIfPresent(TaskDO::getFeedbackSerial, reqVO.getFeedbackSerial())
+                .eqIfPresent(TaskDO::getProcessSequence, reqVO.getProcessSequence())
+                .eqIfPresent(TaskDO::getWorkorderSequence, reqVO.getWorkorderSequence())
                 .orderByDesc(TaskDO::getId));
     }
 
@@ -524,5 +542,8 @@ public interface TaskMapper extends BaseMapperX<TaskDO> {
         }
         return resultMap;
     }
+
+    @Select("SELECT * FROM pro_task WHERE id = #{id} and deleted = 0 FOR UPDATE")
+    TaskDO selectForUpdate(Long id);
 
 }

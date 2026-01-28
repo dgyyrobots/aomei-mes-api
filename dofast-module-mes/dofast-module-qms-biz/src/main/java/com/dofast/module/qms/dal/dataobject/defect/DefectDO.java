@@ -1,5 +1,6 @@
 package com.dofast.module.qms.dal.dataobject.defect;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.util.*;
 import java.time.LocalDateTime;
@@ -68,5 +69,10 @@ public class DefectDO extends BaseDO {
      * 工序编码
      */
     private String processCode;
+
+    /**
+     * 工序名称
+     */
+    private String processName;
 
 }

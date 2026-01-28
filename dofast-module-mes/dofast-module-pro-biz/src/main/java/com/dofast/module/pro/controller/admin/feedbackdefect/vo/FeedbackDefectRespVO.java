@@ -1,8 +1,10 @@
 package com.dofast.module.pro.controller.admin.feedbackdefect.vo;
 
+import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineSummaryVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Schema(description = "管理后台 - 报工缺陷 Response VO")
 @Data

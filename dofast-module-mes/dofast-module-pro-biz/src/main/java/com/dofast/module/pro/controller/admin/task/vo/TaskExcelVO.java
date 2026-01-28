@@ -175,4 +175,11 @@ public class TaskExcelVO {
 
     @ExcelProperty("报工流水号")
     private String feedbackSerial;
+
+    @ExcelProperty("工序工作序")
+    private Long processSequence;
+
+    @ExcelProperty("工单工作序")
+    private Long workorderSequence;
+
 }

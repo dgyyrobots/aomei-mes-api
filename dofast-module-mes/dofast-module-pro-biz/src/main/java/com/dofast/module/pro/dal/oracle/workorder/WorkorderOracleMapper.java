@@ -16,4 +16,5 @@ public interface WorkorderOracleMapper {
     // 初始化变更工单信息
     List<Map<String, Object>> initChangeWorkorder(String erpCode);
 
+    List<Map<String, Object>> initCloseWorkorder(String erpCode);
 }

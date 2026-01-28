@@ -115,6 +115,11 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.selectOne(TaskDO::getTaskCode, taskCode);
     }
 
+    @Override
+    public TaskDO getTaskWithLock(Long taskId){
+        return taskMapper.selectForUpdate(taskId);
+    }
+
 
     @Resource
     private MdWorkstationService mdWorkstationService;
@@ -284,6 +289,5 @@ public class TaskServiceImpl implements TaskService {
     public  Map<String, Integer>  getCountMonthTaskThisYear(){
         return taskMapper.getCountMonthTaskThisYear();
     }
-
 
 }

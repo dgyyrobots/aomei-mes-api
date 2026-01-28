@@ -25,6 +25,10 @@ public interface FeedbackDefectConvert {
 
     FeedbackDefectRespVO convert(FeedbackDefectDO bean);
 
+    FeedbackDefectCreateReqVO convert01(FeedbackDefectDO bean);
+
+    FeedbackDefectUpdateReqVO convert02(FeedbackDefectDO bean);
+
     List<FeedbackDefectRespVO> convertList(List<FeedbackDefectDO> list);
 
     PageResult<FeedbackDefectRespVO> convertPage(PageResult<FeedbackDefectDO> page);

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import com.dofast.module.cmms.controller.admin.dvrepair.vo.*;
 import com.dofast.module.cmms.dal.dataobject.dvrepair.DvRepairDO;
@@ -88,6 +89,16 @@ public class DvRepairServiceImpl implements DvRepairService {
     @Override
     public List<DvRepairDO> getDvRepairList(DvRepairExportReqVO exportReqVO) {
         return dvRepairMapper.selectList(exportReqVO);
+    }
+
+    @Override
+    public int countInspectionRepairInCycle(Long planId, Long machineryId, LocalDateTime cycleStart, LocalDateTime cycleEnd) {
+        return dvRepairMapper.countInspectionRepairInCycle(planId, machineryId, "INSPECTION", cycleStart, cycleEnd);
+    }
+
+    @Override
+    public void updateBatch(List<DvRepairDO> repairList){
+        dvRepairMapper.updateBatch(repairList);
     }
 
 }

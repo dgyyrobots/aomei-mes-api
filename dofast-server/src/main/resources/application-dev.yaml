@@ -21,6 +21,21 @@ spring:
       - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration # 排除积木报表带来的 MongoDB 的自动配置
   datasource:
     druid: # Druid 【监控】相关的全局配置
+      initial-size: 5
+      min-idle: 10
+      max-active: 20
+      max-wait: 60000
+      test-while-idle: true
+      test-on-borrow: true       # 获取连接时校验
+      test-on-return: false
+      validation-query: SELECT 1  # 显式声明验证SQL
+      keepalive: true            # 开启保活机制
+      keep-alive-between-time-millis: 30000 # 30秒发送一次心跳
+      time-between-connect-error-millis: 60000 # 连接错误重试间隔
+      time-between-eviction-runs-millis: 15000   # 改为15秒一次检测
+      phy-timeout-millis: 600000 # 物理连接超时时间(10分钟)
+      min-evictable-idle-time-millis: 180000 # 最小空闲时间(3分钟)
+      max-evictable-idle-time-millis: 300000    # 最大空闲时间(5分钟)
       web-stat-filter:
         enabled: true
       stat-view-servlet:
@@ -38,42 +53,52 @@ spring:
         wall:
           config:
             multi-statement-allow: true
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000;druid.connect.keepAlive=true;druid.connect.timeout=3000;druid.socket.timeout=120000
     dynamic: # 多数据源配置
       druid: # Druid 【连接池】相关的全局配置
         initial-size: 5 # 初始连接数
         min-idle: 10 # 最小连接池数量
         max-active: 20 # 最大连接池数量
-        max-wait: 600000 # 配置获取连接等待超时的时间，单位：毫秒
-        time-between-eviction-runs-millis: 60000 # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位：毫秒
-        min-evictable-idle-time-millis: 300000 # 配置一个连接在池中最小生存的时间，单位：毫秒
-        max-evictable-idle-time-millis: 900000 # 配置一个连接在池中最大生存的时间，单位：毫秒
+        max-wait: 60000  # 配置获取连接等待超时的时间，单位：毫秒
+        time-between-eviction-runs-millis: 30000  # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位：毫秒
+        min-evictable-idle-time-millis: 300000  # 配置一个连接在池中最小生存的时间，单位：毫秒
+        max-evictable-idle-time-millis: 600000  # 配置一个连接在池中最大生存的时间，单位：毫秒
         test-while-idle: true
-        test-on-borrow: false
+        test-on-borrow: true  # 改为true，在借用时检测，确保连接有效
         test-on-return: false
+        keep-alive: true # 启用保持连接活跃
+        remove-abandoned: true # 启用移除废弃连接
+        remove-abandoned-timeout: 120 # 设置废弃连接超时时间(秒)
+        log-abandoned: true # 记录废弃连接日志
       primary: master
       datasource:
         master:
-          name: ruoyi-vue-pro
-          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+          #name: ruoyi-vue-pro
+          #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=3&initialTimeout=5&connectTimeout=10000&socketTimeout=60000&tcpKeepAlive=true
+          #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
           #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=3&initialTimeout=5&connectTimeout=10000&socketTimeout=60000&tcpKeepAlive=true
           #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
             #          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT # MySQL Connector/J 5.X 连接的示例
             #          url: jdbc:postgresql://127.0.0.1:5432/${spring.datasource.dynamic.datasource.slave.name} # PostgreSQL 连接的示例
-            #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
+            #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例`
           #          url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=${spring.datasource.dynamic.datasource.master.name} # SQLServer 连接的示例
           driver-class-name: com.mysql.cj.jdbc.Driver
           username: root
-          #password: Aa123123!@#
-          password: root
+          password: Aa123123!@#
+          #password: root
           validation-query: SELECT 1 # 配置检测连接是否有效
-          #username: root-
+          #username: root-kliu
+
           #          username: sa
           #          password: JSm:g(*%lU4ZAkz06cd52KqT3)i1?H7W
         slave: # 模拟从库，可根据自己需要修改 1.117.176.203:9936
           name: ruoyi-vue-pro
-          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
+          #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=3&initialTimeout=5&connectTimeout=10000&socketTimeout=60000&tcpKeepAlive=true
+          #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=3&initialTimeout=5&connectTimeout=10000&socketTimeout=60000&tcpKeepAlive=true
           #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
           #url: jdbc:mysql://172.18.12.250:1306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true # MySQL Connector/J 8.X 连接的示例
             #          url: jdbc:mysql://127.0.0.1:3306/${spring.datasource.dynamic.datasource.master.name}?useSSL=false&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=CTT # MySQL Connector/J 5.X 连接的示例
@@ -82,8 +107,8 @@ spring:
           #          url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=${spring.datasource.dynamic.datasource.master.name} # SQLServer 连接的示例
           driver-class-name: com.mysql.cj.jdbc.Driver
           username: root
-          password: root
-          #password: Aa123123!@#
+          #password: root
+          password: Aa123123!@#
           validation-query: SELECT 1 # 配置检测连接是否有效
         oracle: # 添加Oracle数据库配置
           name: oracle_db
@@ -104,6 +129,14 @@ spring:
           password: taosdata
           dbName: fastbee_log
           validation-query: SELECT 1
+        iot:
+          name: iot_db
+          #url: jdbc:mysql://172.18.12.249:3306/fastbee?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+          url: jdbc:mysql://172.18.12.249:3306/fastbee?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&connectTimeout=5000&socketTimeout=30000&autoReconnect=true&tcpKeepAlive=true
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          username: root
+          password: fastbee
+          validation-query: SELECT 1 # 配置检测连接是否有效
       transaction:
         type: JTA
 
@@ -204,6 +237,8 @@ spring:
 logging:
   file:
     name: ${user.home}/logs/${spring.application.name}.log # 日志文件名，全路径
+  level:
+    root: info # 根日志级别
 
 --- #################### 微信公众号相关配置 ####################
 wx: # 参见 https://github.com/Wechat-Group/WxJava/blob/develop/spring-boot-starters/wx-java-mp-spring-boot-starter/README.md 文档
@@ -291,14 +326,13 @@ minio:
   #secretKey: minioadmin
   bucketName: ammes
 
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  n
-#myb#atis-plus:
+#mybatis-plus:
 #  configuration:
 #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 
 jeecg :
+  uploadType: minio
   jmreport:
     # 打印纸张配置 title描述 size宽高
     printPaper:
@@ -310,3 +344,10 @@ jeecg :
         size:
           - 150
           - 100
+    #接口超时设置（毫秒）
+    connect-timeout: 450000
+  minio:
+    minio_url: http://172.18.12.250:9000
+    minio_name: admin
+    minio_pass: admin123
+    bucketName: ammes

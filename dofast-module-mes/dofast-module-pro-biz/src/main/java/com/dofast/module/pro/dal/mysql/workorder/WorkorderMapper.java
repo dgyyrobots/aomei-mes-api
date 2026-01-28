@@ -10,6 +10,7 @@ import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
 import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
 import com.sun.corba.se.spi.orbutil.threadpool.Work;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.workorder.vo.*;
 
@@ -57,8 +58,9 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
                 .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId())
                 .notInIfPresent(WorkorderDO::getOrderSource, Collections.singleton("4"))
+                .eqIfPresent(WorkorderDO::getCloseFlag, reqVO.getCloseFlag())
                 .inIfPresent(WorkorderDO::getWorkorderCode, reqVO.getWorkorderList())
-                .orderByDesc(WorkorderDO::getCreateTime));
+                .orderByDesc(WorkorderDO::getId));
     }
     default List<WorkorderDO> selectList(WorkorderListVO reqVO) {
         return selectList(new LambdaQueryWrapperX<WorkorderDO>()
@@ -88,10 +90,11 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getAttr2, reqVO.getAttr2())
                 .eqIfPresent(WorkorderDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(WorkorderDO::getAttr4, reqVO.getAttr4())
-                .eqIfPresent(WorkorderDO::getCreateTime, reqVO.getCreateTime())
+                .betweenIfPresent(WorkorderDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
+                .eqIfPresent(WorkorderDO::getCloseFlag, reqVO.getCloseFlag())
                 .eqIfPresent(WorkorderDO::getIsOut, reqVO.getIsOut())
-                .orderByDesc(WorkorderDO::getCreateTime));
+                .orderByDesc(WorkorderDO::getId));
     }
 
 
@@ -126,6 +129,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
                 .eqIfPresent(WorkorderDO::getIsOut, reqVO.getIsOut())
+                .eqIfPresent(WorkorderDO::getCloseFlag, reqVO.getCloseFlag())
                 .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId())
                 .orderByDesc(WorkorderDO::getId));
     }
@@ -162,6 +166,7 @@ public interface WorkorderMapper extends BaseMapperX<WorkorderDO> {
                 .eqIfPresent(WorkorderDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(WorkorderDO::getAdjuncts, reqVO.getAdjuncts())
                 .eqIfPresent(WorkorderDO::getIsOut, reqVO.getIsOut())
+                .eqIfPresent(WorkorderDO::getCloseFlag, reqVO.getCloseFlag())
                 .eqIfPresent(WorkorderDO::getMixinOrderId, reqVO.getMixinOrderId())
                 .notInIfPresent(WorkorderDO::getOrderSource, Collections.singleton("4")));
     }

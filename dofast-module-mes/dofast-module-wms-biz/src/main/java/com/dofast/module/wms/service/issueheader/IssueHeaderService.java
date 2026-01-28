@@ -77,6 +77,6 @@ public interface IssueHeaderService {
      */
     List<Map<String, Object>> initBomByWorkOrder(String workOrderNo);
 
-
+    Map<String, IssueHeaderDO> getIssueHeadListByTaskCodes(ArrayList<String> taskCodes);
 
 }

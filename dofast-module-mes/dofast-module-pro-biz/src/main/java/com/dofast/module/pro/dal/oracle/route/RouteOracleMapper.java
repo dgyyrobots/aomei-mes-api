@@ -18,6 +18,6 @@ public interface RouteOracleMapper {
 
     List<Map<String, Object>> initChangeWorkOrderRouteBindProcess(@Param("workOrderNo") String workOrderNo, @Param("erpCode") String erpCode);
 
-    Map<String, Object> initWorkSequence(@Param("workOrderNo") String workOrderNo, @Param("processCode") String processCode , @Param("erpCode") String erpCode);
+    Map<String, Object> initWorkSequence(@Param("workOrderNo") String workOrderNo, @Param("processCode") String processCode , @Param("sequence") String sequence , @Param("erpCode") String erpCode);
 
 }

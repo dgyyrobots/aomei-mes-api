@@ -67,6 +67,10 @@ public class WorkorderListVO {
 
     private Boolean isOut;
 
+    private String closeFlag;
 
-    private LocalDateTime createTime;
+    private LocalDateTime[] createTime;
+
+    private LocalDateTime[] updateTime;
+
 }

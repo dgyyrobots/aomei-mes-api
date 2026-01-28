@@ -1,5 +1,8 @@
 package com.dofast.module.pro.service.feedbackaudit;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineSummaryVO;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -88,6 +91,16 @@ public class FeedbackAuditServiceImpl implements FeedbackAuditService {
     @Override
     public List<FeedbackAuditDO> getFeedbackAuditList(FeedbackAuditExportReqVO exportReqVO) {
         return feedbackAuditMapper.selectList(exportReqVO);
+    }
+
+    @Override
+    public IPage<FeedbackAuditRespVO> selectAuditList(FeedbackAuditPageReqVO pageVO){
+        Page<FeedbackAuditDO> page = new Page<>(
+                pageVO.getPageNo() == null ? 1 : pageVO.getPageNo(),
+                pageVO.getPageSize() == null ? 10 : pageVO.getPageSize()
+        );
+
+        return feedbackAuditMapper.selectAuditList(page, pageVO);
     }
 
 }

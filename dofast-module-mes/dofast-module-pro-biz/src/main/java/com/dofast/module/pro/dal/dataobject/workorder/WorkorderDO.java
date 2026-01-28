@@ -154,5 +154,9 @@ public class WorkorderDO extends BaseDO {
      */
     private String routeCode;
 
+    /**
+     * 结案标识
+     */
+    private String closeFlag;
 
 }

@@ -79,6 +79,7 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_HEADER_NO_PROCESS = new ErrorCode(621001, "无法领用非当前工序线边仓的物料, 请检查领料单信息!");
     ErrorCode ISSUE_HEADER_NO_ENABLE_PROCESS = new ErrorCode(621001, "仅允许复合车间使用启用标识!");
     ErrorCode ISSUE_LINE_VIRTUAL_WH = new ErrorCode(621001, "当前物料已使用!");
+    ErrorCode ISSUE_LINE_BATCH_EXIST = new ErrorCode(621001, "当前物料已上料!");
     ErrorCode ISSUE_HEADER_NO_ISSUE = new ErrorCode(621001, "只允许变更已领料的单据!");
     ErrorCode ISSUE_LINE_NOT_ENABLE = new ErrorCode(621001, "仅允许选中膜类物料!");
     ErrorCode ISSUE_LINE_MULTI_MATERIAL = new ErrorCode(621001, "当前机台已存在膜类物料!!");
@@ -89,6 +90,7 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_LINE_NO_NEED_ERP = new ErrorCode(621001, "当前行无需调用ERP领料接口！");
     ErrorCode ISSUE_HEADER_NEED_ERP = new ErrorCode(621001, "上料失败，当前领用物料需进行ERP过账！");
     ErrorCode ISSUE_LINE_NOT_EXECUTE = new ErrorCode(621001, "存在未上料的物料，无需启用！");
+
 
 
     ErrorCode ALLOCATED_HEADER_NEED_PROCESS_LINE = new ErrorCode(621006, "没有需要处理的调拨单行");
@@ -161,5 +163,11 @@ public interface ErrorCodeConstants {
 
     ErrorCode USER_NO_POST = new ErrorCode(6320001, "请配置当前用户岗位!");
 
+    ErrorCode WORKORDER_FINSHED_NOT_AVALIABLE = new ErrorCode(6330001, "当前工单已完成, 无法进行其他操作!");
 
+    ErrorCode QUENTITYP_QUALIFIED_NULL = new ErrorCode(6330001, "请输入报工单正确的合格数量!");
+
+    ErrorCode QUERY_PARAM_LOST = new ErrorCode(6330001, "请确认输入参数!");
+
+    ErrorCode INIT_VIRTUAL_WAREHOUSE_ERROR = new ErrorCode(6340001, "初始化虚拟线边仓异常!");
 }

@@ -57,4 +57,11 @@ public class TeamBaseVO {
 
     @Schema(description = "生产设备ID", example = "14315")
     private Long machineryId;
+
+    @Schema(description = "夜班负责人Id", example = "216")
+    private Long nightPrincipalId;
+
+    @Schema(description = "夜班负责人名称", example = "张三")
+    private String nightPrincipalName;
+
 }

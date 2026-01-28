@@ -1,6 +1,8 @@
 package com.dofast.module.pro.controller.admin.workorder.vo;
 
 import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
+import com.dofast.module.pro.dal.dataobject.workorderbom.WorkorderBomDO;
+import com.dofast.module.wms.controller.admin.feedline.vo.FeedLineSummaryVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
@@ -121,12 +123,17 @@ public class WorkorderRespPlusVO {
     @Schema(defaultValue = "子工单集合")
     private List<WorkorderRespVO> workorderDOList;
 
+    @Schema(defaultValue = "子BOM集合")
+    private List<FeedLineSummaryVO> workorderBomList;
+
     @Schema(description = "已产生工单")
     private Integer generated;
     
     @Schema(description = "生产任务数量")
     private Integer taskNum;
 
+    @Schema(description = "结案标识")
+    private String closeFlag;
 
     @Schema(description = "是否已打印",requiredMode = Schema.RequiredMode.REQUIRED,example = "true")
     private Integer isPrint;

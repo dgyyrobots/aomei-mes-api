@@ -53,4 +53,15 @@ public class FeedbackAuditExportReqVO {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime[] createTime;
 
+    @Schema(description = "原始审批人ID")
+    private Long originalAuditUserId;
+
+    @Schema(description = "转审历史记录")
+    private String transferHistory;
+
+    @Schema(description = "来源审批单ID")
+    private Long sourceAuditId;
+
+    @Schema(description = "请求参数")
+    private String methodArgs;
 }

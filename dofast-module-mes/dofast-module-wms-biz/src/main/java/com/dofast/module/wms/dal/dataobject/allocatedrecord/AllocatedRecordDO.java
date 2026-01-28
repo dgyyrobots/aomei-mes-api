@@ -2,6 +2,8 @@ package com.dofast.module.wms.dal.dataobject.allocatedrecord;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
@@ -126,5 +128,15 @@ public class AllocatedRecordDO extends BaseDO {
      * ERP状态
      */
     private String erpStatus;
+
+    /**
+     * 转换数量
+     */
+    private BigDecimal converQuantity;
+
+    /**
+     * 转换单位
+     */
+    private String converUnitOfMeasure;
 
 }

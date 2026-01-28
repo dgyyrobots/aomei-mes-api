@@ -35,4 +35,22 @@ public class FeedbackDefectBaseVO {
     @Schema(description = "缺陷米数")
     private String defectMeter;
 
+    @Schema(description = "工序编码")
+    private String processCode;
+
+    @Schema(description = "工序名称")
+    private String processName;
+
+    @Schema(description = "来源班组")
+    private String originTeamCode;
+
+    @Schema(description = "来源物料批次")
+    private String originBatchCode;
+
+    @Schema(description = "来源物料报工单")
+    private String originFeedbackCode;
+
+
+
+
 }

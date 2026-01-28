@@ -110,4 +110,15 @@ public class IssueLineServiceImpl implements IssueLineService {
     return issueLineMapper.getIssueLineListByFeedbackCodes(feedbackCodes);
     }
 
+    @Override
+    public  Map<Long, List<IssueLineDO>> getIssueLineListByHeadIds(List<Long> issueHeadIds){
+        Map<Long, List<IssueLineDO>> result = new HashMap<>();
+        for (Long id : issueHeadIds) {
+            List<IssueLineDO> issueLine = issueLineMapper.selectList(IssueLineDO::getIssueId, id);
+            result.put(id, issueLine);
+        }
+        return result;
+    }
+
+
 }

@@ -105,6 +105,8 @@ public class WorkorderPageReqVO extends PageParam {
     @Schema(description = "销售订单", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
     private Long mixinOrderId;
 
+    @Schema(description = "结案标识")
+    private String closeFlag;
 
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
@@ -113,6 +115,7 @@ public class WorkorderPageReqVO extends PageParam {
     // 虚拟字段
     @Schema(description = "任务单号")
     private String taskCode;
+
 
     @Schema(description = "工单列表")
     private List<String> workorderList;

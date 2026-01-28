@@ -103,6 +103,9 @@ public class FeedbackAuditDetailExcelVO {
     @ExcelProperty("不良品数量")
     private BigDecimal quantityUnquanlified;
 
+    @ExcelProperty("工艺损耗数量")
+    private BigDecimal quantityExcess;
+
     @ExcelProperty("报工用户名")
     private String userName;
 

@@ -67,4 +67,6 @@ public interface FeedbackAuditDetailService {
      */
     List<FeedbackAuditDetailDO> getFeedbackAuditDetailList(FeedbackAuditDetailExportReqVO exportReqVO);
 
+    List<FeedbackAuditDetailDO> selectBatchIds(List<Long> ids);
+
 }

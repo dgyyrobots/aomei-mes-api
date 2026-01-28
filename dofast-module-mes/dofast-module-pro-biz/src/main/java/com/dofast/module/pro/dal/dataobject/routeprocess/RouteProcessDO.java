@@ -142,6 +142,10 @@ public class RouteProcessDO extends BaseDO {
      */
     private BigDecimal outUnitsConversionDenominator;
 
+    /**
+     * 工序工作序
+     */
+    private Long processSequence;
 
 
 }

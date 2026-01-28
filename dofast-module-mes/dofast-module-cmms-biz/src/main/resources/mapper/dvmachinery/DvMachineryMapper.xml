@@ -9,4 +9,49 @@
         文档可见：https://www.iocoder.cn/MyBatis/x-plugins/
      -->
 
+    <select id="selectDeviceProductAlertCount" resultType="map">
+        select
+        <!--设备数量-->
+        (select count(distinct d.device_id,d.tenant_id)
+        from iot_device d
+        where d.tenant_id = 1
+        ) as deviceCount,
+
+        <!--在线设备数量-->
+        (select count(distinct d.device_id,d.tenant_id)
+        from iot_device d
+        <where>
+            d.status=3
+            and d.tenant_id = 1
+        </where>
+        ) as deviceOnlineCount,
+
+        (
+        select count(product_id)
+        from iot_product
+        ) as productCount,
+
+        (select count(distinct alert_log_id)
+        from iot_alert_log l
+        left join iot_device d on l.serial_number=d.serial_number
+        where d.tenant_id = 1
+        ) as alertCount
+    </select>
+
+    <select id="selectFunctionLogList" resultType="map">
+        select id, identify, fun_type, fun_value, message_id, device_name, serial_number, mode, user_id, result_msg, result_code, create_by,
+               create_time, remark,show_value,model_name,reply_time from iot_function_log
+        order by create_time DESC
+    </select>
+
+    <select id="selectOnlineLogList" resultType="map">
+        SELECT device_name, serial_number, is_monitor, create_time, remark
+        FROM iot_event_log
+        WHERE identity IN ('online', 'offline')
+        AND create_time BETWEEN #{startDate} and  #{endDate}
+        GROUP BY device_name, serial_number, is_monitor, create_time, remark
+        ORDER BY create_time
+        LIMIT 100
+    </select>
+
 </mapper>

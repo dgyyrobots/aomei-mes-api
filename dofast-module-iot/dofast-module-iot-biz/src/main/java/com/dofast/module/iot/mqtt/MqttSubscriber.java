@@ -143,8 +143,9 @@ public class MqttSubscriber {
         // 获取上一条记录
         DeviceFeedbackLogDO lastLog = Optional.ofNullable(deviceFeedbackLogService.getFinalDeviceFeedbackLog(deviceCode)).orElse(null);
         // 比对production与lastLog的数量, 若当前production大于lastLog的数量, 则打上标记
+        // 2025-8-7 追加卡控, 若lastLog的quantity数量小于200, 不进行判定
         // 追加卡控, 若当前production大于lastLog的数量且涨幅超5%, 则打标记
-        if (lastLog != null && production.multiply(new BigDecimal("1.1")).compareTo(lastLog.getQuantity()) < 0) {
+        if (lastLog != null && production.multiply(new BigDecimal("1.1")).compareTo(lastLog.getQuantity()) < 0  && lastLog.getQuantity().compareTo(new BigDecimal("200")) > 0) {
             lastLog.setEnableStatus("CONFIRMED");
             deviceFeedbackLogService.updateDeviceFeedbackLog(
                     DeviceFeedbackLogConvert.INSTANCE.convert01(lastLog)

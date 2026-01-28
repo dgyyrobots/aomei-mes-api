@@ -101,4 +101,5 @@ public interface WorkorderService {
 
     Map<String, Integer>  getCountMonthWorkorderThisYear();
 
+    void updateBatch(List<WorkorderDO> workorderList);
 }

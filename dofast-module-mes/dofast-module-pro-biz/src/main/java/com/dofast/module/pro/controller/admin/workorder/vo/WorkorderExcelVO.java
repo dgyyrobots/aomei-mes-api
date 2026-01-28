@@ -108,6 +108,9 @@ public class WorkorderExcelVO {
     @ExcelProperty("是否外协")
     private Boolean isOut;
 
+    @Schema(description = "结案标识")
+    private String closeFlag;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

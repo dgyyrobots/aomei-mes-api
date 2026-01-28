@@ -44,8 +44,30 @@
         WHERE
             sfkaent =  #{erpCode}
           AND sfkasite = 'AM01'
-          AND sfkadocno = 'AMGD01-202410003'
+          --  AND sfkadocno = 'AMGD01-202410003'
           --AND sfkacnfdt BETWEEN SYSDATE - INTERVAL '5' MINUTE AND SYSDATE
     </select>
+
+    <select id="initCloseWorkorder" parameterType="java.lang.String" resultType="java.util.HashMap" >
+        SELECT
+            distinct
+            sfaadocno AS WORKORDER_CODE,
+            sfaa005 AS ORDER_SOURCE,
+            sfaa009 AS CLIENT_CODE,
+            SFAA010 AS PRODUCT_CODE,
+            SFAA012 AS QUANTITY,
+            SFAA013 AS UNIT_OF_MEASURE,
+            SFAA019 AS REQUEST_DATE,
+            SFAA011 AS ROUTE_CODE,
+            SFAA021 AS SOURCE_CODE
+        FROM
+            DSDATA.SFAA_T A
+                LEFT JOIN  DSDATA.SFAB_T B ON A.SFAADOCNO = B.SFABDOCNO AND A.SFAAENT = B.SFABENT AND A.SFAASITE = B.SFABSITE
+        WHERE
+            sfaaent = #{erpCode}
+          AND sfaasite = 'AM01'
+          AND sfaastus in ('C' , 'M')
+    </select>
+
 
 </mapper>

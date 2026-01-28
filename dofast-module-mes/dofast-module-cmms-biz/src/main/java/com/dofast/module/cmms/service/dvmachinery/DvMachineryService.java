@@ -1,5 +1,6 @@
 package com.dofast.module.cmms.service.dvmachinery;
 
+import java.time.LocalDate;
 import java.util.*;
 import javax.validation.*;
 import com.dofast.module.cmms.controller.admin.dvmachinery.vo.*;
@@ -76,4 +77,19 @@ public interface DvMachineryService {
      */
     List<DvMachineryDO> getDvMachineryList(DvMachineryExportReqVO exportReqVO);
 
+    /**
+     * 获取设备状态
+     * @return
+     */
+    Map<String, Object> selectDeviceProductAlertCount();
+
+    /**
+     * 查询设备服务下发日志列表
+     */
+    List<Map<String, Object>> selectFunctionLogList();
+
+    /**
+     * 获得设备服务下发上下线列表
+     */
+    List<Map<String, Object>> selectOnlineLogList(LocalDate startDate, LocalDate endDate);
 }

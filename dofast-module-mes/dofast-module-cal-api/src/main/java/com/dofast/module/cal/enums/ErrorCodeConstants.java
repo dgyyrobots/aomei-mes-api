@@ -26,6 +26,9 @@ public interface ErrorCodeConstants {
     
     // === 班组成员 1040007000 ===
     ErrorCode TEAM_MEMBER_NOT_EXISTS = new ErrorCode(1040007000, "班组成员不存在");
-    
+
+    // === 班组排班 TODO 补充编号 ===
+    ErrorCode TEAM_SCHEDULE_NOT_EXISTS = new ErrorCode(1040008000, "班组排班不存在");
+
 
 }

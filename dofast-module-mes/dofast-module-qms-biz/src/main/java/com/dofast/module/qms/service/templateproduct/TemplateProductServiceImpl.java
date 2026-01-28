@@ -101,4 +101,10 @@ public class TemplateProductServiceImpl implements TemplateProductService {
         return templateProductMapper.selectList(listVO);
     }
 
+    @Override
+    public  List<TemplateProductDO> getTemplateProductListNotContainProcessCode(TemplateProductListVO listVO){
+        return templateProductMapper.selectListNotContainProcessCode(listVO);
+    }
+
+
 }

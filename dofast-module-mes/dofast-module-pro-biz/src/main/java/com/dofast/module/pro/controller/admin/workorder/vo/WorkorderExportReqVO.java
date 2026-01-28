@@ -100,6 +100,9 @@ public class WorkorderExportReqVO {
     @Schema(description = "是否外协")
     private Boolean isOut;
 
+    @Schema(description = "结案标识")
+    private String closeFlag;
+
     @Schema(description = "创建时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime createTime;

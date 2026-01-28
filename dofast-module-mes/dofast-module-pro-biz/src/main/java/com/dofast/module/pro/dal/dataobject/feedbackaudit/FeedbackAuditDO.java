@@ -79,4 +79,26 @@ public class FeedbackAuditDO extends BaseDO {
      */
     private String remark;
 
+    /**
+     * 原始审批人ID
+     */
+    private Long originalAuditUserId;
+
+    /**
+     * 转审历史记录
+     */
+    private String transferHistory;
+
+    /**
+     * 来源审批单ID
+     */
+    private Long sourceAuditId;
+
+    /**
+     * 请求参数
+     */
+    private String methodArgs;
+
+
+
 }

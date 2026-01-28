@@ -29,7 +29,7 @@ public interface IssueHeaderMapper extends BaseMapperX<IssueHeaderDO> {
                 .eqIfPresent(IssueHeaderDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(IssueHeaderDO::getWorkstationName, reqVO.getWorkstationName())
                 .eqIfPresent(IssueHeaderDO::getWorkorderId, reqVO.getWorkorderId())
-                .eqIfPresent(IssueHeaderDO::getWorkorderCode, reqVO.getWorkorderCode())
+                .likeIfPresent(IssueHeaderDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .eqIfPresent(IssueHeaderDO::getTaskId, reqVO.getTaskId())
                 .eqIfPresent(IssueHeaderDO::getTaskCode, reqVO.getTaskCode())
                 .eqIfPresent(IssueHeaderDO::getClientId, reqVO.getClientId())
@@ -59,6 +59,7 @@ public interface IssueHeaderMapper extends BaseMapperX<IssueHeaderDO> {
                 .eqIfPresent(IssueHeaderDO::getProcessName, reqVO.getProcessName())
                 .betweenIfPresent(IssueHeaderDO::getCreateTime, reqVO.getCreateTime())
                 .inIfPresent(IssueHeaderDO::getIssueCode, reqVO.getIssueCodeList())
+                .eqIfPresent(IssueHeaderDO::getProcessSequence, reqVO.getProcessSequence())
                 .orderByDesc(IssueHeaderDO::getId));
     }
 
@@ -70,7 +71,7 @@ public interface IssueHeaderMapper extends BaseMapperX<IssueHeaderDO> {
                 .eqIfPresent(IssueHeaderDO::getWorkstationCode, reqVO.getWorkstationCode())
                 .likeIfPresent(IssueHeaderDO::getWorkstationName, reqVO.getWorkstationName())
                 .eqIfPresent(IssueHeaderDO::getWorkorderId, reqVO.getWorkorderId())
-                .eqIfPresent(IssueHeaderDO::getWorkorderCode, reqVO.getWorkorderCode())
+                .likeIfPresent(IssueHeaderDO::getWorkorderCode, reqVO.getWorkorderCode())
                 .eqIfPresent(IssueHeaderDO::getTaskId, reqVO.getTaskId())
                 .eqIfPresent(IssueHeaderDO::getTaskCode, reqVO.getTaskCode())
                 .eqIfPresent(IssueHeaderDO::getClientId, reqVO.getClientId())
@@ -99,6 +100,7 @@ public interface IssueHeaderMapper extends BaseMapperX<IssueHeaderDO> {
                 .eqIfPresent(IssueHeaderDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(IssueHeaderDO::getProcessCode, reqVO.getProcessCode())
                 .eqIfPresent(IssueHeaderDO::getProcessName, reqVO.getProcessName())
+                .eqIfPresent(IssueHeaderDO::getProcessSequence, reqVO.getProcessSequence())
                 .orderByDesc(IssueHeaderDO::getId));
     }
 

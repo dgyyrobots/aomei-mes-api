@@ -29,6 +29,8 @@ public interface DefectMapper extends BaseMapperX<DefectDO> {
                 .eqIfPresent(DefectDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(DefectDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(DefectDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(DefectDO::getProcessCode, reqVO.getProcessCode())
+                .eqIfPresent(DefectDO::getProcessName, reqVO.getProcessName())
                 .orderByDesc(DefectDO::getId));
     }
 
@@ -44,6 +46,8 @@ public interface DefectMapper extends BaseMapperX<DefectDO> {
                 .eqIfPresent(DefectDO::getAttr3, reqVO.getAttr3())
                 .eqIfPresent(DefectDO::getAttr4, reqVO.getAttr4())
                 .betweenIfPresent(DefectDO::getCreateTime, reqVO.getCreateTime())
+                .eqIfPresent(DefectDO::getProcessCode, reqVO.getProcessCode())
+                .eqIfPresent(DefectDO::getProcessName, reqVO.getProcessName())
                 .orderByDesc(DefectDO::getId));
     }
 

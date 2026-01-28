@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import com.dofast.module.qms.controller.admin.iqc.vo.*;
 import com.dofast.module.qms.dal.dataobject.iqc.IqcDO;
@@ -48,6 +49,7 @@ public class IqcServiceImpl implements IqcService {
     public Long createIqc(IqcCreateReqVO createReqVO) {
         // 插入
         IqcDO iqc = IqcConvert.INSTANCE.convert(createReqVO);
+        iqc.setInspectDate( LocalDateTime.now());
         iqcMapper.insert(iqc);
         // 返回
         return iqc.getId();

@@ -78,4 +78,6 @@ public interface IpqcService {
      */
     List<IpqcDO> getIpqcList(IpqcExportReqVO exportReqVO);
 
+    List<Map<String, Object>> getProcessQuality();
+
 }

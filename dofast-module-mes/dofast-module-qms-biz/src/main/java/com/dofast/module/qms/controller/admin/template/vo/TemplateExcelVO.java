@@ -46,6 +46,12 @@ public class TemplateExcelVO {
     @ExcelProperty("预留字段4")
     private Integer attr4;
 
+    @ExcelProperty("工序编码")
+    private String processCode;
+
+    @ExcelProperty("工序名称")
+    private String processName;
+
     @ExcelProperty("创建时间")
     private LocalDateTime createTime;
 

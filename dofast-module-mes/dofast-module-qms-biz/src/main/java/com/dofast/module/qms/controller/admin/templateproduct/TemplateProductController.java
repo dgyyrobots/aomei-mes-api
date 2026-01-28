@@ -1,7 +1,9 @@
 package com.dofast.module.qms.controller.admin.templateproduct;
 
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.qms.dal.dataobject.template.TemplateDO;
 import com.dofast.module.qms.enums.ErrorCodeConstants;
+import com.dofast.module.qms.service.template.TemplateService;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -39,15 +41,21 @@ import com.dofast.module.qms.service.templateproduct.TemplateProductService;
 public class TemplateProductController {
 
     @Resource
+    private TemplateService templateService;
+
+    @Resource
     private TemplateProductService templateProductService;
 
     @PostMapping("/create")
     @Operation(summary = "创建检测模板-产品")
     @PreAuthorize("@ss.hasPermission('qms:template-product:create')")
     public CommonResult<Long> createTemplateProduct(@Valid @RequestBody TemplateProductCreateReqVO createReqVO) {
+        TemplateDO templateDO = templateService.getTemplate(createReqVO.getTemplateId());
+        createReqVO.setProcessCode(templateDO.getProcessCode());
         if(Constant.NOT_UNIQUE.equals(templateProductService.checkProductUnique(createReqVO))){
             return error(ErrorCodeConstants.PRODUCT_HAS_TEMPLATE);
         }
+
         return success(templateProductService.createTemplateProduct(createReqVO));
     }
 

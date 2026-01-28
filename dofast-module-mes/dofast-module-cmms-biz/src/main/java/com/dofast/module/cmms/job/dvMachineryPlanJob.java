@@ -3,70 +3,227 @@ package com.dofast.module.cmms.job;
 import com.dofast.framework.quartz.core.handler.JobHandler;
 import com.dofast.module.cmms.controller.admin.dvcheckmachinery.vo.DvCheckMachineryExportReqVO;
 import com.dofast.module.cmms.controller.admin.dvcheckplan.vo.DvCheckPlanExportReqVO;
+import com.dofast.module.cmms.controller.admin.dvchecksubject.vo.DvCheckSubjectExportReqVO;
+import com.dofast.module.cmms.controller.admin.dvrepair.vo.DvRepairCreateReqVO;
 import com.dofast.module.cmms.dal.dataobject.dvcheckmachinery.DvCheckMachineryDO;
 import com.dofast.module.cmms.dal.dataobject.dvcheckplan.DvCheckPlanDO;
-import com.dofast.module.cmms.dal.dataobject.dvcheckplanheaderlog.DvCheckPlanHeaderLogDO;
-import com.dofast.module.cmms.dal.dataobject.dvcheckplanlinelog.DvCheckPlanLineLogDO;
+import com.dofast.module.cmms.dal.dataobject.dvchecksubject.DvCheckSubjectDO;
+import com.dofast.module.cmms.dal.dataobject.dvmachinery.DvMachineryDO;
+import com.dofast.module.cmms.dal.dataobject.dvrepairline.DvRepairLineDO;
 import com.dofast.module.cmms.service.dvcheckmachinery.DvCheckMachineryService;
 import com.dofast.module.cmms.service.dvcheckplan.DvCheckPlanService;
-import com.dofast.module.cmms.service.dvcheckplanheaderlog.DvCheckPlanHeaderLogService;
-import com.dofast.module.cmms.service.dvcheckplanlinelog.DvCheckPlanLineLogService;
+import com.dofast.module.cmms.service.dvchecksubject.DvCheckSubjectService;
+import com.dofast.module.cmms.service.dvmachinery.DvMachineryService;
+import com.dofast.module.cmms.service.dvrepair.DvRepairService;
+import com.dofast.module.cmms.service.dvrepairline.DvRepairLineService;
+import com.dofast.module.mes.api.autocode.AutoCodeApi;
 import com.dofast.module.system.api.notify.NotifyMessageSendApi;
 import com.dofast.module.system.api.notify.dto.NotifySendSingleToUserReqDTO;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-
-import static java.time.temporal.ChronoUnit.DAYS;
+import java.util.stream.Collectors;
 
 @Component
 public class dvMachineryPlanJob implements JobHandler {
 
     @Resource
     private DvCheckPlanService dvCheckPlanService;
-
     @Resource
     private DvCheckMachineryService dvCheckMachineryService;
-
+    @Resource
+    private DvCheckSubjectService dvCheckSubjectService;
+    @Resource
+    private DvRepairService dvRepairService;
+    @Resource
+    private DvRepairLineService dvRepairLineService;
+    @Resource
+    private DvMachineryService dvMachineryService;
+    @Resource
+    private AutoCodeApi autoCodeApi;
     @Resource
     private NotifyMessageSendApi notifySendApi;
 
-    @Resource
-    private DvCheckPlanHeaderLogService dvCheckPlanHeaderLogService;
-
-    @Resource
-    private DvCheckPlanLineLogService dvCheckPlanLineLogService;
+    // ======================== Job 入口 ========================
 
     @Override
     public String execute(String param) {
-        try {
-            List<DvCheckPlanDO> activePlans = getActivePlans();
-            List<DvCheckPlanDO> needExecutePlans = filterPlans(activePlans);
-            processPlans(needExecutePlans);
-            return "success";
-        } catch (Exception e) {
-            System.out.println("设备点检计划任务执行失败");
-            return "failed: " + e.getMessage();
+        LocalDateTime now = LocalDateTime.now();
+        List<DvCheckPlanDO> plans = getActivePlans();
+
+        for (DvCheckPlanDO plan : plans) {
+            try {
+                processPlan(plan, now);
+            } catch (Exception e) {
+                System.err.println("点检计划执行失败：" + plan.getPlanCode());
+                e.printStackTrace();
+            }
+        }
+        return "SUCCESS";
+    }
+
+    // ======================== 主流程 ========================
+
+    private void processPlan(DvCheckPlanDO plan, LocalDateTime now) {
+
+        if (!isPlanEffective(plan, now)) {
+            return;
+        }
+
+        CycleRange cycle = calculateCycle(plan, now);
+
+        List<DvCheckMachineryDO> machines = getMachines(plan);
+        if (machines.isEmpty()) {
+            return;
+        }
+
+        boolean hasCreated = false;
+
+        for (DvCheckMachineryDO machinery : machines) {
+
+            // 幂等判断（唯一事实源）
+            boolean exists = dvRepairService.countInspectionRepairInCycle(
+                    plan.getId(),
+                    machinery.getMachineryId(),
+                    cycle.start,
+                    cycle.end
+            ) > 0;
+
+            if (exists) {
+                continue;
+            }
+
+            createInspectionRepair(plan, machinery);
+            hasCreated = true;
+        }
+
+        // ⭐ 本周期首次创建，才通知
+        if (hasCreated) {
+            sendNotification(plan, machines);
         }
     }
+
+    // ======================== 周期计算（企业级） ========================
+
+    private CycleRange calculateCycle(DvCheckPlanDO plan, LocalDateTime now) {
+
+        switch (plan.getCycleType()) {
+
+            case "HOUR": {
+                LocalDateTime start = now.truncatedTo(ChronoUnit.HOURS);
+                return new CycleRange(start, start.plusHours(plan.getCycleCount()));
+            }
+
+            case "DAY": {
+                LocalDateTime start = now.toLocalDate().atStartOfDay();
+                return new CycleRange(start, start.plusDays(plan.getCycleCount()));
+            }
+
+            case "WEEK": {
+                LocalDate start = now.toLocalDate()
+                        .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                return new CycleRange(start.atStartOfDay(), start.plusWeeks(1).atStartOfDay());
+            }
+
+            case "MONTH": {
+                LocalDate start = now.toLocalDate().with(TemporalAdjusters.firstDayOfMonth());
+                return new CycleRange(start.atStartOfDay(), start.plusMonths(1).atStartOfDay());
+            }
+
+            case "QUARTER": {
+                int quarter = (now.getMonthValue() - 1) / 3;
+                LocalDate start = LocalDate.of(
+                        now.getYear(),
+                        quarter * 3 + 1,
+                        1
+                );
+                return new CycleRange(start.atStartOfDay(), start.plusMonths(3).atStartOfDay());
+            }
+
+            case "YEAR": {
+                LocalDate start = now.toLocalDate().with(TemporalAdjusters.firstDayOfYear());
+                return new CycleRange(start.atStartOfDay(), start.plusYears(1).atStartOfDay());
+            }
+
+            default:
+                throw new IllegalArgumentException("不支持的周期类型：" + plan.getCycleType());
+        }
+    }
+
+    // ======================== 维修单创建 ========================
+
+    private void createInspectionRepair(DvCheckPlanDO plan, DvCheckMachineryDO machinery) {
+
+        String repairCode = autoCodeApi.genSerialCode("REPAIR_CODE", null);
+
+        DvRepairCreateReqVO req = new DvRepairCreateReqVO();
+        req.setRepairCode(repairCode);
+        req.setRepairName(repairCode);
+        req.setRepairType("INSPECTION");
+        req.setStatus("PREPARE");
+        req.setRequireDate(LocalDateTime.now());
+
+        req.setMachineryId(machinery.getMachineryId());
+        req.setMachineryCode(machinery.getMachineryCode());
+        req.setMachineryName(machinery.getMachineryName());
+
+        DvMachineryDO machine = dvMachineryService.getDvMachinery(machinery.getMachineryId());
+        req.setMachineryTypeId(machine.getMachineryTypeId());
+
+        req.setRemark("系统自动生成，来源点检计划：" + plan.getPlanCode());
+
+        Long repairId = dvRepairService.createDvRepair(req);
+
+        // 创建维修单行
+        List<DvCheckSubjectDO> subjects =
+                Optional.ofNullable(
+                        dvCheckSubjectService.getDvCheckSubjectList(
+                                new DvCheckSubjectExportReqVO().setPlanId(machinery.getPlanId())
+                        )
+                ).orElse(Collections.emptyList());
+
+        List<DvRepairLineDO> lines = new ArrayList<>();
+        for (DvCheckSubjectDO s : subjects) {
+            DvRepairLineDO line = new DvRepairLineDO();
+            line.setRepairId(repairId);
+            line.setSubjectId(s.getSubjectId());
+            line.setSubjectCode(s.getSubjectCode());
+            line.setSubjectName(s.getSubjectName());
+            line.setSubjectType(s.getSubjectType());
+            line.setSubjectContent(s.getSubjectContent());
+            line.setSubjectStandard(s.getSubjectStandard());
+            lines.add(line);
+        }
+
+        if (!lines.isEmpty()) {
+            dvRepairLineService.insertBatch(lines);
+        }
+    }
+
+    // ======================== 通知 ========================
+
+    private void sendNotification(DvCheckPlanDO plan, List<DvCheckMachineryDO> machines) {
+
+        String deviceNames = machines.stream()
+                .map(DvCheckMachineryDO::getMachineryName)
+                .collect(Collectors.joining(","));
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("deviceName", deviceNames);
+
+        notifySendApi.sendSingleMessageToAdmin(
+                new NotifySendSingleToUserReqDTO()
+                        .setUserId(getResponsibleUserId(plan))
+                        .setTemplateCode("devicePlan")
+                        .setTemplateParams(params)
+        );
+    }
+
+    // ======================== 基础方法 ========================
 
     private List<DvCheckPlanDO> getActivePlans() {
         DvCheckPlanExportReqVO query = new DvCheckPlanExportReqVO();
@@ -74,186 +231,9 @@ public class dvMachineryPlanJob implements JobHandler {
         return dvCheckPlanService.getDvCheckPlanList(query);
     }
 
-    private List<DvCheckPlanDO> filterPlans(List<DvCheckPlanDO> plans) {
-        LocalDateTime now = LocalDateTime.now();
-        List<DvCheckPlanDO> result = new ArrayList<>();
-
-        for (DvCheckPlanDO plan : plans) {
-            try {
-                if (isPlanEffective(plan, now) &&
-                        isExecutionTime(plan, now) &&
-                        !hasExecutedInCurrentCycle(plan, now)) {
-                    result.add(plan);
-                }
-            } catch (Exception e) {
-                System.out.println("计划" + plan.getPlanCode() + "检查异常");
-            }
-        }
-        return result;
-    }
-
     private boolean isPlanEffective(DvCheckPlanDO plan, LocalDateTime now) {
-        return !now.isBefore(plan.getStartDate()) && !now.isAfter(plan.getEndDate());
-    }
-
-    private boolean isExecutionTime(DvCheckPlanDO plan, LocalDateTime now) {
-        switch (plan.getCycleType()) {
-            case "DAY":
-                return checkDaily(plan, now);
-            case "HOUR":
-                return checkHourly(plan, now);
-            case "WEEK":
-                return checkWeekly(plan, now);
-            case "MONTH":
-                return checkMonthly(plan, now);
-            case "QUARTER":
-                return checkQuarterly(plan, now);
-            case "YEAR":
-                return checkYearly(plan, now);
-            default:
-                return false;
-        }
-    }
-
-    // 新增 DAY 周期判断方法
-    private boolean checkDaily(DvCheckPlanDO plan, LocalDateTime now) {
-        Map<String, LocalDateTime> range = getCycleTimeRange(plan, now);
-        return now.isAfter(range.get("start")) && now.isBefore(range.get("end"));
-    }
-
-    // 新增 HOUR 周期判断方法
-    private boolean checkHourly(DvCheckPlanDO plan, LocalDateTime now) {
-        Map<String, LocalDateTime> range = getCycleTimeRange(plan, now);
-        return now.isAfter(range.get("start")) && now.isBefore(range.get("end"));
-    }
-
-
-    private boolean checkWeekly(DvCheckPlanDO plan, LocalDateTime now) {
-        Map<String, LocalDateTime> range = getCycleTimeRange(plan, now);
-        long daysBetween = DAYS.between(range.get("start"), now);
-        int interval = (int) Math.ceil(7.0 / plan.getCycleCount());
-        return daysBetween % interval == 0;
-    }
-
-    private boolean checkMonthly(DvCheckPlanDO plan, LocalDateTime now) {
-        Map<String, LocalDateTime> range = getCycleTimeRange(plan, now);
-        long totalDays = DAYS.between(range.get("start"), range.get("end"));
-        int interval = (int) Math.ceil(totalDays * 1.0 / plan.getCycleCount());
-        long daysPassed = DAYS.between(range.get("start"), now);
-        return daysPassed % interval == 0;
-    }
-
-    private boolean checkQuarterly(DvCheckPlanDO plan, LocalDateTime now) {
-        Map<String, LocalDateTime> range = getCycleTimeRange(plan, now);
-        long totalDays = DAYS.between(range.get("start"), range.get("end"));
-        int interval = (int) Math.ceil(totalDays * 1.0 / plan.getCycleCount());
-        long daysPassed = DAYS.between(range.get("start"), now);
-        return daysPassed % interval == 0;
-    }
-
-    private boolean checkYearly(DvCheckPlanDO plan, LocalDateTime now) {
-        return now.getDayOfYear() == plan.getStartDate().getDayOfYear();
-    }
-
-    private boolean hasExecutedInCurrentCycle(DvCheckPlanDO plan, LocalDateTime now) {
-        Map<String, LocalDateTime> range = getCycleTimeRange(plan, now);
-        LocalDateTime startTime = range.get("start");
-        LocalDateTime endTime = range.get("end");
-        // 判定当前周期内是否存在点检记录
-        int count = dvCheckPlanHeaderLogService.selectCountInCycle(plan.getPlanCode(), startTime, endTime);
-        System.out.println("计划" + plan.getPlanCode() + "当前周期内执行次数：" + count);
-        return count > 0;
-    }
-
-    private Map<String, LocalDateTime> getCycleTimeRange(DvCheckPlanDO plan, LocalDateTime now) {
-        Map<String, LocalDateTime> range = new HashMap<>();
-
-        switch (plan.getCycleType()) {
-            case "DAY":    // DAY 类型周期范围
-                long daysSinceStart = ChronoUnit.DAYS.between(
-                        plan.getStartDate().truncatedTo(ChronoUnit.DAYS),
-                        now.truncatedTo(ChronoUnit.DAYS)
-                );
-                long dayPeriods = daysSinceStart / plan.getCycleCount();
-                LocalDateTime dayPeriodStart = plan.getStartDate()
-                        .truncatedTo(ChronoUnit.DAYS)
-                        .plusDays(dayPeriods * plan.getCycleCount());
-                range.put("start", dayPeriodStart);
-                range.put("end", dayPeriodStart.plusDays(plan.getCycleCount()));
-                break;
-
-            case "HOUR":   // HOUR 类型周期范围
-                long hoursSinceStart = ChronoUnit.HOURS.between(
-                        plan.getStartDate().truncatedTo(ChronoUnit.HOURS),
-                        now.truncatedTo(ChronoUnit.HOURS)
-                );
-                long hourPeriods = hoursSinceStart / plan.getCycleCount();
-                LocalDateTime hourPeriodStart = plan.getStartDate()
-                        .truncatedTo(ChronoUnit.HOURS)
-                        .plusHours(hourPeriods * plan.getCycleCount());
-                range.put("start", hourPeriodStart);
-                range.put("end", hourPeriodStart.plusHours(plan.getCycleCount()));
-                break;
-
-            case "WEEK":
-                LocalDateTime weekStart = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-                        .truncatedTo(ChronoUnit.DAYS);
-                range.put("start", weekStart);
-                range.put("end", weekStart.plusWeeks(1));
-                break;
-
-            case "MONTH":
-                LocalDateTime monthStart = now.with(TemporalAdjusters.firstDayOfMonth())
-                        .truncatedTo(ChronoUnit.DAYS);
-                range.put("start", monthStart);
-                range.put("end", monthStart.plusMonths(1));
-                break;
-
-            case "QUARTER":
-                int quarter = (now.getMonthValue() - 1) / 3;
-                LocalDateTime quarterStart = now.withMonth(quarter * 3 + 1)
-                        .with(TemporalAdjusters.firstDayOfMonth())
-                        .truncatedTo(ChronoUnit.DAYS);
-                range.put("start", quarterStart);
-                range.put("end", quarterStart.plusMonths(3));
-                break;
-
-            case "YEAR":
-                LocalDateTime yearStart = now.with(TemporalAdjusters.firstDayOfYear())
-                        .truncatedTo(ChronoUnit.DAYS);
-                range.put("start", yearStart);
-                range.put("end", yearStart.plusYears(1));
-                break;
-
-            default:
-                throw new IllegalArgumentException("不支持的周期类型: " + plan.getCycleType());
-        }
-        return range;
-    }
-
-    private void processPlans(List<DvCheckPlanDO> plans) {
-        for (DvCheckPlanDO plan : plans) {
-            try {
-                sendNotification(plan);
-                System.out.println("计划" + plan.getPlanCode() + "处理成功");
-            } catch (Exception e) {
-                System.out.println("计划" + plan.getPlanCode() + "处理失败");
-            }
-        }
-    }
-
-    private void sendNotification(DvCheckPlanDO plan) {
-        String deviceNames = getMachines(plan).stream()
-                .map(DvCheckMachineryDO::getMachineryName)
-                .collect(Collectors.joining(","));
-
-        Map<String, Object> param = new HashMap<>();
-        param.put("deviceName", deviceNames);
-
-        notifySendApi.sendSingleMessageToAdmin(new NotifySendSingleToUserReqDTO()
-                .setUserId(getResponsibleUserId(plan)).setTemplateCode("devicePlan").setTemplateParams(param));
-
-
+        return !now.isBefore(plan.getStartDate())
+                && !now.isAfter(plan.getEndDate());
     }
 
     private List<DvCheckMachineryDO> getMachines(DvCheckPlanDO plan) {
@@ -264,5 +244,17 @@ public class dvMachineryPlanJob implements JobHandler {
 
     private Long getResponsibleUserId(DvCheckPlanDO plan) {
         return 170L;
+    }
+
+    // ======================== 内部对象 ========================
+
+    private static class CycleRange {
+        LocalDateTime start;
+        LocalDateTime end;
+
+        CycleRange(LocalDateTime start, LocalDateTime end) {
+            this.start = start;
+            this.end = end;
+        }
     }
 }

@@ -224,8 +224,6 @@ public class WorkorderERPAPI {
             master.put("source_no", order.get("source_no"));    // MES单号
             master.put("sfeadocno", order.get("sfeadocno"));    // 单别
 
-
-
             // 判断当前系统获取的时间与关账日期进行比对, 若当前时间大于关账日期则传递下个月1号的日期, 需要考虑跨年情况, 即12月跳转至下一年1月
             // 追加判定, 若关账日期为上个月, 则忽略, 传递今日日期
             // 判断关账日期是否为上个月
@@ -297,11 +295,12 @@ public class WorkorderERPAPI {
         interfaceLogService.createInterfaceLog(log);
 
         JSONObject jsonObject = JSONObject.parseObject(result);
-        // 防止jsonObject.getString("code")空指针异常
+
         if (jsonObject == null) {
             return "error";
         }
-        // 提取执行状态信息
+
+        /*// 提取执行状态信息
         JSONObject reqPayload = jsonObject.getJSONObject("payload");
         JSONObject reqStdData = payload != null ? reqPayload.getJSONObject("std_data") : null;
         JSONObject reqExecution = stdData != null ? reqStdData.getJSONObject("execution") : null;
@@ -310,7 +309,7 @@ public class WorkorderERPAPI {
 
         if ("0".equals(code)) {
             return description != null ? description : "error";
-        }
+        }*/
         return result;
     }
 

@@ -8,6 +8,7 @@ import com.dofast.module.wms.dal.dataobject.allocatedrecord.AllocatedRecordDO;
 import com.dofast.module.wms.enums.ErrorCodeConstants;
 import com.dofast.module.wms.service.allocatedheader.AllocatedHeaderService;
 import com.dofast.module.wms.service.allocatedrecord.AllocatedRecordService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -136,83 +137,123 @@ public class AllocatedLineController {
         ExcelUtils.write(response, "调拨单身.xls", "数据", AllocatedLineExcelVO.class, datas);
     }
 
+
     @PostMapping("/updateLine")
     @Operation(summary = "修改调拨单身")
-    //@PreAuthorize("@ss.hasPermission('wms:allocated-line:create')")
+    @Transactional(rollbackFor = Exception.class) // 添加事务管理
     public CommonResult<Long> updateLine(@Valid @RequestBody Map<String, Object> requestmap) {
         Integer headerId = (Integer) requestmap.get("headerId");
 
         AllocatedHeaderDO allocatedHeaderDO = allocatedHeaderService.getAllocatedHeader(Long.valueOf(headerId));
-
-
         boolean bindWorkorder = Boolean.parseBoolean(allocatedHeaderDO.getBindWorkorder());
         if(bindWorkorder){
             TaskDTO taskDTO = taskApi.getTask(allocatedHeaderDO.getTaskId());
             if (taskDTO == null) {
                 return error(ErrorCodeConstants.ALLOCATED_TASK_NOT_EXISTS);
             }
-            // 班组编码
-            String attr1 = taskDTO.getAttr1();
-            if(attr1 == null){
+            if (taskDTO.getAttr1() == null) {
                 return error(ErrorCodeConstants.ALLOCATED_HEADER_NEED_TASK_TEAM);
             }
         }
 
         List<Map<String, Object>> detailList = (List<Map<String, Object>>) requestmap.get("bomList");
+        List<AllocatedRecordDO> existingRecords = allocatedRecordService.getAllocatedRecordList(new AllocatedRecordExportReqVO().setAllocatedId(headerId.longValue()));
 
-        // 比对recordList与detailList, 若存在相同的则进行修改, 不存在则新增
-        // 基于物料号与批次号视为一个唯一标识. 比对recordList中是否存在
+        Map<String, AllocatedRecordDO> existingRecordMap = new HashMap<>();
+        for (AllocatedRecordDO record : existingRecords) {
+            String key = record.getItemCode() + "|" + record.getBatchCode();
+            existingRecordMap.put(key, record);
+        }
 
+        Set<String> frontendKeys = new HashSet<>();
         List<AllocatedRecordDO> addList = new ArrayList<>();
-        List<AllocatedRecordDO> editList = new ArrayList<>();
+        List<AllocatedRecordDO> updateList = new ArrayList<>();
+        List<Long> deleteIdList = new ArrayList<>();
 
         for (Map<String, Object> detail : detailList) {
             String itemCode = (String) detail.get("itemCode");
             String batchCode = (String) detail.get("batchCode");
-            String parentBatchCode = (String) detail.get("parentBatchCode");
+            String key = itemCode + "|" + batchCode;
+            frontendKeys.add(key);
 
-            // 根据单头Id获取记录
-            AllocatedRecordExportReqVO exportReqVO = new AllocatedRecordExportReqVO();
-            exportReqVO.setAllocatedId(headerId.longValue());
-            exportReqVO.setItemCode(itemCode);
-            exportReqVO.setBatchCode(batchCode);
-            List<AllocatedRecordDO> recordList = allocatedRecordService.getAllocatedRecordList(exportReqVO);
-            if (recordList.isEmpty()) {
-                // 不存在相同的, 新增记录
-                AllocatedRecordDO allocatedRecordDO = new AllocatedRecordDO();
-                allocatedRecordDO.setAllocatedId(headerId.longValue());
-                allocatedRecordDO.setItemCode((String) detail.get("itemCode"));
-                allocatedRecordDO.setItemName((String) detail.get("itemName"));
-                allocatedRecordDO.setSpecification((String) detail.get("specification"));
-                // String itemIdStr = Optional.ofNullable((String) detail.get("itemId")).orElse("0");
-                Integer itemId = Optional.ofNullable((Integer)detail.get("itemId")).orElse(0);
-                allocatedRecordDO.setItemId(Long.valueOf(itemId));
-                allocatedRecordDO.setBatchCode((String) detail.get("batchCode"));
-                // 2025-6-8 追加母批次号
-                allocatedRecordDO.setParentBatchCode((String) detail.get("parentBatchCode"));
-                allocatedRecordDO.setWarehouseCode((String) detail.get("warehouseCode"));
-                allocatedRecordDO.setWarehouseName((String) detail.get("warehouseName"));
-                Integer warehouseId = (Integer) detail.get("warehouseId");
-                allocatedRecordDO.setWarehouseId(warehouseId.longValue());
-                allocatedRecordDO.setLocationCode((String) detail.get("locationCode"));
-                allocatedRecordDO.setLocationName((String) detail.get("locationName"));
-                Integer locationId = (Integer) detail.get("locationId");
-                allocatedRecordDO.setLocationId(locationId.longValue());
-                allocatedRecordDO.setAreaCode((String) detail.get("areaCode"));
-                allocatedRecordDO.setAreaName((String) detail.get("areaName"));
-                Integer areaId = (Integer) detail.get("areaId");
-                allocatedRecordDO.setAreaId(areaId.longValue());
-                BigDecimal quantityAllocated = new BigDecimal(String.valueOf(detail.get("quantityAllocated")));
-                allocatedRecordDO.setQuantityAllocated(quantityAllocated.doubleValue());
-                allocatedRecordDO.setUnitOfMeasure((String) detail.get("unitOfMeasure"));
-                allocatedRecordDO.setMaterialStockId((Long) detail.get("materialStockId"));
-                allocatedRecordDO.setAllocatedFlag("N");
-                allocatedRecordDO.setVendorCode((String) detail.get("vendorCode"));
-                addList.add(allocatedRecordDO);
+            if (!existingRecordMap.containsKey(key)) {
+                AllocatedRecordDO newRecord = buildAllocatedRecordDO(detail, headerId);
+                addList.add(newRecord);
+            } else {
+                AllocatedRecordDO existingRecord = existingRecordMap.get(key);
+                updateRecordFromDetail(existingRecord, detail);
+                updateList.add(existingRecord);
             }
         }
-        allocatedRecordService.createBatchAllocatedRecord(addList);
+
+        for (AllocatedRecordDO existingRecord : existingRecords) {
+            String key = existingRecord.getItemCode() + "|" + existingRecord.getBatchCode();
+            if (!frontendKeys.contains(key)) {
+                deleteIdList.add(existingRecord.getId());
+            }
+        }
+
+        if (!addList.isEmpty()) {
+            allocatedRecordService.createBatchAllocatedRecord(addList);
+        }
+        if (!updateList.isEmpty()) {
+            allocatedRecordService.updateAllocatedRecordBatch(updateList);
+        }
+        if (!deleteIdList.isEmpty()) {
+            allocatedRecordService.deleteAllocatedRecordBatch(deleteIdList);
+        }
+
         return success();
+    }
+
+    // 构建新增记录的实体
+    private AllocatedRecordDO buildAllocatedRecordDO(Map<String, Object> detail, Integer headerId) {
+        AllocatedRecordDO record = new AllocatedRecordDO();
+        record.setAllocatedId(headerId.longValue());
+        record.setItemCode((String) detail.get("itemCode"));
+        record.setItemName((String) detail.get("itemName"));
+        record.setSpecification((String) detail.get("specification"));
+        record.setItemId(Long.valueOf(Optional.ofNullable((Integer) detail.get("itemId")).orElse(0)));
+        record.setBatchCode((String) detail.get("batchCode"));
+        record.setParentBatchCode((String) detail.get("parentBatchCode"));
+        record.setWarehouseCode((String) detail.get("warehouseCode"));
+        record.setWarehouseName((String) detail.get("warehouseName"));
+        record.setWarehouseId(((Integer) detail.get("warehouseId")).longValue());
+        record.setLocationCode((String) detail.get("locationCode"));
+        record.setLocationName((String) detail.get("locationName"));
+        record.setLocationId(((Integer) detail.get("locationId")).longValue());
+        record.setAreaCode((String) detail.get("areaCode"));
+        record.setAreaName((String) detail.get("areaName"));
+        record.setAreaId(((Integer) detail.get("areaId")).longValue());
+        BigDecimal quantityAllocated = new BigDecimal(String.valueOf(detail.get("quantityAllocated")));
+        record.setQuantityAllocated(quantityAllocated.doubleValue());
+        record.setUnitOfMeasure((String) detail.get("unitOfMeasure"));
+        record.setMaterialStockId((Long) detail.get("materialStockId"));
+        record.setAllocatedFlag("N");
+        record.setVendorCode((String) detail.get("vendorCode"));
+        return record;
+    }
+
+    // 更新现有记录的字段
+    private void updateRecordFromDetail(AllocatedRecordDO record, Map<String, Object> detail) {
+        record.setItemName((String) detail.get("itemName"));
+        record.setSpecification((String) detail.get("specification"));
+        record.setItemId(Long.valueOf(Optional.ofNullable((Integer) detail.get("itemId")).orElse(0)));
+        record.setParentBatchCode((String) detail.get("parentBatchCode"));
+        record.setWarehouseCode((String) detail.get("warehouseCode"));
+        record.setWarehouseName((String) detail.get("warehouseName"));
+        record.setWarehouseId(((Integer) detail.get("warehouseId")).longValue());
+        record.setLocationCode((String) detail.get("locationCode"));
+        record.setLocationName((String) detail.get("locationName"));
+        record.setLocationId(((Integer) detail.get("locationId")).longValue());
+        record.setAreaCode((String) detail.get("areaCode"));
+        record.setAreaName((String) detail.get("areaName"));
+        record.setAreaId(((Integer) detail.get("areaId")).longValue());
+        BigDecimal quantityAllocated = new BigDecimal(String.valueOf(detail.get("quantityAllocated")));
+        record.setQuantityAllocated(quantityAllocated.doubleValue());
+        record.setUnitOfMeasure((String) detail.get("unitOfMeasure"));
+        record.setMaterialStockId((Long) detail.get("materialStockId"));
+        record.setVendorCode((String) detail.get("vendorCode"));
     }
 
 

@@ -97,8 +97,8 @@ public class DeviceFeedbackLogServiceImpl implements DeviceFeedbackLogService {
     }
 
     @Override
-    public int deleteByCreateTimeRange(String cutoffTime){
-        return deviceFeedbackLogMapper.deleteByCreateTimeRange(cutoffTime);
+    public int deleteByCreateTimeRange(String startTime, String endTime){
+        return deviceFeedbackLogMapper.deleteByCreateTimeRange(startTime, endTime);
     }
 
 

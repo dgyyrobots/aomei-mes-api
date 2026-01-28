@@ -92,6 +92,9 @@ public class FeedbackAuditDetailExportReqVO {
     @Schema(description = "不良品数量")
     private BigDecimal quantityUnquanlified;
 
+    @Schema(description = "工艺损耗数量")
+    private BigDecimal quantityExcess;
+
     @Schema(description = "报工用户名", example = "王五")
     private String userName;
 

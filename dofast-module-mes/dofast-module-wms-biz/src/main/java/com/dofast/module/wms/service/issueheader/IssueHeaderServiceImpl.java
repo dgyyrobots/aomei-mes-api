@@ -102,4 +102,15 @@ public class IssueHeaderServiceImpl implements IssueHeaderService {
         return issueHeaderMapper.initBomByWorkOrder(workOrderNo);
     }
 
+    @Override
+    public  Map<String, IssueHeaderDO> getIssueHeadListByTaskCodes(ArrayList<String> taskCodes){
+        Map<String, IssueHeaderDO> issueHeaderMap = new HashMap<>();
+        for (String taskCode : taskCodes) {
+            IssueHeaderDO issueHeaderDO = issueHeaderMapper.selectOne(IssueHeaderDO::getTaskCode , taskCode);
+            issueHeaderMap.put(taskCode,issueHeaderDO);
+        }
+        return issueHeaderMap;
+    }
+
+
 }

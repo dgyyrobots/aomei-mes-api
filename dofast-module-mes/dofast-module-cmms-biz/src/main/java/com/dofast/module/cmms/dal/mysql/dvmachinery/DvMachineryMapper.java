@@ -1,7 +1,9 @@
 package com.dofast.module.cmms.dal.mysql.dvmachinery;
 
+import java.time.LocalDate;
 import java.util.*;
 
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.dofast.framework.mybatis.core.mapper.BaseMapperX;
@@ -9,6 +11,8 @@ import com.dofast.module.cmms.dal.dataobject.dvcheckmachinery.DvCheckMachineryDO
 import com.dofast.module.cmms.dal.dataobject.dvmachinery.DvMachineryDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.cmms.controller.admin.dvmachinery.vo.*;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 /**
  * 设备台账 Mapper
@@ -65,5 +69,15 @@ public interface DvMachineryMapper extends BaseMapperX<DvMachineryDO> {
                 .eqIfPresent(DvMachineryDO::getProductId, reqVO.getProductId())
                 .orderByDesc(DvMachineryDO::getId));
     }
+
+    @InterceptorIgnore(tenantLine = "true")
+   public Map<String, Object> selectDeviceProductAlertCount();
+
+
+    @InterceptorIgnore(tenantLine = "true")
+    public List<Map<String, Object>> selectFunctionLogList();
+
+    @InterceptorIgnore(tenantLine = "true")
+    public List<Map<String, Object>> selectOnlineLogList(@Param("startDate") LocalDate startDate,@Param("endDate") LocalDate endDate);
 
 }

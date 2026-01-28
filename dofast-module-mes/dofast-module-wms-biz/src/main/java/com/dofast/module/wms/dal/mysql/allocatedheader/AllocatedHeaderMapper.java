@@ -53,6 +53,7 @@ public interface AllocatedHeaderMapper extends BaseMapperX<AllocatedHeaderDO> {
                 .eqIfPresent(AllocatedHeaderDO::getBindWorkorder, reqVO.getBindWorkorder())
                 .betweenIfPresent(AllocatedHeaderDO::getCreateTime, reqVO.getCreateTime())
                 .inIfPresent(AllocatedHeaderDO::getAllocatedCode , reqVO.getAllocatedCodeList())
+                .eqIfPresent(AllocatedHeaderDO::getCompleter , reqVO.getCompleter())
                 .orderByDesc(AllocatedHeaderDO::getId));
     }
 
@@ -86,6 +87,7 @@ public interface AllocatedHeaderMapper extends BaseMapperX<AllocatedHeaderDO> {
                 .eqIfPresent(AllocatedHeaderDO::getTaskName, reqVO.getTaskName())
                 .betweenIfPresent(AllocatedHeaderDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(AllocatedHeaderDO::getBindWorkorder, reqVO.getBindWorkorder())
+                .eqIfPresent(AllocatedHeaderDO::getCompleter , reqVO.getCompleter())
                 .orderByDesc(AllocatedHeaderDO::getId));
     }
 

@@ -140,7 +140,7 @@ public class ProductProduceServiceImpl implements ProductProduceService {
     }
 
     @Override
-    public ProductProduceDO generateProductProduce(FeedbackDTO feedback) {
+    public ProductProduceDO generateProductProduce(FeedbackDTO feedback, String batchCode) {
         WorkorderDTO workorder = workorderApi.getWorkorder(feedback.getWorkorderId());
         WorkStationDTO workstation = workStationApi.getWorkstation(feedback.getWorkstationId());
         ProcessDTO process = processApi.getcess(workstation.getProcessId());
@@ -184,12 +184,13 @@ public class ProductProduceServiceImpl implements ProductProduceService {
         // 产成品批次号规则, 任务单号+2位流水号
         // 流水号在管控在任务单号内
         // 校验流水号是否存在
-        if (task.getParentBatchCode() == null) {
+
+
+        /*if (task.getParentBatchCode() == null) {
             // 若母批次号为空，生成母批次号
             String serial = "001";
             // 修改任务单表
             task.setParentBatchCode(task.getTaskCode());
-            //task.setSerial(serial);
             taskApi.updateTask(task);
             line.setBatchCode(task.getTaskCode() + "-" + serial);
         } else {
@@ -205,7 +206,9 @@ public class ProductProduceServiceImpl implements ProductProduceService {
             line.setBatchCode(task.getTaskCode() + "-" + serial);
             //task.setSerial(serial);
             taskApi.updateTask(task);
-        }
+        }*/
+
+        line.setBatchCode(batchCode);
         line.setOrderSource(workorder.getOrderSource());
         int insert1 = productProduceLineMapper.insert(line);
         if (insert1<=0){

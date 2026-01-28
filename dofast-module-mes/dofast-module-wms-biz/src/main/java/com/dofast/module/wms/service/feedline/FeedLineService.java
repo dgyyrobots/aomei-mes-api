@@ -76,4 +76,8 @@ public interface FeedLineService {
     void insertBatch(List<FeedLineDO> feedLineDOS);
 
     IPage<FeedLineSummaryVO> selectMaterialUsageSummary(FeedLinePageReqVO pageReqVO);
+
+    List<FeedLineSummaryVO> selectMaterialUsageSummaryList(FeedLinePageReqVO pageReqVO);
+
+
 }

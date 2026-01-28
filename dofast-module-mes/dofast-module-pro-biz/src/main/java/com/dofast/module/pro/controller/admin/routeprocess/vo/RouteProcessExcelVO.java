@@ -102,4 +102,7 @@ public class RouteProcessExcelVO {
     @ExcelProperty("转出单位分母")
     private BigDecimal outUnitsConversionDenominator;
 
+    @ExcelProperty("工序工作序")
+    private Long processSequence;
+
 }

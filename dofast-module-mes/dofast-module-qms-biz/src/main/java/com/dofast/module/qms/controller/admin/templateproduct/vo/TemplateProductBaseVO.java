@@ -67,6 +67,12 @@ public class TemplateProductBaseVO {
     @Schema(description = "预留字段4")
     private Integer attr4;
 
+    @Schema(description = "工序编码")
+    private String processCode;
+
+    @Schema(description = "工序名称")
+    private String processName;
+
     public Long getId(){
         return null;
     }

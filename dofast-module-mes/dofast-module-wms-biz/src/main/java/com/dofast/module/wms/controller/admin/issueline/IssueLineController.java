@@ -9,10 +9,13 @@ import com.dofast.framework.web.core.util.WebFrameworkUtils;
 import com.dofast.module.cmms.api.dvmachinery.DvMachineryApi;
 import com.dofast.module.cmms.api.dvmachinery.dto.DvMachineryDTO;
 import com.dofast.module.mes.constant.Constant;
+import com.dofast.module.pro.api.FeedbackApi.FeedbackApi;
+import com.dofast.module.pro.api.FeedbackApi.dto.FeedbackDTO;
 import com.dofast.module.pro.api.TaskApi.TaskApi;
 import com.dofast.module.pro.api.TaskApi.dto.TaskDTO;
 import com.dofast.module.pro.api.WorkorderApi.WorkorderApi;
 import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderBomDTO;
+import com.dofast.module.pro.api.WorkorderApi.dto.WorkorderDTO;
 import com.dofast.module.system.api.user.AdminUserApi;
 import com.dofast.module.system.api.user.dto.AdminUserRespDTO;
 import com.dofast.module.tm.convert.tool.ToolConvert;
@@ -146,6 +149,9 @@ public class IssueLineController {
     @Resource
     private DvMachineryApi machineryApi;
 
+    @Resource
+    private FeedbackApi feedbackApi;
+
     @PostMapping("/create")
     @Operation(summary = "创建生产领料单行")
     @PreAuthorize("@ss.hasPermission('wms:issue-line:create')")
@@ -155,6 +161,17 @@ public class IssueLineController {
 
         if(issueHeaderDO == null){
             return error(ErrorCodeConstants.ISSUE_HEADER_NOT_EXISTS);
+        }
+
+        WorkorderDTO workorderDO = workorderApi.getWorkorder(issueHeaderDO.getWorkorderCode());
+
+        if("FINISHED".equals(workorderDO.getStatus())){
+            return error(ErrorCodeConstants.WORKORDER_FINSHED_NOT_AVALIABLE);
+        }
+
+        // 2025-8-1 当前机长仅能看见自己的上料记录, 未防止重复领用
+        if(issueLineService.getIssueLineList(new IssueLineExportReqVO().setIssueId(createReqVO.getIssueId()).setBatchCode(createReqVO.getBatchCode()).setBarcodeNumber(createReqVO.getBarcodeNumber())).size() > 0){
+            return error(ErrorCodeConstants.ISSUE_LINE_BATCH_EXIST);
         }
 
         String originWorkorder = issueHeaderDO.getWorkorderCode();
@@ -298,6 +315,7 @@ public class IssueLineController {
     @Operation(summary = "更新生产领料单行")
     @PreAuthorize("@ss.hasPermission('wms:issue-line:update')")
     public CommonResult<Boolean> updateIssueLine(@Valid @RequestBody IssueLineUpdateReqVO updateReqVO) {
+
         if (StrUtils.isNotNull(updateReqVO.getWarehouseId())) {
             WarehouseDO warehouse = warehouseService.getWarehouse(updateReqVO.getWarehouseId());
             updateReqVO.setWarehouseCode(warehouse.getWarehouseCode());
@@ -327,7 +345,6 @@ public class IssueLineController {
             if ("Y".equals(issueLineService.getIssueLine(id).getStatus())) {
                 return error(ErrorCodeConstants.ISSUE_LINE_DELETE_ERROR);
             }
-            ;
         }
         issueLineService.batchDeleteIssueLine(ids);
         return success(true);
@@ -355,16 +372,20 @@ public class IssueLineController {
     @Operation(summary = "获得生产领料单行分页")
     @PreAuthorize("@ss.hasPermission('wms:issue-line:query')")
     public CommonResult<PageResult<IssueLineRespVO>> getIssueLinePage(@Valid IssueLinePageReqVO pageVO) {
-        /*AdminUserRespDTO adminUser = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        // 2025-8-1 当前机长仅能看见自己的上料记录, 车间主任可以看到所有数据
+        AdminUserRespDTO adminUser = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
         Set<Long> postIds =adminUser.getPostIds();
         if(postIds.isEmpty()){
             return error(ErrorCodeConstants.USER_NO_POST);
         }
         // 校验postIds是否包含42(车间主任)
-        if (!postIds.contains(42L)) {
-            // 若当前并非车间主任, 则仅允许查看自己的上料记录
-            pageVO.setCreator(adminUser.getId());
-        }*/
+        if (postIds.contains(42L)) {
+            // 若当前为车间主任, 则允许查看当前机台的内容
+            pageVO.setMachineryId(null);
+            pageVO.setMachineryCode(null);
+            pageVO.setMachineryName(null);
+        }
+        // 2025-8-12 修改为设备过滤, 由前端传输缓存中的设备来查看上料详情
         PageResult<IssueLineDO> pageResult = issueLineService.getIssueLinePage(pageVO);
         List<IssueLineDO> voList = pageResult.getList();
         // 循环列表, 数据创建人id, 去用户表转换为用户昵称
@@ -373,9 +394,6 @@ public class IssueLineController {
             adminUserRespDTO.getNickname();
             vo.setCreator(adminUserRespDTO.getNickname());
         }
-        System.out.println(voList);
-        System.out.println(pageResult);
-
         return success(IssueLineConvert.INSTANCE.convertPage(pageResult));
     }
 
@@ -392,7 +410,7 @@ public class IssueLineController {
     }
 
     @PutMapping("/updateEnable")
-    @Operation(summary = "更新生产领料单行")
+    @Operation(summary = "更新领料单行启用状态")
     @PreAuthorize("@ss.hasPermission('wms:issue-line:update')")
     public CommonResult<Boolean> updateEnable(@RequestBody ArrayList<Long> ids) {
         List<IssueLineDO> lineList = issueLineService.getIssueLineList(ids);
@@ -415,7 +433,6 @@ public class IssueLineController {
             }
         }
 
-
         for (IssueLineDO line : lineList) {
             String flag = "true".equals(line.getEnableFlag()) ? "false" : "true";
             line.setEnableFlag(flag);
@@ -429,7 +446,16 @@ public class IssueLineController {
     @PreAuthorize("@ss.hasPermission('wms:issue-line:update')")
     public CommonResult<Boolean> cancleIssue(@RequestBody ArrayList<Long> ids) {
         List<IssueLineDO> lineList = issueLineService.getIssueLineList(ids);
+        if (lineList.isEmpty()) {
+            return error(ErrorCodeConstants.ISSUE_LINE_NOT_EXISTS);
+        }
+
         IssueHeaderDO headerDO = issueHeaderService.getIssueHeader(lineList.get(0).getIssueId());
+
+        WorkorderDTO workorderDO = workorderApi.getWorkorder(headerDO.getWorkorderCode());
+        if("FINISHED".equals(workorderDO.getStatus())){
+            return error(ErrorCodeConstants.WORKORDER_FINSHED_NOT_AVALIABLE);
+        }
 
         // ==================== ERP 接口调用部分 - 只处理 erp_status=Y 的行 ====================
         Map<String, Object> params = new HashMap<>();
@@ -440,121 +466,196 @@ public class IssueLineController {
                 .filter(line -> "Y".equals(line.getErpEnable()))
                 .collect(Collectors.toList());
 
-        if (!erpSyncLines.isEmpty()) {
-            // 获取工单BOM信息（只需获取一次）
-            List<WorkorderBomDTO> bomList = workorderApi.getWorkorderBom(headerDO.getWorkorderId());
+        if (!workorderDO.getWorkorderCode().startsWith("MO")) {
+            if (!erpSyncLines.isEmpty()) {
+                // 获取工单BOM信息（只需获取一次）
+                List<WorkorderBomDTO> bomList = workorderApi.getWorkorderBom(headerDO.getWorkorderId());
 
-            // 构建BOM查找映射（按工序+工序顺序）
-            Map<String, WorkorderBomDTO> bomMap = new HashMap<>();
-            for (WorkorderBomDTO bom : bomList) {
-                String key = bom.getSequence() + "|" + bom.getSequenceOrder();
-                bomMap.put(key, bom);
-            }
+                // 构建BOM查找映射（按工序+工序顺序）
+                Map<String, WorkorderBomDTO> bomMap = new HashMap<>();
+                for (WorkorderBomDTO bom : bomList) {
+                    String key = bom.getSequence() + "|" + bom.getSequenceOrder();
+                    bomMap.put(key, bom);
+                }
 
-            // 按物料+工序+工序顺序复合分组
-            Map<String, List<IssueLineDO>> materialGroups = erpSyncLines.stream()
-                    .filter(line -> line.getSequence() != null && line.getSequenceOrder() != null)
-                    .collect(Collectors.groupingBy(line ->
-                            line.getItemCode() + "|" + line.getSequence() + "|" + line.getSequenceOrder()
-                    ));
+                // 按物料+工序+工序顺序复合分组
+                Map<String, List<IssueLineDO>> materialGroups = erpSyncLines.stream()
+                        .filter(line -> line.getSequence() != null && line.getSequenceOrder() != null)
+                        .collect(Collectors.groupingBy(line ->
+                                line.getItemCode() + "|" + line.getSequence() + "|" + line.getSequenceOrder()
+                        ));
 
-            // 处理每个物料工序组
-            for (Map.Entry<String, List<IssueLineDO>> entry : materialGroups.entrySet()) {
-                String key = entry.getKey();
-                List<IssueLineDO> lines = entry.getValue();
+                // 处理每个物料工序组
+                for (Map.Entry<String, List<IssueLineDO>> entry : materialGroups.entrySet()) {
+                    String key = entry.getKey();
+                    List<IssueLineDO> lines = entry.getValue();
 
-                // 获取组内首行（同组行工序相同）
-                IssueLineDO firstLine = lines.get(0);
+                    // 获取组内首行（同组行工序相同）
+                    IssueLineDO firstLine = lines.get(0);
 
-                // 获取工单BOM应发量
-                String bomKey = firstLine.getSequence() + "|" + firstLine.getSequenceOrder();
-                WorkorderBomDTO bom = bomMap.get(bomKey);
-                BigDecimal bomQty = bom != null ? new BigDecimal(bom.getQuantity()) : BigDecimal.ZERO;
+                    // 获取工单BOM应发量
+                    String bomKey = firstLine.getSequence() + "|" + firstLine.getSequenceOrder();
+                    WorkorderBomDTO bom = bomMap.get(bomKey);
+                    if (bom == null) {
+                        continue;
+                    }
 
-                // 获取历史已退量
-                // 获取当前已完成的退料单信息
-                RtIssueExportReqVO usedRtIssue = new RtIssueExportReqVO();
-                usedRtIssue.setTaskCode(headerDO.getTaskCode());
-                usedRtIssue.setWorkorderCode(headerDO.getAreaCode());
-                usedRtIssue.setStatus("FINISHED"); // 仅获取已完成物料
-                List<RtIssueDO> usedRtIssueDOList = rtIssueService.getRtIssueList(usedRtIssue);
+                    BigDecimal bomQty = new BigDecimal(bom.getQuantity());
+                    String bomUnit = bom.getUnitOfMeasure(); // BOM单位
 
-                BigDecimal totalReturned = BigDecimal.ZERO;
-                for (RtIssueDO rtIssue : usedRtIssueDOList) {
-                    RtIssueLineExportReqVO usedLineExportReqVO = new RtIssueLineExportReqVO();
-                    usedLineExportReqVO.setItemCode(firstLine.getItemCode());
-                    usedLineExportReqVO.setRtId(rtIssue.getId());
-                    // 使用当前组的工序信息
-                    usedLineExportReqVO.setSequence(firstLine.getSequence());
-                    usedLineExportReqVO.setSequenceOrder(firstLine.getSequenceOrder());
+                    // 获取历史已退量
+                    // 获取当前已完成的退料单信息
+                    RtIssueExportReqVO usedRtIssue = new RtIssueExportReqVO();
+                    usedRtIssue.setTaskCode(headerDO.getTaskCode());
+                    usedRtIssue.setWorkorderCode(headerDO.getWorkorderCode());
+                    usedRtIssue.setStatus("FINISHED"); // 仅获取已完成物料
+                    List<RtIssueDO> usedRtIssueDOList = rtIssueService.getRtIssueList(usedRtIssue);
 
-                    List<RtIssueLineDO> rtIssueLine = rtIssueLineService.getRtIssueLineList(usedLineExportReqVO);
-                    if (rtIssueLine != null && !rtIssueLine.isEmpty()) {
-                        for (RtIssueLineDO rt : rtIssueLine) {
-                            totalReturned = totalReturned.add(rt.getQuantityRt());
+                    BigDecimal totalReturned = BigDecimal.ZERO;
+                    for (RtIssueDO rtIssue : usedRtIssueDOList) {
+                        RtIssueLineExportReqVO usedLineExportReqVO = new RtIssueLineExportReqVO();
+                        usedLineExportReqVO.setItemCode(firstLine.getItemCode());
+                        usedLineExportReqVO.setRtId(rtIssue.getId());
+                        // 使用当前组的工序信息
+                        usedLineExportReqVO.setSequence(firstLine.getSequence());
+                        usedLineExportReqVO.setSequenceOrder(firstLine.getSequenceOrder());
+
+                        List<RtIssueLineDO> rtIssueLine = rtIssueLineService.getRtIssueLineList(usedLineExportReqVO);
+                        if (rtIssueLine != null && !rtIssueLine.isEmpty()) {
+                            for (RtIssueLineDO rt : rtIssueLine) {
+                                // 单位换算逻辑
+                                BigDecimal returnedQty = rt.getQuantityRt();
+                                String rtUnit = rt.getUnitOfMeasure();
+
+                                if (!bomUnit.equals(rtUnit)) {
+                                    if ("吨".equals(bomUnit) && "公斤".equals(rtUnit)) {
+                                        returnedQty = rt.getQuantityRt().divide(new BigDecimal(1000), 4, RoundingMode.HALF_UP);
+                                    } else if ("公斤".equals(bomUnit) && "吨".equals(rtUnit)) {
+                                        returnedQty = rt.getQuantityRt().multiply(new BigDecimal(1000));
+                                    }else if ("公斤".equals(bomUnit) && "米".equals(rtUnit)) {
+                                        // 2025-11-7 修改剥离返工单数量获取
+                                        // 判定当前领用行批次是否为TASK开头, 且当前的报工单存在转换数量
+                                        if (rt.getBatchCode().startsWith("TASK")) {
+                                            FeedbackDTO feedbackDTO = feedbackApi.getFeedBackByBatchCode(rt.getBatchCode());
+                                            if(feedbackDTO != null && feedbackDTO.getMachineryCode().contains("AMSB-BF")){
+                                                Double qualifiedQuantity = Optional.ofNullable( feedbackDTO.getQuantityQualified()).orElse(0.0);
+                                                BigDecimal changeQuantity = Optional.ofNullable( feedbackDTO.getConversionQuantity()).orElse(BigDecimal.ZERO);
+                                                BigDecimal rate = BigDecimal.ZERO;
+                                                // 将当前的行的领用数量与报工合格数做比对, 判定占比
+                                                if (qualifiedQuantity > 0) {
+                                                    rate = rt.getQuantityRt().divide(new BigDecimal(qualifiedQuantity), 4, RoundingMode.HALF_UP);
+                                                }
+                                                // 将当前比率再次乘转换数量, 得出实际的转换数量占比
+                                                returnedQty = changeQuantity.multiply(rate).setScale(4, RoundingMode.HALF_UP);
+                                            }
+                                        }
+                                    }
+                                }
+                                totalReturned = totalReturned.add(returnedQty);
+                            }
+                        }
+                    }
+
+                    // 计算当前待退总量（组内所有行）- 使用BOM单位
+                    BigDecimal currentTotal = BigDecimal.ZERO;
+                    for (IssueLineDO line : lines) {
+                        // 单位换算逻辑
+                        BigDecimal lineQty = line.getQuantityIssued();
+                        String lineUnit = line.getUnitOfMeasure();
+
+                        if (!bomUnit.equals(lineUnit)) {
+                            if ("吨".equals(bomUnit) && "公斤".equals(lineUnit)) {
+                                lineQty = line.getQuantityIssued().divide(new BigDecimal(1000), 4, RoundingMode.HALF_UP);
+                            } else if ("公斤".equals(bomUnit) && "吨".equals(lineUnit)) {
+                                lineQty = line.getQuantityIssued().multiply(new BigDecimal(1000));
+                            } else if ("公斤".equals(bomUnit) && "米".equals(lineUnit)) {
+                                // 2025-11-7 修改剥离返工单数量获取
+                                if (line.getBatchCode().startsWith("TASK")) {
+                                    FeedbackDTO feedbackDTO = feedbackApi.getFeedBackByBatchCode(line.getBatchCode());
+                                    if(feedbackDTO != null  && feedbackDTO.getMachineryCode().contains("AMSB-BF")){
+                                        Double qualifiedQuantity = Optional.ofNullable( feedbackDTO.getQuantityQualified()).orElse(0.0);
+                                        BigDecimal changeQuantity = Optional.ofNullable( feedbackDTO.getConversionQuantity()).orElse(BigDecimal.ZERO);
+                                        BigDecimal rate = BigDecimal.ZERO;
+                                        if (qualifiedQuantity > 0) {
+                                            rate = line.getQuantityIssued().divide(new BigDecimal(qualifiedQuantity), 4, RoundingMode.HALF_UP);
+                                        }
+                                        lineQty = changeQuantity.multiply(rate).setScale(4, RoundingMode.HALF_UP);
+                                    }
+                                }
+                            }
+                        }
+                        currentTotal = currentTotal.add(lineQty);
+                    }
+                    // 计算可退量分配
+                    BigDecimal remaining = bomQty.subtract(totalReturned);
+                    BigDecimal y01Qty = BigDecimal.ZERO;
+                    BigDecimal y02Qty = BigDecimal.ZERO;
+
+                    if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+                        // 全部超退
+                        y02Qty = currentTotal;
+                    } else if (currentTotal.compareTo(remaining) <= 0) {
+                        // 全部正常退
+                        y01Qty = currentTotal;
+                    } else {
+                        // 拆分退料
+                        y01Qty = remaining;
+                        y02Qty = currentTotal.subtract(remaining);
+                    }
+
+                    // 将数量转换回原始单位
+                    String firstLineUnit = firstLine.getUnitOfMeasure();
+                    if (!bomUnit.equals(firstLineUnit)) {
+                        if ("吨".equals(bomUnit) && "公斤".equals(firstLineUnit)) {
+                            y01Qty = y01Qty.multiply(new BigDecimal(1000));
+                            y02Qty = y02Qty.multiply(new BigDecimal(1000));
+                        } else if ("公斤".equals(bomUnit) && "吨".equals(firstLineUnit)) {
+                            y01Qty = y01Qty.divide(new BigDecimal(1000), 4, RoundingMode.HALF_UP);
+                            y02Qty = y02Qty.divide(new BigDecimal(1000), 4, RoundingMode.HALF_UP);
+                        }
+                    }
+
+                    // 配置4位小数
+                    y01Qty = y01Qty.setScale(4, RoundingMode.HALF_UP);
+                    y02Qty = y02Qty.setScale(4, RoundingMode.HALF_UP);
+
+                    // 生成Y01报文（使用组内首行）
+                    if (y01Qty.compareTo(BigDecimal.ZERO) > 0) {
+                        Map<String, Object> item = buildErpItem(headerDO, firstLine, "Y01", y01Qty);
+                        if (item != null) {
+                            list.add(item);
+                        }
+                    }
+
+                    if (y02Qty.compareTo(BigDecimal.ZERO) > 0) {
+                        Map<String, Object> item = buildErpItem(headerDO, firstLine, "Y02", y02Qty);
+                        if (item != null) {
+                            list.add(item);
                         }
                     }
                 }
 
-                // 计算当前待退总量（组内所有行）
-                BigDecimal currentTotal = BigDecimal.ZERO;
-                for (IssueLineDO line : lines) {
-                    currentTotal = currentTotal.add(line.getQuantityIssued());
-                }
+                // 按退料类型分组调用
+                Map<String, List<Map<String, Object>>> typeGroups = list.stream()
+                        .collect(Collectors.groupingBy(item -> (String) item.get("sfdc015")));
+                // 执行分组调用
+                for (Map.Entry<String, List<Map<String, Object>>> entry : typeGroups.entrySet()) {
+                    String type = entry.getKey();
+                    List<Map<String, Object>> items = entry.getValue();
+                    Map<String, Object> erpParams = new HashMap<>();
+                    erpParams.put("goodsList", items);
+                    String sfda002Value = "Y01".equals(type) ? "21" : "22";
 
-                // 计算可退量分配
-                BigDecimal remaining = bomQty.subtract(totalReturned);
-                BigDecimal y01Qty = BigDecimal.ZERO;
-                BigDecimal y02Qty = BigDecimal.ZERO;
-
-                if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
-                    // 全部超退
-                    y02Qty = currentTotal;
-                } else if (currentTotal.compareTo(remaining) <= 0) {
-                    // 全部正常退
-                    y01Qty = currentTotal;
-                } else {
-                    // 拆分退料
-                    y01Qty = remaining;
-                    y02Qty = currentTotal.subtract(remaining);
-                }
-
-                // 生成H01报文（使用组内首行）
-                if (y01Qty.compareTo(BigDecimal.ZERO) > 0) {
-                    Map<String, Object> item = buildErpItem(headerDO, firstLine, "Y01", y01Qty);
-                    if (item != null) {
-                        list.add(item);
-                    }
-                }
-
-                if (y02Qty.compareTo(BigDecimal.ZERO) > 0) {
-                    Map<String, Object> item = buildErpItem(headerDO, firstLine, "Y02", y02Qty);
-                    if (item != null) {
-                        list.add(item);
+                    erpParams.put("sfda002", sfda002Value);
+                    erpParams.put("source_no", headerDO.getIssueCode());
+                    if (!items.isEmpty()) {
+                        // 调用ERP接口
+                        String erpResult = workorderERPAPI.workOrderIssueCreate(erpParams);
                     }
                 }
             }
-
-            // 按退料类型分组调用
-            Map<String, List<Map<String, Object>>> typeGroups = list.stream()
-                    .collect(Collectors.groupingBy(item -> (String) item.get("sfdc015")));
-            // 执行分组调用
-            for (Map.Entry<String, List<Map<String, Object>>> entry : typeGroups.entrySet()) {
-                String type = entry.getKey();
-                List<Map<String, Object>> items = entry.getValue();
-                Map<String, Object> erpParams = new HashMap<>();
-                erpParams.put("goodsList", items);
-                String sfda002Value = "Y01".equals(type) ? "21" : "22";
-
-                erpParams.put("sfda002", sfda002Value);
-                erpParams.put("source_no", headerDO.getIssueCode());
-                if (!items.isEmpty()) {
-                    // 调用ERP接口
-                    String erpResult = workorderERPAPI.workOrderIssueCreate(erpParams);
-                }
-            }
+            // ==================== ERP 处理结束 ====================
         }
-        // ==================== ERP 处理结束 ====================
 
         // 开始追加生产退料单信息 - 后续用于统计已退料总数, 判定是否超退
         RtIssueCreateReqVO rtIssueCreateReqVO = new RtIssueCreateReqVO();
@@ -696,6 +797,10 @@ public class IssueLineController {
             line.setAreaId(feedLine.getAreaId());
             line.setAreaCode(feedLine.getAreaCode());
             line.setAreaName(feedLine.getAreaName());
+            // 判定当前line的ERP同步状态是否为Y, 若为Y则将其改为N
+            if ("Y".equals(line.getErpEnable())) {
+                line.setErpEnable("N");
+            }
             issueLineService.updateIssueLine(IssueLineConvert.INSTANCE.convert01(line));
 
             // 移除上料记录
@@ -707,7 +812,6 @@ public class IssueLineController {
 
     private Map<String, Object> buildErpItem(IssueHeaderDO header, IssueLineDO line,
                                              String reasonCode, BigDecimal qty) {
-
         // 前置校验批次号
         String batchCode;
         MaterialStockExportReqVO exportReqVO = new MaterialStockExportReqVO();
@@ -738,11 +842,39 @@ public class IssueLineController {
             }
         }
 
+        // 2025-9-4 追加返工单领料需求, 当前分切工序传递给ERP为公斤, 故调拨时判定是否为产成品 => 判定是否存在转换单位与转换数量
+
+        // 根据当前line对应的领料数量与qty进行比对, 判定占比
+        BigDecimal rate = qty.divide(line.getQuantityIssued(), 4, BigDecimal.ROUND_HALF_UP);
+
+        // 默认使用传递的对应数量与单位
+        BigDecimal quantityIssued = qty;
+        String unit = line.getUnitOfMeasure();
+
+        if(line.getBatchCode().startsWith("TASK")){
+            FeedbackDTO feedbackDTO = feedbackApi.getFeedBackByBatchCode(line.getBatchCode());
+            if(feedbackDTO != null){
+                unit = Optional.ofNullable( feedbackDTO.getConversionUnit()).orElse(line.getUnitOfMeasure());
+                /*quantityIssued =  Optional.ofNullable( feedbackDTO.getConversionQuantity()).orElse(qty);
+                if(feedbackDTO.getConversionQuantity() != null){
+                    // 考虑当前占比
+                    quantityIssued = quantityIssued.multiply(rate);
+                }*/
+            }
+        }
+
+
         Map<String, Object> item = new LinkedHashMap<>();
         item.put("sfdc001", header.getWorkorderCode()); // 工单号
         item.put("sfdc002", line.getSequence()); // 项次
         item.put("sfdc003", line.getSequenceOrder()); // 项序
-        item.put("sfdc007", qty.setScale(4, RoundingMode.HALF_UP)); // 撤销数量
+
+          /*item.put("sfdc007", qty);                       // 数量
+        item.put("typeud001", line.getUnitOfMeasure()); // 追加单位*/
+
+        item.put("sfdc007", quantityIssued.setScale(4, RoundingMode.HALF_UP));                       // 数量
+        item.put("typeud001", unit); // 单位
+
         item.put("sfdc012", header.getLocationCode()); // 库区
         item.put("sfdc013", header.getAreaCode()); // 库位
         // 2025-06-08 修改为母批
@@ -750,12 +882,12 @@ public class IssueLineController {
         item.put("sfdc015", reasonCode); // 理由码
         item.put("sfdc016", ""); // 库存管理特征
         item.put("issueLineId", line.getId());
-        item.put("typeud001" , line.getUnitOfMeasure()); // 追加单位
+
         return item;
     }
 
     @GetMapping("/getMachineryInfo")
-    @Operation(summary = "获得生产领料单行")
+    @Operation(summary = "获得设备信息")
     @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('wms:issue-line:query')")
     public CommonResult<DvMachineryDTO> getMachineryInfo(@RequestParam("taskCode") String taskCode) {
@@ -780,10 +912,18 @@ public class IssueLineController {
 
     @PutMapping("/issueErp")
     @Operation(summary = "手动领料")
-    //@PreAuthorize("@ss.hasPermission('wms:issue-header:erpInterface')")
+//@PreAuthorize("@ss.hasPermission('wms:issue-header:erpInterface')")
     public CommonResult<Boolean> issueErp(@RequestBody ArrayList<Long> ids) {
         List<IssueLineDO> lineList = issueLineService.getIssueLineList(ids);
+        if (lineList.isEmpty()) {
+            return error(ErrorCodeConstants.ISSUE_LINE_NOT_EXISTS);
+        }
+
         IssueHeaderDO header = issueHeaderService.getIssueHeader(lineList.get(0).getIssueId());
+
+        if (header.getWorkorderCode().startsWith("MO")) {
+            return error(ErrorCodeConstants.ISSUE_LINE_NO_NEED_ERP);
+        }
 
         // 构建ERP接口参数
         Map<String, Object> erpParams = new HashMap<>();
@@ -807,6 +947,34 @@ public class IssueLineController {
                 continue;
             }
 
+            // 单位换算逻辑
+            String bomUnit = bom.getUnitOfMeasure(); // BOM单位
+            String lineUnit = line.getUnitOfMeasure(); // 领料单行单位
+            BigDecimal convertedQuantity = line.getQuantityIssued(); // 初始化为原始数量
+
+            // 如果单位不同，进行换算
+            if (!bomUnit.equals(lineUnit)) {
+                if ("吨".equals(bomUnit) && "公斤".equals(lineUnit)) {
+                    convertedQuantity = line.getQuantityIssued().divide(new BigDecimal(1000), 4, RoundingMode.HALF_UP);
+                } else if ("公斤".equals(bomUnit) && "吨".equals(lineUnit)) {
+                    convertedQuantity = line.getQuantityIssued().multiply(new BigDecimal(1000));
+                } else if ("公斤".equals(bomUnit) && "米".equals(lineUnit)) {
+                    // 2025-11-7 修改剥离返工单数量获取
+                    if (line.getBatchCode().startsWith("TASK")) {
+                        FeedbackDTO feedbackDTO = feedbackApi.getFeedBackByBatchCode(line.getBatchCode());
+                        if(feedbackDTO != null  && feedbackDTO.getMachineryCode().contains("AMSB-BF")){
+                            Double qualifiedQuantity = Optional.ofNullable( feedbackDTO.getQuantityQualified()).orElse(0.0);
+                            BigDecimal changeQuantity = Optional.ofNullable( feedbackDTO.getConversionQuantity()).orElse(BigDecimal.ZERO);
+                            BigDecimal rate = BigDecimal.ZERO;
+                            if (qualifiedQuantity > 0) {
+                                rate = line.getQuantityIssued().divide(new BigDecimal(qualifiedQuantity), 4, RoundingMode.HALF_UP);
+                            }
+                            convertedQuantity = changeQuantity.multiply(rate).setScale(4, RoundingMode.HALF_UP);
+                        }
+                    }
+                }
+            }
+
             // 判定当前领料单, 使用物料是否超标
             // 开始判定当前领料单下改物料的所有用量
             IssueLineExportReqVO lineExportReqVO = new IssueLineExportReqVO();
@@ -821,10 +989,33 @@ public class IssueLineController {
             // 循环lineDOlist, 获取每一行数据的使用量并进行汇总
             BigDecimal totalUsed = new BigDecimal(0);
             for (IssueLineDO lineDO : lineDOList) {
-                totalUsed = totalUsed.add(lineDO.getQuantityIssued());
+                // 对已领用量也进行单位换算
+                BigDecimal issuedQty = lineDO.getQuantityIssued();
+                if (!bomUnit.equals(lineDO.getUnitOfMeasure())) {
+                    if ("吨".equals(bomUnit) && "公斤".equals(lineDO.getUnitOfMeasure())) {
+                        issuedQty = lineDO.getQuantityIssued().divide(new BigDecimal(1000), 4, RoundingMode.HALF_UP);
+                    } else if ("公斤".equals(bomUnit) && "吨".equals(lineDO.getUnitOfMeasure())) {
+                        issuedQty = lineDO.getQuantityIssued().multiply(new BigDecimal(1000));
+                    } else if ("公斤".equals(bomUnit) && "米".equals(lineUnit)) {
+                        // 2025-11-7 修改剥离返工单数量获取
+                        if (lineDO.getBatchCode().startsWith("TASK")) {
+                            FeedbackDTO feedbackDTO = feedbackApi.getFeedBackByBatchCode(lineDO.getBatchCode());
+                            if(feedbackDTO != null  && feedbackDTO.getMachineryCode().contains("AMSB-BF")){
+                                Double qualifiedQuantity = Optional.ofNullable( feedbackDTO.getQuantityQualified()).orElse(0.0);
+                                BigDecimal changeQuantity = Optional.ofNullable( feedbackDTO.getConversionQuantity()).orElse(BigDecimal.ZERO);
+                                BigDecimal rate = BigDecimal.ZERO;
+                                if (qualifiedQuantity > 0) {
+                                    rate = lineDO.getQuantityIssued().divide(new BigDecimal(qualifiedQuantity), 4, RoundingMode.HALF_UP);
+                                }
+                                issuedQty = changeQuantity.multiply(rate).setScale(4, RoundingMode.HALF_UP);
+                            }
+                        }
+                    }
+                }
+                totalUsed = totalUsed.add(issuedQty);
             }
 
-            BigDecimal currentQty = line.getQuantityIssued();
+            BigDecimal currentQty = convertedQuantity; // 使用换算后的数量
             BigDecimal bomQty = new BigDecimal(bom.getQuantity());
 
             // 计算可分配数量
@@ -834,17 +1025,28 @@ public class IssueLineController {
 
             if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
                 // 全部超领
-                h02Qty = currentQty;
+                h02Qty = convertedQuantity; // 使用换算后的数量
             } else if (currentQty.compareTo(remaining) <= 0) {
                 // 全部成套领料
-                h01Qty = currentQty;
+                h01Qty = convertedQuantity; // 使用换算后的数量
             } else {
                 // 拆分领料
                 h01Qty = remaining;
                 h02Qty = currentQty.subtract(remaining);
             }
 
-            // 配置4为小数
+            // 将数量转换回原始单位
+            if (!bomUnit.equals(lineUnit)) {
+                if ("吨".equals(bomUnit) && "公斤".equals(lineUnit)) {
+                    h01Qty = h01Qty.multiply(new BigDecimal(1000));
+                    h02Qty = h02Qty.multiply(new BigDecimal(1000));
+                } else if ("公斤".equals(bomUnit) && "吨".equals(lineUnit)) {
+                    h01Qty = h01Qty.divide(new BigDecimal(1000), 4, RoundingMode.HALF_UP);
+                    h02Qty = h02Qty.divide(new BigDecimal(1000), 4, RoundingMode.HALF_UP);
+                }
+            }
+
+            // 配置4位小数
             h01Qty = h01Qty.setScale(4, RoundingMode.HALF_UP);
             h02Qty = h02Qty.setScale(4, RoundingMode.HALF_UP);
 
@@ -893,11 +1095,70 @@ public class IssueLineController {
                 }
             }
         }
-        /*if(erpEnableList.isEmpty()){
-            return error(ErrorCodeConstants.ISSUE_LINE_NO_NEED_ERP);
-        }*/
-
         return success();
+    }
+
+    @GetMapping("/getErpUnsyncCount")
+    @Operation(summary = "获得生产领料单行未同步ERP的数量")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    @PreAuthorize("@ss.hasPermission('wms:issue-line:query')")
+    public CommonResult<Map<String, Object>> getErpUnsyncCount(@RequestParam("issueId") Long issueId , @RequestParam("machineryCode") String machineryCode) {
+        if (issueId == null || StringUtils.isEmpty(machineryCode)) {
+            return error(ErrorCodeConstants.QUERY_PARAM_LOST);
+        }
+        // 2025-8-15 车间主任可以看到所有数据
+        AdminUserRespDTO adminUser = adminUserApi.getUser(WebFrameworkUtils.getLoginUserId());
+        Set<Long> postIds = adminUser.getPostIds();
+        if(postIds.isEmpty()){
+            return error(ErrorCodeConstants.USER_NO_POST);
+        }
+        // 校验postIds是否包含42(车间主任)
+        if (postIds.contains(42L)) {
+            // 若当前为车间主任, 则允许查看当前机台的内容
+            machineryCode = null;
+        }
+
+        List<IssueLineDO> issueLine = issueLineService.getIssueLineList(new IssueLineExportReqVO().setIssueId(issueId).setMachineryCode(machineryCode));
+
+        // 按物料和同步状态分组统计
+        Map<String, Map<Boolean, BigDecimal>> materialQuantityMap = issueLine.stream()
+                .collect(Collectors.groupingBy(
+                        IssueLineDO::getItemCode,
+                        Collectors.partitioningBy(
+                                line -> "N".equals(line.getErpEnable()),
+                                Collectors.reducing(
+                                        BigDecimal.ZERO,
+                                        IssueLineDO::getQuantityIssued,
+                                        BigDecimal::add
+                                )
+                        )
+                ));
+
+        // 按物料和同步状态分组统计条数
+        Map<String, Map<Boolean, Long>> materialCountMap = issueLine.stream()
+                .collect(Collectors.groupingBy(
+                        IssueLineDO::getItemCode,
+                        Collectors.partitioningBy(
+                                line -> "N".equals(line.getErpEnable()),
+                                Collectors.counting()
+                        )
+                ));
+
+        Map<String, Object> result = new HashMap<>();
+
+        // 按物料分组的数据
+        List<Map<String, Object>> materialDetails = new ArrayList<>();
+        for (String materialCode : materialQuantityMap.keySet()) {
+            Map<String, Object> materialDetail = new HashMap<>();
+            materialDetail.put("materialCode", materialCode);
+            materialDetail.put("unsyncQuantity", materialQuantityMap.get(materialCode).getOrDefault(true, BigDecimal.ZERO));
+            materialDetail.put("syncQuantity", materialQuantityMap.get(materialCode).getOrDefault(false, BigDecimal.ZERO));
+            materialDetail.put("unsyncCount", materialCountMap.get(materialCode).getOrDefault(true, 0L));
+            materialDetail.put("syncCount", materialCountMap.get(materialCode).getOrDefault(false, 0L));
+            materialDetails.add(materialDetail);
+        }
+        result.put("materialDetails", materialDetails);
+        return success(result);
     }
 
 

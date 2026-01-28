@@ -77,4 +77,6 @@ public interface IssueLineService {
 
     List<IssueLineDO> getIssueLineListByFeedbackCodes(List<String> feedbackCodes);
 
+    Map<Long, List<IssueLineDO>> getIssueLineListByHeadIds(List<Long> issueHeadIds);
+
 }

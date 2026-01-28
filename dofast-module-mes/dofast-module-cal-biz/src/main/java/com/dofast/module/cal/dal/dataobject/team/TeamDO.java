@@ -88,4 +88,15 @@ public class TeamDO extends BaseDO {
      * 设备ID
      */
     private Long machineryId;
+
+    /**
+     * 夜班负责人Id
+     */
+    private Long nightPrincipalId;
+
+    /**
+     * 夜班负责人名称
+     */
+    private String nightPrincipalName;
+
 }

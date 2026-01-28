@@ -101,5 +101,8 @@ public class AllocatedHeaderBaseVO {
     @Schema(description = "绑定工单标识", example = "Y")
     private String bindWorkorder;
 
+    @Schema(description = "完成者", example = "Y")
+    private String completer;
+
 
 }
