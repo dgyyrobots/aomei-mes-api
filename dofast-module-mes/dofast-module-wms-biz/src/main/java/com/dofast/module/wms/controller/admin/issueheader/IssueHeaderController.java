@@ -164,6 +164,10 @@ public class IssueHeaderController {
         }
 
         TaskDTO taskDTO = taskApi.getTask(taskCode);
+        //选择的任务单不是此工单
+        if (!taskDTO.getWorkorderCode().equals(createReqVO.getWorkorderCode())){
+            return error(ErrorCodeConstants.ISSUE_HEADER_NO_ENABLE_PROCESS);
+        }
         LocalDate localDate = LocalDate.now();
         String dateStr = localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         // 生成3位随机数
