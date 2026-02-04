@@ -77,7 +77,7 @@ public interface ErrorCodeConstants {
     ErrorCode ISSUE_HEADER_TASK_EXISTS = new ErrorCode(621006, "没有需要处理的领料单行");
     ErrorCode ISSUE_HEADER_NOT_FEEDBACK_EXISTS = new ErrorCode(621007, "当前领料单身存在未报工数据!");
     ErrorCode ISSUE_HEADER_NO_PROCESS = new ErrorCode(621001, "无法领用非当前工序线边仓的物料, 请检查领料单信息!");
-    ErrorCode ISSUE_HEADER_NO_ENABLE_PROCESS = new ErrorCode(621001, "仅允许复合车间使用启用标识!");
+    ErrorCode ISSUE_HEADER_NO_ENABLE_PROCESS = new ErrorCode(621001, "选择的任务单不是此工单!");
     ErrorCode ISSUE_LINE_VIRTUAL_WH = new ErrorCode(621001, "当前物料已使用!");
     ErrorCode ISSUE_LINE_BATCH_EXIST = new ErrorCode(621001, "当前物料已上料!");
     ErrorCode ISSUE_HEADER_NO_ISSUE = new ErrorCode(621001, "只允许变更已领料的单据!");
