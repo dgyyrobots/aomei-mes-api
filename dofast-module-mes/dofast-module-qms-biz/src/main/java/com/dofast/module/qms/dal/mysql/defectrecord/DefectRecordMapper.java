@@ -42,7 +42,7 @@ public interface DefectRecordMapper extends BaseMapperX<DefectRecordDO> {
                 .eqIfPresent(DefectRecordDO::getQcType, reqVO.getQcType())
                 .eqIfPresent(DefectRecordDO::getQcId, reqVO.getQcId())
                 .eqIfPresent(DefectRecordDO::getLineId, reqVO.getLineId())
-                .likeIfPresent(DefectRecordDO::getDefectName, reqVO.getDefectName())
+                .eqIfPresent(DefectRecordDO::getDefectName, reqVO.getDefectName())
                 .eqIfPresent(DefectRecordDO::getDefectLevel, reqVO.getDefectLevel())
                 .eqIfPresent(DefectRecordDO::getDefectQuantity, reqVO.getDefectQuantity())
                 .eqIfPresent(DefectRecordDO::getRemark, reqVO.getRemark())

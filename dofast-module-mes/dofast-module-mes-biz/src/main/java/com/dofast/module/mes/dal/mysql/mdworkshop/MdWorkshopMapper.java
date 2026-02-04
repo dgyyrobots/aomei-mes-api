@@ -52,7 +52,7 @@ public interface MdWorkshopMapper extends BaseMapperX<MdWorkshopDO> {
     default List<MdWorkshopDO> selectList(MdWorkshopExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<MdWorkshopDO>()
                 .eqIfPresent(MdWorkshopDO::getWorkshopCode, reqVO.getWorkshopCode())
-                .likeIfPresent(MdWorkshopDO::getWorkshopName, reqVO.getWorkshopName())
+                .eqIfPresent(MdWorkshopDO::getWorkshopName, reqVO.getWorkshopName())
                 .eqIfPresent(MdWorkshopDO::getArea, reqVO.getArea())
                 .eqIfPresent(MdWorkshopDO::getCharge, reqVO.getCharge())
                 .eqIfPresent(MdWorkshopDO::getEnableFlag, reqVO.getEnableFlag())

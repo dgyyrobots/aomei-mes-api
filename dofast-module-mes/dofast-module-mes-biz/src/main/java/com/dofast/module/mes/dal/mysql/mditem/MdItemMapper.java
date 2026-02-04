@@ -27,8 +27,8 @@ public interface MdItemMapper extends BaseMapperX<MdItemDO> {
 
     default List<MdItemDO> selectList(MdItemExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<MdItemDO>()
-                .likeIfPresent(MdItemDO::getItemCode, reqVO.getItemCode())
-                .likeIfPresent(MdItemDO::getItemName, reqVO.getItemName())
+                .eqIfPresent(MdItemDO::getItemCode, reqVO.getItemCode())
+                .eqIfPresent(MdItemDO::getItemName, reqVO.getItemName())
                 .orderByDesc(MdItemDO::getId));
     }
 
@@ -52,8 +52,8 @@ public interface MdItemMapper extends BaseMapperX<MdItemDO> {
 
     default List<MdItemDO> selectListByItemReq(MdItemExportReqVO mdItemExportReqVO) {
         return selectList(new LambdaQueryWrapperX<MdItemDO>()
-                .likeIfPresent(MdItemDO::getItemCode, mdItemExportReqVO.getItemCode())
-                .likeIfPresent(MdItemDO::getItemName, mdItemExportReqVO.getItemName())
+                .eqIfPresent(MdItemDO::getItemCode, mdItemExportReqVO.getItemCode())
+                .eqIfPresent(MdItemDO::getItemName, mdItemExportReqVO.getItemName())
                 .eqIfPresent(MdItemDO::getEnableFlag, mdItemExportReqVO.getEnableFlag())
                 .eqIfPresent(MdItemDO::getItemTypeId, mdItemExportReqVO.getItemTypeId())
                 .orderByDesc(MdItemDO::getId));

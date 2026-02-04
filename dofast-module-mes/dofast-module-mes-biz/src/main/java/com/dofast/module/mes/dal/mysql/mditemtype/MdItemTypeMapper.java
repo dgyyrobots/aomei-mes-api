@@ -84,7 +84,7 @@ public interface MdItemTypeMapper extends BaseMapperX<MdItemTypeDO> {
     default List<MdItemTypeDO> selectList(MdItemTypeListVO reqVO) {
         return selectList(new LambdaQueryWrapperX<MdItemTypeDO>()
                 .eqIfPresent(MdItemTypeDO::getItemTypeCode, reqVO.getItemTypeCode())
-                .likeIfPresent(MdItemTypeDO::getItemTypeName, reqVO.getItemTypeName())
+                .eqIfPresent(MdItemTypeDO::getItemTypeName, reqVO.getItemTypeName())
                 .eqIfPresent(MdItemTypeDO::getParentTypeId, reqVO.getParentTypeId())
                 .eqIfPresent(MdItemTypeDO::getAncestors, reqVO.getAncestors())
                 .eqIfPresent(MdItemTypeDO::getItemOrProduct, reqVO.getItemOrProduct())

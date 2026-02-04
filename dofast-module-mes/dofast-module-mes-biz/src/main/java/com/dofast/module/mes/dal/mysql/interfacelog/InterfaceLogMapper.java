@@ -32,7 +32,7 @@ public interface InterfaceLogMapper extends BaseMapperX<InterfaceLogDO> {
     default List<InterfaceLogDO> selectList(InterfaceLogExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<InterfaceLogDO>()
                 .betweenIfPresent(InterfaceLogDO::getCreateTime, reqVO.getCreateTime())
-                .likeIfPresent(InterfaceLogDO::getInterfaceName, reqVO.getInterfaceName())
+                .eqIfPresent(InterfaceLogDO::getInterfaceName, reqVO.getInterfaceName())
                 .eqIfPresent(InterfaceLogDO::getRequester, reqVO.getRequester())
                 .eqIfPresent(InterfaceLogDO::getReceiver, reqVO.getReceiver())
                 .eqIfPresent(InterfaceLogDO::getRequestType, reqVO.getRequestType())

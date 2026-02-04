@@ -63,7 +63,7 @@ public interface RouteProductBomMapper extends BaseMapperX<RouteProductBomDO> {
                 .eqIfPresent(RouteProductBomDO::getProductId, reqVO.getProductId())
                 .eqIfPresent(RouteProductBomDO::getItemId, reqVO.getItemId())
                 .eqIfPresent(RouteProductBomDO::getItemCode, reqVO.getItemCode())
-                .likeIfPresent(RouteProductBomDO::getItemName, reqVO.getItemName())
+                .eqIfPresent(RouteProductBomDO::getItemName, reqVO.getItemName())
                 .eqIfPresent(RouteProductBomDO::getSpecification, reqVO.getSpecification())
                 .eqIfPresent(RouteProductBomDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
                 .eqIfPresent(RouteProductBomDO::getQuantity, reqVO.getQuantity())

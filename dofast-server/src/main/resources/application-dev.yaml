@@ -73,7 +73,7 @@ spring:
       primary: master
       datasource:
         master:
-          #name: ruoyi-vue-pro
+          name: ruoyi-vue-pro
           #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=3&initialTimeout=5&connectTimeout=10000&socketTimeout=60000&tcpKeepAlive=true
           #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-update?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
           #url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-test?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true

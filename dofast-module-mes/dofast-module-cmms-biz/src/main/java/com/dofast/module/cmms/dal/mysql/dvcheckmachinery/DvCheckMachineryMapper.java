@@ -50,7 +50,7 @@ public interface DvCheckMachineryMapper extends BaseMapperX<DvCheckMachineryDO> 
                 .eqIfPresent(DvCheckMachineryDO::getPlanId, reqVO.getPlanId())
                 .eqIfPresent(DvCheckMachineryDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(DvCheckMachineryDO::getMachineryCode, reqVO.getMachineryCode())
-                .likeIfPresent(DvCheckMachineryDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(DvCheckMachineryDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(DvCheckMachineryDO::getMachineryBrand, reqVO.getMachineryBrand())
                 .eqIfPresent(DvCheckMachineryDO::getMachinerySpec, reqVO.getMachinerySpec())
                 .eqIfPresent(DvCheckMachineryDO::getRemark, reqVO.getRemark())

@@ -51,7 +51,7 @@ public interface BarcodeMapper extends BaseMapperX<BarcodeDO> {
                 .eqIfPresent(BarcodeDO::getBarcodeContent, reqVO.getBarcodeContent())
                 .eqIfPresent(BarcodeDO::getBussinessId, reqVO.getBussinessId())
                 .eqIfPresent(BarcodeDO::getBussinessCode, reqVO.getBussinessCode())
-                .likeIfPresent(BarcodeDO::getBussinessName, reqVO.getBussinessName())
+                .eqIfPresent(BarcodeDO::getBussinessName, reqVO.getBussinessName())
                 .eqIfPresent(BarcodeDO::getBarcodeUrl, reqVO.getBarcodeUrl())
                 .eqIfPresent(BarcodeDO::getEnableFlag, reqVO.getEnableFlag())
                 .eqIfPresent(BarcodeDO::getRemark, reqVO.getRemark())

@@ -43,7 +43,7 @@ public interface TemplateMapper extends BaseMapperX<TemplateDO> {
     default List<TemplateDO> selectList(TemplateExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<TemplateDO>()
                 .eqIfPresent(TemplateDO::getTemplateCode, reqVO.getTemplateCode())
-                .likeIfPresent(TemplateDO::getTemplateName, reqVO.getTemplateName())
+                .eqIfPresent(TemplateDO::getTemplateName, reqVO.getTemplateName())
                 .eqIfPresent(TemplateDO::getQcTypes, reqVO.getQcTypes())
                 .eqIfPresent(TemplateDO::getEnableFlag, reqVO.getEnableFlag())
                 .eqIfPresent(TemplateDO::getRemark, reqVO.getRemark())

@@ -40,7 +40,7 @@ public interface FreezeInfoMapper extends BaseMapperX<FreezeInfoDO> {
         return selectList(new LambdaQueryWrapperX<FreezeInfoDO>()
                 .betweenIfPresent(FreezeInfoDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(FreezeInfoDO::getItemCode, reqVO.getItemCode())
-                .likeIfPresent(FreezeInfoDO::getItemName, reqVO.getItemName())
+                .eqIfPresent(FreezeInfoDO::getItemName, reqVO.getItemName())
                 .eqIfPresent(FreezeInfoDO::getItenQty, reqVO.getItenQty())
                 .eqIfPresent(FreezeInfoDO::getState, reqVO.getState())
                 .eqIfPresent(FreezeInfoDO::getWhCode, reqVO.getWhCode())

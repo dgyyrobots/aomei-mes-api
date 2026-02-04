@@ -36,7 +36,7 @@ public interface MdUnitMeasureMapper extends BaseMapperX<MdUnitMeasureDO> {
     default List<MdUnitMeasureDO> selectList(MdUnitMeasureListVO reqVO) {
         return selectList(new LambdaQueryWrapperX<MdUnitMeasureDO>()
                 .eqIfPresent(MdUnitMeasureDO::getMeasureCode, reqVO.getMeasureCode())
-                .likeIfPresent(MdUnitMeasureDO::getMeasureName, reqVO.getMeasureName())
+                .eqIfPresent(MdUnitMeasureDO::getMeasureName, reqVO.getMeasureName())
                 .eqIfPresent(MdUnitMeasureDO::getPrimaryFlag, reqVO.getPrimaryFlag())
                 .eqIfPresent(MdUnitMeasureDO::getPrimaryId, reqVO.getPrimaryId())
                 .eqIfPresent(MdUnitMeasureDO::getChangeRate, reqVO.getChangeRate())

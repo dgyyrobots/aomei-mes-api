@@ -42,7 +42,7 @@ public interface MdProductSopMapper extends BaseMapperX<MdProductSopDO> {
                 .eqIfPresent(MdProductSopDO::getOrderNum, reqVO.getOrderNum())
                 .eqIfPresent(MdProductSopDO::getProcessId, reqVO.getProcessId())
                 .eqIfPresent(MdProductSopDO::getProcessCode, reqVO.getProcessCode())
-                .likeIfPresent(MdProductSopDO::getProcessName, reqVO.getProcessName())
+                .eqIfPresent(MdProductSopDO::getProcessName, reqVO.getProcessName())
                 .eqIfPresent(MdProductSopDO::getSopTitle, reqVO.getSopTitle())
                 .eqIfPresent(MdProductSopDO::getSopDescription, reqVO.getSopDescription())
                 .eqIfPresent(MdProductSopDO::getSopUrl, reqVO.getSopUrl())

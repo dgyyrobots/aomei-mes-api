@@ -43,7 +43,7 @@ public interface MdWorkstationWorkerMapper extends BaseMapperX<MdWorkstationWork
                 .eqIfPresent(MdWorkstationWorkerDO::getWorkstationId, reqVO.getWorkstationId())
                 .eqIfPresent(MdWorkstationWorkerDO::getPostId, reqVO.getPostId())
                 .eqIfPresent(MdWorkstationWorkerDO::getPostCode, reqVO.getPostCode())
-                .likeIfPresent(MdWorkstationWorkerDO::getPostName, reqVO.getPostName())
+                .eqIfPresent(MdWorkstationWorkerDO::getPostName, reqVO.getPostName())
                 .eqIfPresent(MdWorkstationWorkerDO::getQuantity, reqVO.getQuantity())
                 .eqIfPresent(MdWorkstationWorkerDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(MdWorkstationWorkerDO::getAttr1, reqVO.getAttr1())

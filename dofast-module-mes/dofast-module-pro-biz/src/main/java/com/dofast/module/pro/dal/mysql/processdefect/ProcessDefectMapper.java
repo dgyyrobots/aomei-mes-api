@@ -29,7 +29,7 @@ public interface ProcessDefectMapper extends BaseMapperX<ProcessDefectDO> {
         return selectList(new LambdaQueryWrapperX<ProcessDefectDO>()
                 .betweenIfPresent(ProcessDefectDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(ProcessDefectDO::getProcessCode, reqVO.getProcessCode())
-                .likeIfPresent(ProcessDefectDO::getDefectName, reqVO.getDefectName())
+                .eqIfPresent(ProcessDefectDO::getDefectName, reqVO.getDefectName())
                 .orderByDesc(ProcessDefectDO::getId));
     }
 

@@ -59,7 +59,7 @@ public interface PadMdVendorMapper extends BaseMapperX<MdVendorDO> {
     default List<MdVendorDO> selectList(MdVendorExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<MdVendorDO>()
                 .eqIfPresent(MdVendorDO::getVendorCode, reqVO.getVendorCode())
-                .likeIfPresent(MdVendorDO::getVendorName, reqVO.getVendorName())
+                .eqIfPresent(MdVendorDO::getVendorName, reqVO.getVendorName())
                 .eqIfPresent(MdVendorDO::getVendorNick, reqVO.getVendorNick())
                 .eqIfPresent(MdVendorDO::getVendorEn, reqVO.getVendorEn())
                 .eqIfPresent(MdVendorDO::getVendorDes, reqVO.getVendorDes())

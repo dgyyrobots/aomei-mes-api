@@ -43,7 +43,7 @@ public interface DvRepairLineMapper extends BaseMapperX<DvRepairLineDO> {
                 .eqIfPresent(DvRepairLineDO::getRepairId, reqVO.getRepairId())
                 .eqIfPresent(DvRepairLineDO::getSubjectId, reqVO.getSubjectId())
                 .eqIfPresent(DvRepairLineDO::getSubjectCode, reqVO.getSubjectCode())
-                .likeIfPresent(DvRepairLineDO::getSubjectName, reqVO.getSubjectName())
+                .eqIfPresent(DvRepairLineDO::getSubjectName, reqVO.getSubjectName())
                 .eqIfPresent(DvRepairLineDO::getSubjectType, reqVO.getSubjectType())
                 .eqIfPresent(DvRepairLineDO::getSubjectContent, reqVO.getSubjectContent())
                 .eqIfPresent(DvRepairLineDO::getSubjectStandard, reqVO.getSubjectStandard())

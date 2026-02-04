@@ -44,7 +44,7 @@ public interface DvCheckSubjectMapper extends BaseMapperX<DvCheckSubjectDO> {
                 .eqIfPresent(DvCheckSubjectDO::getPlanId, reqVO.getPlanId())
                 .eqIfPresent(DvCheckSubjectDO::getSubjectId, reqVO.getSubjectId())
                 .eqIfPresent(DvCheckSubjectDO::getSubjectCode, reqVO.getSubjectCode())
-                .likeIfPresent(DvCheckSubjectDO::getSubjectName, reqVO.getSubjectName())
+                .eqIfPresent(DvCheckSubjectDO::getSubjectName, reqVO.getSubjectName())
                 .eqIfPresent(DvCheckSubjectDO::getSubjectType, reqVO.getSubjectType())
                 .eqIfPresent(DvCheckSubjectDO::getSubjectContent, reqVO.getSubjectContent())
                 .eqIfPresent(DvCheckSubjectDO::getSubjectStandard, reqVO.getSubjectStandard())

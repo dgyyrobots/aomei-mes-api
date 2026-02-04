@@ -40,7 +40,7 @@ public interface DvCheckPlanLineLogMapper extends BaseMapperX<DvCheckPlanLineLog
                 .eqIfPresent(DvCheckPlanLineLogDO::getHeaderId, reqVO.getHeaderId())
                 .eqIfPresent(DvCheckPlanLineLogDO::getSubjectId, reqVO.getSubjectId())
                 .eqIfPresent(DvCheckPlanLineLogDO::getSubjectCode, reqVO.getSubjectCode())
-                .likeIfPresent(DvCheckPlanLineLogDO::getSubjectName, reqVO.getSubjectName())
+                .eqIfPresent(DvCheckPlanLineLogDO::getSubjectName, reqVO.getSubjectName())
                 .eqIfPresent(DvCheckPlanLineLogDO::getSubjectType, reqVO.getSubjectType())
                 .eqIfPresent(DvCheckPlanLineLogDO::getSubjectContent, reqVO.getSubjectContent())
                 .eqIfPresent(DvCheckPlanLineLogDO::getSubjectStandard, reqVO.getSubjectStandard())

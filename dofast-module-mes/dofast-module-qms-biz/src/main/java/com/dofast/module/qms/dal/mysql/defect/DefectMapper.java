@@ -37,7 +37,7 @@ public interface DefectMapper extends BaseMapperX<DefectDO> {
     default List<DefectDO> selectList(DefectExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<DefectDO>()
                 .eqIfPresent(DefectDO::getDefectCode, reqVO.getDefectCode())
-                .likeIfPresent(DefectDO::getDefectName, reqVO.getDefectName())
+                .eqIfPresent(DefectDO::getDefectName, reqVO.getDefectName())
                 .eqIfPresent(DefectDO::getIndexType, reqVO.getIndexType())
                 .eqIfPresent(DefectDO::getDefectLevel, reqVO.getDefectLevel())
                 .eqIfPresent(DefectDO::getRemark, reqVO.getRemark())

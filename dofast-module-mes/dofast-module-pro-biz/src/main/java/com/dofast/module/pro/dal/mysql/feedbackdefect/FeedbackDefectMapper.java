@@ -41,7 +41,7 @@ public interface FeedbackDefectMapper extends BaseMapperX<FeedbackDefectDO> {
                 .eqIfPresent(FeedbackDefectDO::getFeedbackId, reqVO.getFeedbackId())
                 .eqIfPresent(FeedbackDefectDO::getTaskCode, reqVO.getTaskCode())
                 .betweenIfPresent(FeedbackDefectDO::getCreateTime, reqVO.getCreateTime())
-                .likeIfPresent(FeedbackDefectDO::getDefectName, reqVO.getDefectName())
+                .eqIfPresent(FeedbackDefectDO::getDefectName, reqVO.getDefectName())
                 .eqIfPresent(FeedbackDefectDO::getDefectId, reqVO.getDefectId())
                 .eqIfPresent(FeedbackDefectDO::getStartMeter, reqVO.getStartMeter())
                 .eqIfPresent(FeedbackDefectDO::getEndMeter, reqVO.getEndMeter())

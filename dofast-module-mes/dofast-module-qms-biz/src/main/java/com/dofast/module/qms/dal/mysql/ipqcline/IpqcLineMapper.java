@@ -66,7 +66,7 @@ public interface IpqcLineMapper extends BaseMapperX<IpqcLineDO> {
                 .eqIfPresent(IpqcLineDO::getIpqcId, reqVO.getIpqcId())
                 .eqIfPresent(IpqcLineDO::getIndexId, reqVO.getIndexId())
                 .eqIfPresent(IpqcLineDO::getIndexCode, reqVO.getIndexCode())
-                .likeIfPresent(IpqcLineDO::getIndexName, reqVO.getIndexName())
+                .eqIfPresent(IpqcLineDO::getIndexName, reqVO.getIndexName())
                 .eqIfPresent(IpqcLineDO::getIndexType, reqVO.getIndexType())
                 .eqIfPresent(IpqcLineDO::getQcTool, reqVO.getQcTool())
                 .eqIfPresent(IpqcLineDO::getCheckMethod, reqVO.getCheckMethod())

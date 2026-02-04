@@ -46,7 +46,7 @@ public interface WorkorderBomMapper extends BaseMapperX<WorkorderBomDO> {
                 .eqIfPresent(WorkorderBomDO::getWorkorderId, reqVO.getWorkorderId())
                 .eqIfPresent(WorkorderBomDO::getItemId, reqVO.getItemId())
                 .eqIfPresent(WorkorderBomDO::getItemCode, reqVO.getItemCode())
-                .likeIfPresent(WorkorderBomDO::getItemName, reqVO.getItemName())
+                .eqIfPresent(WorkorderBomDO::getItemName, reqVO.getItemName())
                 .eqIfPresent(WorkorderBomDO::getItemSpc, reqVO.getItemSpc())
                 .eqIfPresent(WorkorderBomDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
                 .eqIfPresent(WorkorderBomDO::getItemOrProduct, reqVO.getItemOrProduct())

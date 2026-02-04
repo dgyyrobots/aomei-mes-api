@@ -62,7 +62,7 @@ public interface TaskIssueMapper extends BaseMapperX<TaskIssueDO> {
                 .eqIfPresent(TaskIssueDO::getSourceLineId, reqVO.getSourceLineId())
                 .eqIfPresent(TaskIssueDO::getItemId, reqVO.getItemId())
                 .eqIfPresent(TaskIssueDO::getItemCode, reqVO.getItemCode())
-                .likeIfPresent(TaskIssueDO::getItemName, reqVO.getItemName())
+                .eqIfPresent(TaskIssueDO::getItemName, reqVO.getItemName())
                 .eqIfPresent(TaskIssueDO::getSpecification, reqVO.getSpecification())
                 .eqIfPresent(TaskIssueDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
                 .eqIfPresent(TaskIssueDO::getQuantityIssued, reqVO.getQuantityIssued())

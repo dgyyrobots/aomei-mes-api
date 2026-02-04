@@ -50,7 +50,7 @@ public interface OqcLineMapper extends BaseMapperX<OqcLineDO> {
                 .eqIfPresent(OqcLineDO::getOqcId, reqVO.getOqcId())
                 .eqIfPresent(OqcLineDO::getIndexId, reqVO.getIndexId())
                 .eqIfPresent(OqcLineDO::getIndexCode, reqVO.getIndexCode())
-                .likeIfPresent(OqcLineDO::getIndexName, reqVO.getIndexName())
+                .eqIfPresent(OqcLineDO::getIndexName, reqVO.getIndexName())
                 .eqIfPresent(OqcLineDO::getIndexType, reqVO.getIndexType())
                 .eqIfPresent(OqcLineDO::getQcTool, reqVO.getQcTool())
                 .eqIfPresent(OqcLineDO::getCheckMethod, reqVO.getCheckMethod())

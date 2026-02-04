@@ -35,7 +35,7 @@ public interface MdItemCategoryMapper extends BaseMapperX<MdItemCategoryDO> {
 
     default List<MdItemCategoryDO> selectList(MdItemCategoryExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<MdItemCategoryDO>()
-                .likeIfPresent(MdItemCategoryDO::getItemCategoryName, reqVO.getItemCategoryName())
+                .eqIfPresent(MdItemCategoryDO::getItemCategoryName, reqVO.getItemCategoryName())
                 .eqIfPresent(MdItemCategoryDO::getItemCategoryCode, reqVO.getItemCategoryCode())
                 .eqIfPresent(MdItemCategoryDO::getItemRoute, reqVO.getItemRoute())
                 .eqIfPresent(MdItemCategoryDO::getItemRouteCode, reqVO.getItemRouteCode())

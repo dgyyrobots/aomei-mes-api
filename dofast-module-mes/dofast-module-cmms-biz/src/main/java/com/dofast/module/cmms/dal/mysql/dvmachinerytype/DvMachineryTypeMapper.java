@@ -45,7 +45,7 @@ public interface DvMachineryTypeMapper extends BaseMapperX<DvMachineryTypeDO> {
     default List<DvMachineryTypeDO> selectList(DvMachineryTypeExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<DvMachineryTypeDO>()
                 .eqIfPresent(DvMachineryTypeDO::getMachineryTypeCode, reqVO.getMachineryTypeCode())
-                .likeIfPresent(DvMachineryTypeDO::getMachineryTypeName, reqVO.getMachineryTypeName())
+                .eqIfPresent(DvMachineryTypeDO::getMachineryTypeName, reqVO.getMachineryTypeName())
                 .eqIfPresent(DvMachineryTypeDO::getParentTypeId, reqVO.getParentTypeId())
                 .eqIfPresent(DvMachineryTypeDO::getAncestors, reqVO.getAncestors())
                 .eqIfPresent(DvMachineryTypeDO::getEnableFlag, reqVO.getEnableFlag())

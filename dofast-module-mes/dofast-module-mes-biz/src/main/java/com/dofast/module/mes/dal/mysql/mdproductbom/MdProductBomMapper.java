@@ -66,7 +66,7 @@ public interface MdProductBomMapper extends BaseMapperX<MdProductBomDO> {
                 .eqIfPresent(MdProductBomDO::getItemId, reqVO.getItemId())
                 .eqIfPresent(MdProductBomDO::getBomItemId, reqVO.getBomItemId())
                 .eqIfPresent(MdProductBomDO::getBomItemCode, reqVO.getBomItemCode())
-                .likeIfPresent(MdProductBomDO::getBomItemName, reqVO.getBomItemName())
+                .eqIfPresent(MdProductBomDO::getBomItemName, reqVO.getBomItemName())
                 .eqIfPresent(MdProductBomDO::getBomItemSpec, reqVO.getBomItemSpec())
                 .eqIfPresent(MdProductBomDO::getUnitOfMeasure, reqVO.getUnitOfMeasure())
                 .eqIfPresent(MdProductBomDO::getItemOrProduct, reqVO.getItemOrProduct())

@@ -43,7 +43,7 @@ public interface QualityAbnormityMapper extends BaseMapperX<QualityAbnormityDO> 
         return selectList(new LambdaQueryWrapperX<QualityAbnormityDO>()
                 .betweenIfPresent(QualityAbnormityDO::getCreateTime, reqVO.getCreateTime())
                 .eqIfPresent(QualityAbnormityDO::getItemCode, reqVO.getItemCode())
-                .likeIfPresent(QualityAbnormityDO::getItemName, reqVO.getItemName())
+                .eqIfPresent(QualityAbnormityDO::getItemName, reqVO.getItemName())
                 .eqIfPresent(QualityAbnormityDO::getBatchesCode, reqVO.getBatchesCode())
                 .eqIfPresent(QualityAbnormityDO::getBatches, reqVO.getBatches())
                 .eqIfPresent(QualityAbnormityDO::getBadDescription, reqVO.getBadDescription())

@@ -50,11 +50,11 @@ public interface RtVendorMapper extends BaseMapperX<RtVendorDO> {
     default List<RtVendorDO> selectList(RtVendorExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<RtVendorDO>()
                 .eqIfPresent(RtVendorDO::getRtCode, reqVO.getRtCode())
-                .likeIfPresent(RtVendorDO::getRtName, reqVO.getRtName())
+                .eqIfPresent(RtVendorDO::getRtName, reqVO.getRtName())
                 .eqIfPresent(RtVendorDO::getPoCode, reqVO.getPoCode())
                 .eqIfPresent(RtVendorDO::getVendorId, reqVO.getVendorId())
                 .eqIfPresent(RtVendorDO::getVendorCode, reqVO.getVendorCode())
-                .likeIfPresent(RtVendorDO::getVendorName, reqVO.getVendorName())
+                .eqIfPresent(RtVendorDO::getVendorName, reqVO.getVendorName())
                 .eqIfPresent(RtVendorDO::getVendorNick, reqVO.getVendorNick())
                 .eqIfPresent(RtVendorDO::getBatchCode, reqVO.getBatchCode())
                 .betweenIfPresent(RtVendorDO::getRtDate, reqVO.getRtDate())

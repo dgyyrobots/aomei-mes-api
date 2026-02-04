@@ -44,7 +44,7 @@ public interface MdWorkstationToolMapper extends BaseMapperX<MdWorkstationToolDO
                 .eqIfPresent(MdWorkstationToolDO::getWorkstationId, reqVO.getWorkstationId())
                 .eqIfPresent(MdWorkstationToolDO::getToolTypeId, reqVO.getToolTypeId())
                 .eqIfPresent(MdWorkstationToolDO::getToolTypeCode, reqVO.getToolTypeCode())
-                .likeIfPresent(MdWorkstationToolDO::getToolTypeName, reqVO.getToolTypeName())
+                .eqIfPresent(MdWorkstationToolDO::getToolTypeName, reqVO.getToolTypeName())
                 .eqIfPresent(MdWorkstationToolDO::getQuantity, reqVO.getQuantity())
                 .eqIfPresent(MdWorkstationToolDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(MdWorkstationToolDO::getAttr1, reqVO.getAttr1())

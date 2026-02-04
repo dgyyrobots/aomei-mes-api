@@ -59,7 +59,7 @@ public interface WarehouseMapper extends BaseMapperX<WarehouseDO> {
     default List<WarehouseDO> selectList(WarehouseExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<WarehouseDO>()
                 .eqIfPresent(WarehouseDO::getWarehouseCode, reqVO.getWarehouseCode())
-                .likeIfPresent(WarehouseDO::getWarehouseName, reqVO.getWarehouseName())
+                .eqIfPresent(WarehouseDO::getWarehouseName, reqVO.getWarehouseName())
                 .eqIfPresent(WarehouseDO::getLocation, reqVO.getLocation())
                 .eqIfPresent(WarehouseDO::getArea, reqVO.getArea())
                 .eqIfPresent(WarehouseDO::getCharge, reqVO.getCharge())
@@ -75,7 +75,7 @@ public interface WarehouseMapper extends BaseMapperX<WarehouseDO> {
                 .eqIfPresent(WarehouseDO::getSendDistrict, reqVO.getSendDistrict())
                 .eqIfPresent(WarehouseDO::getSendStreet, reqVO.getSendStreet())
                 .eqIfPresent(WarehouseDO::getSendDetail, reqVO.getSendDetail())
-                .likeIfPresent(WarehouseDO::getSendName, reqVO.getSendName())
+                .eqIfPresent(WarehouseDO::getSendName, reqVO.getSendName())
                 .eqIfPresent(WarehouseDO::getSendPhone, reqVO.getSendPhone())
                 .eqIfPresent(WarehouseDO::getSendMobile, reqVO.getSendMobile())
                 .orderByDesc(WarehouseDO::getId));

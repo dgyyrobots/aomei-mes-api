@@ -56,7 +56,7 @@ public interface StorageLocationMapper extends BaseMapperX<StorageLocationDO> {
     default List<StorageLocationDO> selectList(StorageLocationExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<StorageLocationDO>()
                 .eqIfPresent(StorageLocationDO::getLocationCode, reqVO.getLocationCode())
-                .likeIfPresent(StorageLocationDO::getLocationName, reqVO.getLocationName())
+                .eqIfPresent(StorageLocationDO::getLocationName, reqVO.getLocationName())
                 .eqIfPresent(StorageLocationDO::getWarehouseId, reqVO.getWarehouseId())
                 .eqIfPresent(StorageLocationDO::getArea, reqVO.getArea())
                 .eqIfPresent(StorageLocationDO::getAreaFlag, reqVO.getAreaFlag())

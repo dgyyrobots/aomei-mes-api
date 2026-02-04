@@ -42,7 +42,7 @@ public interface DvCheckPlanMapper extends BaseMapperX<DvCheckPlanDO> {
     default List<DvCheckPlanDO> selectList(DvCheckPlanExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<DvCheckPlanDO>()
                 .eqIfPresent(DvCheckPlanDO::getPlanCode, reqVO.getPlanCode())
-                .likeIfPresent(DvCheckPlanDO::getPlanName, reqVO.getPlanName())
+                .eqIfPresent(DvCheckPlanDO::getPlanName, reqVO.getPlanName())
                 .eqIfPresent(DvCheckPlanDO::getPlanType, reqVO.getPlanType())
                 .betweenIfPresent(DvCheckPlanDO::getStartDate, reqVO.getStartDate())
                 .betweenIfPresent(DvCheckPlanDO::getEndDate, reqVO.getEndDate())

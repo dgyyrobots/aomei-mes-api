@@ -35,7 +35,7 @@ public interface ExceptionLevelConfigMapper extends BaseMapperX<ExceptionLevelCo
     default List<ExceptionLevelConfigDO> selectList(ExceptionLevelConfigExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<ExceptionLevelConfigDO>()
                 .eqIfPresent(ExceptionLevelConfigDO::getLevelCode, reqVO.getLevelCode())
-                .likeIfPresent(ExceptionLevelConfigDO::getLevelName, reqVO.getLevelName())
+                .eqIfPresent(ExceptionLevelConfigDO::getLevelName, reqVO.getLevelName())
                 .eqIfPresent(ExceptionLevelConfigDO::getColor, reqVO.getColor())
                 .betweenIfPresent(ExceptionLevelConfigDO::getResponseTime, reqVO.getResponseTime())
                 .eqIfPresent(ExceptionLevelConfigDO::getRemark, reqVO.getRemark())

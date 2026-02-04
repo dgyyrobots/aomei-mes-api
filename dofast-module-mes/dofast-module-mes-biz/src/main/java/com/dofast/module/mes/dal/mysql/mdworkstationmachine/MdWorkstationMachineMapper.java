@@ -44,7 +44,7 @@ public interface MdWorkstationMachineMapper extends BaseMapperX<MdWorkstationMac
                 .eqIfPresent(MdWorkstationMachineDO::getWorkstationId, reqVO.getWorkstationId())
                 .eqIfPresent(MdWorkstationMachineDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(MdWorkstationMachineDO::getMachineryCode, reqVO.getMachineryCode())
-                .likeIfPresent(MdWorkstationMachineDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(MdWorkstationMachineDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(MdWorkstationMachineDO::getQuantity, reqVO.getQuantity())
                 .eqIfPresent(MdWorkstationMachineDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(MdWorkstationMachineDO::getAttr1, reqVO.getAttr1())

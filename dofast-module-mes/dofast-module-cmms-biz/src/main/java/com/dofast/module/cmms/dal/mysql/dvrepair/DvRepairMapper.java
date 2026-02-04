@@ -53,10 +53,10 @@ public interface DvRepairMapper extends BaseMapperX<DvRepairDO> {
     default List<DvRepairDO> selectList(DvRepairExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<DvRepairDO>()
                 .eqIfPresent(DvRepairDO::getRepairCode, reqVO.getRepairCode())
-                .likeIfPresent(DvRepairDO::getRepairName, reqVO.getRepairName())
+                .eqIfPresent(DvRepairDO::getRepairName, reqVO.getRepairName())
                 .eqIfPresent(DvRepairDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(DvRepairDO::getMachineryCode, reqVO.getMachineryCode())
-                .likeIfPresent(DvRepairDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(DvRepairDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(DvRepairDO::getMachineryBrand, reqVO.getMachineryBrand())
                 .eqIfPresent(DvRepairDO::getMachinerySpec, reqVO.getMachinerySpec())
                 .eqIfPresent(DvRepairDO::getMachineryTypeId, reqVO.getMachineryTypeId())

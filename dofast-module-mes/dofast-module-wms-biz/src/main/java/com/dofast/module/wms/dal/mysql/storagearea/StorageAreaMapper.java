@@ -49,7 +49,7 @@ public interface StorageAreaMapper extends BaseMapperX<StorageAreaDO> {
     default List<StorageAreaDO> selectList(StorageAreaExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<StorageAreaDO>()
                 .eqIfPresent(StorageAreaDO::getAreaCode, reqVO.getAreaCode())
-                .likeIfPresent(StorageAreaDO::getAreaName, reqVO.getAreaName())
+                .eqIfPresent(StorageAreaDO::getAreaName, reqVO.getAreaName())
                 .eqIfPresent(StorageAreaDO::getLocationId, reqVO.getLocationId())
                 .eqIfPresent(StorageAreaDO::getArea, reqVO.getArea())
                 .eqIfPresent(StorageAreaDO::getMaxLoa, reqVO.getMaxLoa())

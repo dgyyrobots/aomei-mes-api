@@ -40,11 +40,11 @@ public interface DvCheckPlanHeaderLogMapper extends BaseMapperX<DvCheckPlanHeade
     default List<DvCheckPlanHeaderLogDO> selectList(DvCheckPlanHeaderLogExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<DvCheckPlanHeaderLogDO>()
                 .eqIfPresent(DvCheckPlanHeaderLogDO::getPlanCode, reqVO.getPlanCode())
-                .likeIfPresent(DvCheckPlanHeaderLogDO::getPlanName, reqVO.getPlanName())
+                .eqIfPresent(DvCheckPlanHeaderLogDO::getPlanName, reqVO.getPlanName())
                 .eqIfPresent(DvCheckPlanHeaderLogDO::getPlanType, reqVO.getPlanType())
                 .eqIfPresent(DvCheckPlanHeaderLogDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(DvCheckPlanHeaderLogDO::getMachineryCode, reqVO.getMachineryCode())
-                .likeIfPresent(DvCheckPlanHeaderLogDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(DvCheckPlanHeaderLogDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(DvCheckPlanHeaderLogDO::getRemark, reqVO.getRemark())
                 .eqIfPresent(DvCheckPlanHeaderLogDO::getAttr1, reqVO.getAttr1())
                 .eqIfPresent(DvCheckPlanHeaderLogDO::getAttr2, reqVO.getAttr2())

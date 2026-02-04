@@ -34,7 +34,7 @@ public interface ElectroplateLogMapper extends BaseMapperX<ElectroplateLogDO> {
         return selectList(new LambdaQueryWrapperX<ElectroplateLogDO>()
                 .eqIfPresent(ElectroplateLogDO::getMachineryId, reqVO.getMachineryId())
                 .eqIfPresent(ElectroplateLogDO::getMachineryCode, reqVO.getMachineryCode())
-                .likeIfPresent(ElectroplateLogDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(ElectroplateLogDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(ElectroplateLogDO::getProportion, reqVO.getProportion())
                 .eqIfPresent(ElectroplateLogDO::getTemperature, reqVO.getTemperature())
                 .eqIfPresent(ElectroplateLogDO::getPhValue, reqVO.getPhValue())

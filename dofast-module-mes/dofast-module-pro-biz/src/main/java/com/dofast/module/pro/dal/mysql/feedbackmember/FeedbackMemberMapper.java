@@ -38,8 +38,8 @@ public interface FeedbackMemberMapper extends BaseMapperX<FeedbackMemberDO> {
                 .eqIfPresent(FeedbackMemberDO::getTaskCode, reqVO.getTaskCode())
                 .eqIfPresent(FeedbackMemberDO::getTeamCode, reqVO.getTeamCode())
                 .eqIfPresent(FeedbackMemberDO::getUserId, reqVO.getUserId())
-                .likeIfPresent(FeedbackMemberDO::getUserName, reqVO.getUserName())
-                .likeIfPresent(FeedbackMemberDO::getNickName, reqVO.getNickName())
+                .eqIfPresent(FeedbackMemberDO::getUserName, reqVO.getUserName())
+                .eqIfPresent(FeedbackMemberDO::getNickName, reqVO.getNickName())
                 .eqIfPresent(FeedbackMemberDO::getPostIds, reqVO.getPostIds())
                 .betweenIfPresent(FeedbackMemberDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(FeedbackMemberDO::getId));

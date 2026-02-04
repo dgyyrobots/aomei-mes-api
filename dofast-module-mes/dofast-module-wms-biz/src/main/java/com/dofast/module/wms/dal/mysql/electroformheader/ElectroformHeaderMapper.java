@@ -33,11 +33,11 @@ public interface ElectroformHeaderMapper extends BaseMapperX<ElectroformHeaderDO
     default List<ElectroformHeaderDO> selectList(ElectroformHeaderExportReqVO reqVO) {
         return selectList(new LambdaQueryWrapperX<ElectroformHeaderDO>()
                 .eqIfPresent(ElectroformHeaderDO::getIssueCode, reqVO.getIssueCode())
-                .likeIfPresent(ElectroformHeaderDO::getIssueName, reqVO.getIssueName())
+                .eqIfPresent(ElectroformHeaderDO::getIssueName, reqVO.getIssueName())
                 .betweenIfPresent(ElectroformHeaderDO::getIssueDate, reqVO.getIssueDate())
                 .eqIfPresent(ElectroformHeaderDO::getStatus, reqVO.getStatus())
                 .betweenIfPresent(ElectroformHeaderDO::getCreateTime, reqVO.getCreateTime())
-                .likeIfPresent(ElectroformHeaderDO::getMachineryName, reqVO.getMachineryName())
+                .eqIfPresent(ElectroformHeaderDO::getMachineryName, reqVO.getMachineryName())
                 .eqIfPresent(ElectroformHeaderDO::getMachineryCode, reqVO.getMachineryCode())
                 .eqIfPresent(ElectroformHeaderDO::getMachineryId, reqVO.getMachineryId())
                 .orderByDesc(ElectroformHeaderDO::getId));
