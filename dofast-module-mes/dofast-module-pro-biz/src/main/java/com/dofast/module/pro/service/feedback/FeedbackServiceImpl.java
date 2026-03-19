@@ -12,6 +12,7 @@ import com.dofast.module.pro.dal.dataobject.workorder.WorkorderDO;
 import com.dofast.module.pro.enums.ErrorCodeConstants;
 import com.dofast.module.pro.service.task.TaskService;
 import com.dofast.module.pro.service.workorder.WorkorderService;
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -238,6 +239,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         return feedbackMapper.getFeedbackListByTaskCodes(taskCodes, startTime, endTime);
     }
 
-
+    @Override
+    public List<FeedbackDO> selectErpPendingList(){
+        return feedbackMapper.selectErpPendingList();
+    }
 
 }

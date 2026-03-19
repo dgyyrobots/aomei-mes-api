@@ -11,6 +11,7 @@ import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import org.apache.ibatis.annotations.Mapper;
 import com.dofast.module.pro.controller.admin.feedback.vo.*;
 import org.apache.ibatis.annotations.Param;
+import org.joda.time.DateTime;
 
 /**
  * 生产报工记录 Mapper
@@ -307,4 +308,7 @@ public interface FeedbackMapper extends BaseMapperX<FeedbackDO> {
     public List<Map<String, Object>> initFeedbackReport(@Param("params") Map<String, Object> params);
 
     List<FeedbackDO> getFeedbackListByTaskCodes(@Param("taskCodes") List<String> taskCodes ,@Param("startTime") LocalDateTime startTime,@Param("endTime") LocalDateTime endTime);
+
+    List<FeedbackDO> selectErpPendingList();
+
 }

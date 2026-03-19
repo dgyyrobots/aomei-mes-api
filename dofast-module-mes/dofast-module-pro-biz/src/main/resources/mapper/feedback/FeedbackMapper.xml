@@ -182,5 +182,18 @@
     </select>
 
 
+    <select id="selectErpPendingList" resultType="com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO">
+        SELECT * FROM pro_feedback
+        WHERE workorder_code LIKE 'AMGD%'
+          AND erp_feedback_status = 'N'
+          AND erp_feedback  is null
+          -- AND status in ('FINISHED' , 'WAREHOUSED')
+          AND status = 'WAREHOUSED'
+          AND create_time >= CONVERT_TZ(UTC_TIMESTAMP() - INTERVAL 5 HOUR, '+00:00', '+08:00')
+        order by create_time
+    </select>
+
+
+
 
 </mapper>

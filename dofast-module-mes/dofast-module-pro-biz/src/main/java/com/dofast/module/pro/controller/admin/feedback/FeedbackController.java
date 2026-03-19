@@ -2,6 +2,7 @@ package com.dofast.module.pro.controller.admin.feedback;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.dofast.framework.common.exception.ErrorCode;
@@ -1250,7 +1251,7 @@ public class FeedbackController {
             denominator = BigDecimal.ONE;
         }
 
-        BigDecimal conversionQuantity = numerator.divide(denominator, 4, BigDecimal.ROUND_HALF_UP);
+        BigDecimal conversionQuantity = numerator.divide(denominator, 6, BigDecimal.ROUND_HALF_UP);
 
         result.put("outUnit", process.getOutUnits());
         result.put("outNumber", conversionQuantity);
@@ -1389,7 +1390,7 @@ public class FeedbackController {
         itemRecptService.updateItemRecpt(itemRecptUpdateReqVO);
     }
 
-    @PutMapping("/update-feedback-status")
+   /* @PutMapping("/update-feedback-status")
     @Operation(summary = "更新生产报工记录的状态")
     @Transactional
     @PreAuthorize("@ss.hasPermission('pro:feedback:update')")
@@ -1450,12 +1451,12 @@ public class FeedbackController {
             }
         }
     }
-
+*/
 
     /**
      * 执行业务逻辑
      */
-    private CommonResult executeBusinessLogicInLock(Long id, String status, Long warehouseId,
+    /*private CommonResult executeBusinessLogicInLock(Long id, String status, Long warehouseId,
                                                     Long locationId, Long areaId, FeedbackDO feedback) {
         // 打样工单 判定标识
         boolean proof = "AMGD01".equals(feedback.getWorkorderCode().split("-")[0]);
@@ -1518,7 +1519,7 @@ public class FeedbackController {
             // 2025-06-09 修改为每次MES报工就调用ERP报工接口, 若需要传批次, 以母批为准
             //if (feedback.getTaskStatus() == "FINISHED") {
             // 获取当前批次报工信息
-            /*List<FeedbackDO> feedbackDOS = feedbackService.getFeedbackList(new FeedbackExportReqVO().setTaskCode(task.getTaskCode()));
+            *//*List<FeedbackDO> feedbackDOS = feedbackService.getFeedbackList(new FeedbackExportReqVO().setTaskCode(task.getTaskCode()));
             BigDecimal sumQuality = null;
             BigDecimal sumUnQuality = null;
             for (FeedbackDO feedbackDO : feedbackDOS) {
@@ -1529,7 +1530,7 @@ public class FeedbackController {
                     sumQuality.add(BigDecimal.valueOf(feedbackDO.getQuantityQualified()));
                     sumUnQuality.add(BigDecimal.valueOf(feedbackDO.getQuantityUnquanlified()));
                 }
-            }*/
+            }*//*
         }
 
         if (!feedback.getWorkorderCode().startsWith("MO")) {
@@ -1553,12 +1554,13 @@ public class FeedbackController {
             RouteProcessDO process = routeProcess.get(0);
             // 20025-10-16 修改工单工作序取值
             // 若两者都为空, 是否会出现问题?
-            Long workorderSequence = Optional.ofNullable(task.getWorkorderSequence())
-                    .orElseGet(() -> process.getWorkorderSequence());
+            *//*Long workorderSequence = Optional.ofNullable(task.getWorkorderSequence())
+                    .orElseGet(() -> process.getWorkorderSequence());*//*
+            Long workorderSequence = task.getWorkorderSequence() != null ? task.getWorkorderSequence() : process.getWorkorderSequence();
 
             // 获取ERP设备编码
             DvMachineryDTO machineryDTO = dvMachineryApi.getMachineryInfo(feedback.getMachineryCode());
-            Map<String, Object> erpParams = new HashMap<>();
+            Map<String, Object> erpParams = new HashMap<>(32);
             // 基础信息
             erpParams.put("source_no", feedback.getFeedbackCode()); // MES报工单号
             erpParams.put("sffb002", feedback.getUserName()); // 报工人员工号
@@ -1587,8 +1589,15 @@ public class FeedbackController {
                 erpParams.put("sffb016", feedback.getUnitOfMeasure()); // 单位
             }
             // 调用ERP接口
-            String erpResult = workorderERPAPI.workOrderReportCreate(erpParams);
-            // String erpResult = "ERROR";
+            // String erpResult = workorderERPAPI.workOrderReportCreate(erpParams);
+            // 设置2秒等待
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            String erpResult = "ERROR";
             // 解析响应结果
             if (erpResult.contains("SUCCESS")) { // 根据实际接口返回判断
                 //return error(ErrorCodeConstants.FEEDBACK_ERP_ERROR);
@@ -1649,7 +1658,296 @@ public class FeedbackController {
             taskService.updateTask(BeanUtil.toBean(reqTask, TaskUpdateReqVO.class));
         }
         return success();
+    }*/
+
+    @PutMapping("/update-feedback-status")
+    @Operation(summary = "更新生产报工记录的状态")
+    @PreAuthorize("@ss.hasPermission('pro:feedback:update')")
+    public CommonResult updateFeedbackStatus(@RequestParam("id") Long id, @RequestParam("status") String status, @RequestParam("warehouseId") Long warehouseId, @RequestParam("locationId") Long locationId, @RequestParam("areaId") Long areaId) {
+
+        if (!StrUtils.isNotNull(id)) {
+            return error(ErrorCodeConstants.FEEDBACK_NEED_SAVE_FIRST);
+        }
+
+        // 前置校验逻辑
+        FeedbackDO feedback = feedbackService.getFeedback(id);
+
+        WorkorderDO workorderDO = workorderService.getWorkorder(feedback.getWorkorderCode());
+
+        if ("FINISHED".equals(workorderDO.getStatus())) {
+            return error(com.dofast.module.wms.enums.ErrorCodeConstants.WORKORDER_FINSHED_NOT_AVALIABLE);
+        }
+
+        // 打样工单 判定标识
+        boolean proof = "AMGD01".equals(feedback.getWorkorderCode().split("-")[0]);
+
+        // 获得用户基本信息
+        Long loginUserId = getLoginUserId();
+        AdminUserRespDTO userDTO = adminUserApi.getUser(loginUserId);
+
+        feedback.setNickName(userDTO.getNickname());
+        feedback.setUserName(userDTO.getUsername());
+
+        if (status.equals("UNAPPROVED")) {
+            FeedbackUpdateReqVO feedbackUpdateReqVO = BeanUtil.toBean(feedback, FeedbackUpdateReqVO.class);
+            feedbackUpdateReqVO.setStatus("UNAPPROVED");
+            feedbackService.updateFeedback(feedbackUpdateReqVO);
+            return error(ErrorCodeConstants.FEEDBACK_NOT_APPROVED);
+        }
+
+        if (feedback.getQuantityFeedback().compareTo(Double.valueOf(0)) != 1) {
+            return error(ErrorCodeConstants.FEEDBACK_NUM_IS_ZERO);
+        }
+
+        // ========== 分布式锁开始 ==========
+        // 使用固定的业务Key，确保同一任务同一机器的请求使用相同的锁
+        String lockKey = String.format("feedback:batch:task:%s", feedback.getTaskId());
+
+        String lockValue = UUID.randomUUID().toString();
+
+        boolean locked = false;
+
+        try {
+
+            // 获取分布式锁
+            locked = redisTemplate.opsForValue().setIfAbsent(lockKey, lockValue, Duration.ofSeconds(60));
+
+            if (!locked) {
+                return error(ErrorCodeConstants.LOCK_FAIL);
+            }
+
+            return executeBusinessLogicInLock(id, status, warehouseId, locationId, areaId, feedback);
+
+        } finally {
+
+            if (locked) {
+
+                try {
+
+                    String luaScript = "if redis.call('get', KEYS[1]) == ARGV[1] then " + "return redis.call('del', KEYS[1]) " + "else return 0 end";
+                    redisTemplate.execute(
+                            new DefaultRedisScript<>(luaScript, Long.class),
+                            Arrays.asList(lockKey),
+                            lockValue
+                    );
+
+                } catch (Exception e) {
+
+                    System.out.println("释放分布式锁异常: " + e + ", Key: " + lockKey);
+                }
+            }
+        }
     }
+
+    @Transactional
+    public TaskDO generateBatchAndLock(FeedbackDO feedback) {
+
+        // 重新获取最新数据
+        TaskDO taskForBatch = taskService.getTaskWithLock(feedback.getTaskId());
+        // ========== 批次号生成开始 ==========
+        String batchCode;
+        String parentBatchCode = taskForBatch.getParentBatchCode();
+
+        // 生成批次号
+        batchCode = generateUniqueBatchCode(taskForBatch, feedback);
+
+        if (batchCode == null) {
+            return null;
+        }
+
+        // 更新任务单的父批次号和序列号
+        taskForBatch.setParentBatchCode(parentBatchCode);
+        taskForBatch.setSerial(batchCode.split("-")[1]);
+
+        taskService.updateTask(TaskConvert.INSTANCE.convert01(taskForBatch));
+
+        // 设置批次号
+        feedback.setBatchCode(batchCode);
+
+        return taskForBatch;
+    }
+
+    private CommonResult executeBusinessLogicInLock(Long id, String status, Long warehouseId,
+                                                    Long locationId, Long areaId, FeedbackDO feedback) {
+
+        // 打样工单 判定标识
+        boolean proof = "AMGD01".equals(feedback.getWorkorderCode().split("-")[0]);
+
+        TaskDO task = generateBatchAndLock(feedback);
+
+        if (task == null) {
+            return error(ErrorCodeConstants.BATCH_CODE_DUPLICATE);
+        }
+
+        String batchCode = feedback.getBatchCode();
+
+        WorkorderDO workorder = workorderService.getWorkorder(feedback.getWorkorderId());
+        //更新生产任务的生产数量
+        // TaskDO task = taskService.getTask(feedback.getTaskId());
+        // 追加ERP报工接口调用
+        // 2025-03-13 追加需求: 判定当前任务单对应的领料单是否存在未上料单据信息, 存在则不允许其进行报工操作
+        // 基于任务单获取生产领料单
+        IssueheaderDTO issueHeader = new IssueheaderDTO();
+        issueHeader.setTaskId(task.getId());
+        issueHeader.setWorkorderCode(workorder.getWorkorderCode());
+        List<IssueheaderDTO> issueHeaderList = issueApi.listIssueHeader(issueHeader);
+        List<IssueLineDTO> issueLineList = new ArrayList<>();
+        List<IssueLineDTO> enableIssueList = new ArrayList<>();
+        if (proof) {
+            if (issueHeaderList.isEmpty()) {
+                return error(ErrorCodeConstants.ISSUE_NOT_EXISTS);
+            }
+            IssueheaderDTO issueHeaderDTO = issueHeaderList.get(0);
+            // 基于生产领料单获取已上料未报工的生产领料单行
+            IssueLineDTO issueLine = new IssueLineDTO();
+            issueLine.setIssueId(issueHeaderDTO.getId());
+            issueLine.setStatus("Y");
+            issueLine.setFeedbackStatus("N");
+            issueLine.setMachineryCode(feedback.getMachineryCode());
+            issueLineList = issueApi.listIssueLine(issueLine);
+
+            // 获取当前已报工且勾选已启用的物料
+            IssueLineDTO enableIssue = new IssueLineDTO();
+            enableIssue.setIssueId(issueHeaderDTO.getId());
+            enableIssue.setFeedbackStatus("Y");
+            enableIssue.setEnableFlag("true");
+            issueLine.setMachineryCode(feedback.getMachineryCode());
+            enableIssueList = issueApi.listIssueLine(enableIssue);
+            if (issueLineList.isEmpty() && enableIssueList.isEmpty()) {
+                // 不存在已上料未报工信息与残留物料
+                return error(ErrorCodeConstants.TASK_NOT_RECEPT);
+            }
+            // 2025-06-09 修改为每次MES报工就调用ERP报工接口, 若需要传批次, 以母批为准
+            //if (feedback.getTaskStatus() == "FINISHED") {
+            // 获取当前批次报工信息
+            /*List<FeedbackDO> feedbackDOS = feedbackService.getFeedbackList(new FeedbackExportReqVO().setTaskCode(task.getTaskCode()));
+            BigDecimal sumQuality = null;
+            BigDecimal sumUnQuality = null;
+            for (FeedbackDO feedbackDO : feedbackDOS) {
+                if ("AM006".equals(feedbackDO.getProcessCode()) && "公斤".equals(feedbackDO.getUnitOfMeasure())) {
+                    sumQuality.add(feedbackDO.getConversionQuantity());
+                    sumUnQuality.add(feedbackDO.getConversionQuantityUnquanlified());
+                } else {
+                    sumQuality.add(BigDecimal.valueOf(feedbackDO.getQuantityQualified()));
+                    sumUnQuality.add(BigDecimal.valueOf(feedbackDO.getQuantityUnquanlified()));
+                }
+            }*/
+        }
+
+        /*if (!feedback.getWorkorderCode().startsWith("MO")) {
+            // 将当前上料时间与报工时间进行比对, 算出上料到报工所经历的时长信息
+            LocalDateTime feedbackTime = feedback.getFeedbackTime();
+            // 判定issueLineList与enableIssueList哪个不为空, 取不为空的数据
+            List<IssueLineDTO> issueLineListNotEmpty = issueLineList.isEmpty() ? enableIssueList : issueLineList;
+            Date issueTime = new Date(); // 获取上料时间
+            if (!issueLineListNotEmpty.isEmpty()) {
+                issueTime = issueLineListNotEmpty.get(0).getCreateTime();
+            }
+            String routeCode = workorder.getProductCode() + "-" + workorder.getRouteCode();
+            // 获取工作序
+            RouteDO route = routeService.getRoute(routeCode);
+            RouteProcessExportReqVO exportReqVO = new RouteProcessExportReqVO();
+            exportReqVO.setRouteId(route.getId());
+            exportReqVO.setProcessCode(task.getProcessCode());
+            List<RouteProcessDO> routeProcess = routeProcessService.getRouteProcessList(exportReqVO);
+            RouteProcessDO process = routeProcess.get(0);
+            // 20025-10-16 修改工单工作序取值
+            // 若两者都为空, 是否会出现问题?
+            Long workorderSequence = task.getWorkorderSequence() != null ? task.getWorkorderSequence() : process.getWorkorderSequence();
+            // 获取ERP设备编码
+            DvMachineryDTO machineryDTO = dvMachineryApi.getMachineryInfo(feedback.getMachineryCode());
+            Map<String, Object> erpParams = new HashMap<>(32);
+            // 基础信息
+            erpParams.put("source_no", feedback.getFeedbackCode()); // MES报工单号
+            erpParams.put("sffb002", feedback.getUserName()); // 报工人员工号
+            erpParams.put("sffb005", workorder.getWorkorderCode()); // 工单单号
+            erpParams.put("sffb007", feedback.getProcessCode()); // 作业编号(工序编号)
+            erpParams.put("sffb009", feedback.getWorkstationCode()); // 工作站
+            erpParams.put("sffb010", machineryDTO.getErpMachineryCode() + "#"); // 设备编号
+            erpParams.put("sffb012", feedbackTime.toLocalDate()); // 完成日期
+            erpParams.put("sffb013", feedbackTime.toLocalTime()); // 完成时间
+            erpParams.put("sffb008", String.valueOf(workorderSequence)); // 工作序
+            Date feedbackDate = Date.from(feedbackTime.atZone(ZoneId.systemDefault()).toInstant());
+            long durationInMillis = feedbackDate.getTime() - issueTime.getTime(); // 计算时间跨度毫秒
+            long durationInMinutes = durationInMillis / (60 * 1000); // 转为分钟
+
+            erpParams.put("sffb014", durationInMinutes); // 工时（分）
+            erpParams.put("sffb015", durationInMinutes); // 机时（分）
+
+            if ("AM006".equals(feedback.getProcessCode()) && "BF".equals(feedback.getMachineryCode().split("-")[1].substring(0, 2))) {
+                erpParams.put("sffb017", feedback.getConversionQuantity()); // 良品数量
+                erpParams.put("sffb018", feedback.getConversionQuantityUnquanlified()); // 报废数量
+                erpParams.put("sffb016", feedback.getConversionUnit()); // 单位
+            } else {
+                erpParams.put("sffb017", feedback.getQuantityQualified()); // 良品数量
+                erpParams.put("sffb018", feedback.getQuantityUnquanlified()); // 报废数量
+                erpParams.put("sffb016", feedback.getUnitOfMeasure()); // 单位
+            }
+            // 调用ERP接口
+            String erpResult = workorderERPAPI.workOrderReportCreate(erpParams);
+            // 解析响应结果
+            if (erpResult.contains("SUCCESS")) { // 根据实际接口返回判断
+                String erpFeedback = erpResult.split(",")[1];
+                feedback.setErpFeedback(erpFeedback);
+                feedback.setErpFeedbackStatus("Y");
+                feedbackService.updateFeedback(FeedbackConvert.INSTANCE.convert02(feedback));
+            }
+        }*/
+        task.setActualEndTime(LocalDateTime.now());
+
+        Double quantityProduced, quantityQuanlify, quantityUnquanlify;
+        quantityQuanlify = task.getQuantityQuanlify() == null ? 0 : task.getQuantityQuanlify();
+        quantityUnquanlify = task.getQuantityUnquanlify() == null ? 0 : task.getQuantityUnquanlify();
+        quantityProduced = task.getQuantityProduced() == null ? 0 : task.getQuantityProduced();
+        task.setQuantityProduced(quantityProduced + feedback.getQuantityFeedback());
+        task.setQuantityQuanlify(quantityQuanlify + feedback.getQuantityQualified());
+        task.setQuantityUnquanlify(quantityUnquanlify + feedback.getQuantityUnquanlified());
+        TaskUpdateReqVO taskUpdateReqVO = BeanUtil.toBean(task, TaskUpdateReqVO.class);
+        taskService.updateTask(taskUpdateReqVO);
+        //更新工单的生产数量
+        //workorder.setQuantityProduced(quantityProduced + feedback.getQuantityFeedback());
+        //WorkorderUpdateReqVO workorderUpdateReqVO = BeanUtil.toBean(workorder, WorkorderUpdateReqVO.class);
+        //workorderService.updateWorkorder(workorderUpdateReqVO);
+        //如果是关键工序，则更新当前工单的已生产数量
+        //checkKeyProcess(feedback, workorder);
+        //父工单操作
+        //parentOrder(feedback, workorder);
+        if (routeProcessService.checkFinProcess(task)) {
+            //更新生产工单的生产数量
+            Double produced = workorder.getQuantityProduced() == null ? 0 : workorder.getQuantityProduced();
+            Double feedBackQuantity = feedback.getQuantityFeedback() == null ? 0 : feedback.getQuantityFeedback();
+            workorder.setQuantityProduced(produced + feedBackQuantity);
+            WorkorderUpdateReqVO workorderUpdateReqVO = BeanUtil.toBean(workorder, WorkorderUpdateReqVO.class);
+            workorderService.updateWorkorder(workorderUpdateReqVO);
+        }
+        //根据当前工序的物料BOM配置，进行物料消耗
+        //先生成消耗单
+        FeedbackDTO feedbackDTO = BeanUtil.toBean(feedback, FeedbackDTO.class);
+        ItemConsumeDO itemConsume = itemConsumeService.generateItemConsume(feedbackDTO);
+        if (StrUtils.isNotNull(itemConsume)) {
+            //再执行库存消耗动作
+            executeItemConsume(itemConsume);
+        }
+        //生成产品产出记录单
+        ProductProduceDO productRecord = productProduceService.generateProductProduce(feedbackDTO, batchCode);
+        //执行产品产出入线边库
+        executeProductProduce(feedback, productRecord, workorder, warehouseId, locationId, areaId , batchCode);
+        //更新报工单的状态
+        feedback.setStatus(UserConstants.ORDER_STATUS_FINISHED);
+        FeedbackUpdateReqVO feedbackUpdateReqVO = BeanUtil.toBean(feedback, FeedbackUpdateReqVO.class);
+        feedbackService.updateFeedback(feedbackUpdateReqVO);
+
+        // 将任务单信息修改为已完成
+        if ("FINISHED".equals(feedback.getTaskStatus())) {
+            TaskDO reqTask = taskService.getTask(feedback.getTaskCode());
+            reqTask.setStatus("FINISHED");
+            taskService.updateTask(BeanUtil.toBean(reqTask, TaskUpdateReqVO.class));
+        }
+        return success();
+    }
+
+
+
 
     private String generateUniqueBatchCode(TaskDO task, FeedbackDO feedback) {
         String parentBatchCode;

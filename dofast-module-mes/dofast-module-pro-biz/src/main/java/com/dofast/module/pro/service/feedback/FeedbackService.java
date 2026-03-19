@@ -8,6 +8,7 @@ import com.dofast.module.pro.dal.dataobject.feedback.FeedbackDO;
 import com.dofast.framework.common.pojo.PageResult;
 import com.dofast.module.pro.dal.dataobject.task.TaskDO;
 import org.apache.ibatis.annotations.Param;
+import org.joda.time.DateTime;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -121,4 +122,5 @@ public interface FeedbackService {
 
    List<FeedbackDO> getFeedbackListByTaskCodes(List<String> taskCodes , LocalDateTime startTime, LocalDateTime endTime);
 
+   List<FeedbackDO> selectErpPendingList();
 }
